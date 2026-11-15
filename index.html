@@ -275,6 +275,7 @@ import {EffectComposer} from "three/addons/postprocessing/EffectComposer.js";
 import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
 import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
 import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
+import {ShaderPass} from "three/addons/postprocessing/ShaderPass.js";
 import {Sky} from "three/addons/objects/Sky.js";
 import {GroundedSkybox} from "three/addons/objects/GroundedSkybox.js";
 import {RGBELoader} from "three/addons/loaders/RGBELoader.js";
@@ -309,6 +310,10 @@ const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(4,4,{type
 const renderPass=new RenderPass(new THREE.Scene(),camera);
 const bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.38,.45,1.35);
 composer.addPass(renderPass);composer.addPass(bloom);composer.addPass(new OutputPass());
+/* game-style colour grade: richer colour, gentle contrast, soft vignette */
+const GRADE=new ShaderPass({uniforms:{tDiffuse:{value:null},sat:{value:1.0},con:{value:1.0},vig:{value:0}},vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
+ fragmentShader:"uniform sampler2D tDiffuse;uniform float sat,con,vig;varying vec2 vUv;void main(){vec4 c=texture2D(tDiffuse,vUv);float l=dot(c.rgb,vec3(.2126,.7152,.0722));vec3 r=mix(vec3(l),c.rgb,sat);r=(r-.5)*con+.5;float d=distance(vUv,vec2(.5));r*=1.-vig*smoothstep(.35,.85,d);gl_FragColor=vec4(clamp(r,0.,1.),c.a);}"});
+composer.addPass(GRADE);
 const pmrem=new THREE.PMREMGenerator(renderer);
 const roomEnv=pmrem.fromScene(new RoomEnvironment(renderer),.04).texture;
 const maxAniso=renderer.capabilities.getMaxAnisotropy();
@@ -317,6 +322,8 @@ function regShadow(l,size){l.castShadow=true;l.shadow.mapSize.set(QUAL[quality].
 
 /* =============== canvas textures =============== */
 function ctex(w,h,draw,rep,srgb=true){const c=document.createElement("canvas");c.width=w;c.height=h;const g=c.getContext("2d");draw&&draw(g,w,h);const t=new THREE.CanvasTexture(c);if(rep){t.wrapS=t.wrapT=THREE.RepeatWrapping;t.repeat.set(rep[0],rep[1])}if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(8,maxAniso);t.cv=c;t.g=g;return t}
+const WIND={value:0};
+function mergeGeos(list){let n=0,ni=0;list.forEach(g=>{n+=g.attributes.position.count;ni+=g.index.count});const P=new Float32Array(n*3),N=new Float32Array(n*3),U=new Float32Array(n*2),I=new Uint32Array(ni);let o=0,oi=0;list.forEach(g=>{P.set(g.attributes.position.array,o*3);N.set(g.attributes.normal.array,o*3);U.set(g.attributes.uv.array,o*2);const ix=g.index.array;for(let k=0;k<ix.length;k++)I[oi+k]=ix[k]+o;o+=g.attributes.position.count;oi+=ix.length;g.dispose()});const m=new THREE.BufferGeometry();m.setAttribute("position",new THREE.BufferAttribute(P,3));m.setAttribute("normal",new THREE.BufferAttribute(N,3));m.setAttribute("uv",new THREE.BufferAttribute(U,2));m.setIndex(new THREE.BufferAttribute(I,1));m.computeBoundingSphere();return m}
 function rep(t,x,y){const c=t.clone();c.wrapS=c.wrapT=THREE.RepeatWrapping;c.repeat.set(x,y);c.needsUpdate=true;return c}
 function speckle(g,w,h,n,cols,alpha,sz=[1,2],r=rng(7)){for(let i=0;i<n;i++){g.globalAlpha=alpha*(.35+r()*.65);g.fillStyle=cols[(r()*cols.length)|0];const s=sz[0]+r()*(sz[1]-sz[0]);g.fillRect(r()*w,r()*h,s,s)}g.globalAlpha=1}
 function txt(g,s,x,y,font,color,align="left",base="alphabetic"){g.font=font;g.fillStyle=color;g.textAlign=align;g.textBaseline=base;g.fillText(s,x,y)}
@@ -361,7 +368,7 @@ function stool(x,z){const g=new THREE.Group();g.position.set(x,0,z);g.add(mesh(c
 /* =============== camera fly-to & stage mounting =============== */
 let world=null,tween=null,camDriver=null,host=null;
 function flyTo(p,t,dur=1.4,done,lift=0){if(window.__eduFast)dur=.05;tween={p0:camera.position.clone(),t0:controls.target.clone(),p1:V(...p),t1:V(...t),k:0,dur,done,lift};controls.enabled=false}
-function setWorld(w){world=w;camera.fov=w.fov||45;camera.updateProjectionMatrix();w.scene.add(camera);renderer.toneMappingExposure=w.exposure;bloom.strength=w.bloom??.38;renderPass.scene=w.scene;controls.minDistance=w.lim.min;controls.maxDistance=w.lim.max;controls.maxPolarAngle=w.lim.polar;controls.minPolarAngle=w.lim.minPolar||0}
+function setWorld(w){world=w;if(typeof GRADE!=="undefined"){GRADE.uniforms.sat.value=1.06;GRADE.uniforms.con.value=1.02;GRADE.uniforms.vig.value=.12}camera.fov=w.fov||45;camera.updateProjectionMatrix();w.scene.add(camera);renderer.toneMappingExposure=w.exposure;bloom.strength=w.bloom??.38;renderPass.scene=w.scene;controls.minDistance=w.lim.min;controls.maxDistance=w.lim.max;controls.maxPolarAngle=w.lim.polar;controls.minPolarAngle=w.lim.minPolar||0}
 function resize(){if(!host)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;const pr=Math.min(devicePixelRatio||1,QUAL[quality].pr);renderer.setPixelRatio(pr);renderer.setSize(w,h,false);composer.setPixelRatio(pr);composer.setSize(w,h);camera.aspect=w/h;camera.fov=w/h<1.1?60:45;camera.updateProjectionMatrix()}
 function applyQuality(){const q=QUAL[quality];renderer.shadowMap.enabled=q.sh;shadowLights.forEach(l=>{l.castShadow=q.sh;if(l.shadow.mapSize.x!==q.map){l.shadow.mapSize.set(q.map,q.map);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null}}});Object.values(WORLDS).forEach(w=>w&&w.scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>m.needsUpdate=true)}));document.querySelectorAll(".qbtn").forEach(b=>b.textContent="Quality: "+quality);resize()}
 function mount(stage){
@@ -549,7 +556,7 @@ function buildCampus(){
   const gate=new THREE.Group();gate.position.set(0,0,92);s.add(gate);
   [-6,6].forEach(x=>{gate.add(mesh(new THREE.BoxGeometry(2.2,9,2.2),brickMat(1,4),[x,4.5,0]));gate.add(mesh(new THREE.BoxGeometry(2.6,.5,2.6),conc(),[x,9.2,0]))});
   gate.add(mesh(new THREE.BoxGeometry(14.8,1.6,1.4),dark,[0,8.1,0]));
-  const signT=ctex(1600,150,(g,w,h)=>{g.fillStyle="#1d2329";g.fillRect(0,0,w,h);txt(g,"SAURABH EDUVERSE LABORATORY",w/2,100,'700 84px "Chakra Petch"',"#e8c77a","center")});
+  const signT=ctex(1600,150,(g,w,h)=>{g.fillStyle="#1d2329";g.fillRect(0,0,w,h);txt(g,"SAURABH EDUVERSE LABORATORY",w/2,98,'700 66px "Chakra Petch",sans-serif',"#e8c77a","center")});
   gate.add(mesh(new THREE.PlaneGeometry(13.6,1.28),std(0xffffff,.35,.6,{map:signT}),[0,8.1,.71],{cast:false}));
   // buildings
   const taps=[],spin=[];
@@ -577,17 +584,49 @@ function buildCampus(){
     G.traverse(o=>o.userData.dept=d.id);taps.push(G);G.updateMatrixWorld(true);d.door=G.localToWorld(V(0,2.2,fz+14));d.look=G.localToWorld(V(0,5,0))});
   // trees, hedges, lamps, benches
   const r=rng(9),leaf=[std(0x3d5f22,.9),std(0x4c6d28,.9),std(0x56762e,.9),std(0x34521d,.9)],bark=std(0x4a3a2c,.95);
-  const tree2=(x,z,sc)=>{const g=new THREE.Group();g.position.set(x,0,z);g.add(mesh(cyl(.18*sc,.32*sc,3.2*sc,10),bark,[0,1.6*sc,0]));for(let i=0;i<7;i++){const geo=new THREE.IcosahedronGeometry((1+r()*.7)*sc,3);const p=geo.attributes.position;for(let k=0;k<p.count;k++){const a=p.getX(k),b=p.getY(k),c=p.getZ(k);const f=1+.12*Math.sin(a*5.1+b*3.7)*Math.cos(c*4.3+a*2)+.06*Math.sin(b*11+c*9);p.setXYZ(k,a*f,b*f,c*f)}geo.computeVertexNormals();const a=i/7*6.28;g.add(mesh(geo,leaf[(r()*4)|0],[Math.cos(a)*1.1*sc*(i?1:0),(3.6+r()*1.8)*sc,Math.sin(a)*1.1*sc*(i?1:0)]))}s.add(g)};
+  const LEAFT=ctex(256,256,(g,w,h)=>{g.clearRect(0,0,w,h);const rr=rng(77);for(let k=0;k<70;k++){const x=20+rr()*216,y=20+rr()*216,a=rr()*6.28,l=16+rr()*16;g.save();g.translate(x,y);g.rotate(a);const c=[ "#4f7d2a","#5f8f31","#3f6a22","#6e9a38","#3a5f1f"][(rr()*5)|0];g.fillStyle=c;g.beginPath();g.moveTo(0,-l);g.quadraticCurveTo(l*.55,0,0,l);g.quadraticCurveTo(-l*.55,0,0,-l);g.fill();g.strokeStyle="rgba(30,50,15,.5)";g.lineWidth=1;g.beginPath();g.moveTo(0,-l);g.lineTo(0,l);g.stroke();g.restore()}});
+  const leafMat=new THREE.MeshStandardMaterial({map:LEAFT,alphaTest:.45,side:THREE.DoubleSide,roughness:.85,color:0xd8ecb8});
+  leafMat.onBeforeCompile=sh=>{sh.uniforms.uT=WIND;sh.vertexShader="uniform float uT;\n"+sh.vertexShader.replace("#include <begin_vertex>","#include <begin_vertex>\nvec4 wp=modelMatrix*vec4(position,1.);float sw=sin(uT*1.7+wp.x*.35+wp.z*.27)*.06*max(0.,position.y-2.);transformed.x+=sw;transformed.z+=sw*.6;")};
+  const tree2=(x,z,sc)=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=r()*6.28;
+    g.add(mesh(cyl(.13*sc,.3*sc,3.4*sc,10),bark,[0,1.7*sc,0]));
+    [[.9,2.6,.5],[-.8,2.9,-.3],[.2,3.1,-.9]].forEach(([a,b,c])=>{const br=mesh(cyl(.05*sc,.09*sc,1.6*sc,6),bark,[a*.5*sc,b*sc,c*.5*sc]);br.lookAt(V(x+a*2*sc,b*sc+1.5*sc,z+c*2*sc));br.rotateX(Math.PI/2);g.add(br)});
+    const geos=[];const N=quality==="low"?26:48;for(let k=0;k<N;k++){const pg=new THREE.PlaneGeometry(1.5*sc,1.5*sc);const th=r()*6.28,ph=Math.acos(2*r()-1),rad=(1.2+r()*.9)*sc;
+      pg.rotateX(r()*3);pg.rotateY(r()*6.28);pg.translate(Math.cos(th)*Math.sin(ph)*rad*1.15,(4.1+Math.cos(ph)*rad*.8)*sc/sc*sc,Math.sin(th)*Math.sin(ph)*rad*1.15);geos.push(pg)}
+    const merged=mergeGeos(geos);const fm=new THREE.Mesh(merged,leafMat);fm.castShadow=true;fm.receiveShadow=true;g.add(fm);s.add(g)};
   for(let i=0;i<8;i++){const a=i/8*Math.PI*2+.39,x=Math.cos(a)*18,z=Math.sin(a)*18;s.add(mesh(cyl(.07,.11,5,12),dark,[x,2.5,z]),mesh(new THREE.BoxGeometry(.7,.12,.3),dark,[x,5,z]),mesh(new THREE.BoxGeometry(.6,.03,.22),std(0xfff3d9,.3,0,{emissive:0xffe2b0,emissiveIntensity:.6}),[x,4.93,z],{cast:false}))}
   const benchM=std(0xffffff,.7,0,{map:TEX.woodLight});[[-6,24],[6,24],[-6,38],[6,38]].forEach(([x,z])=>{const g=new THREE.Group();g.position.set(x,0,z);g.rotation.y=x<0?Math.PI/2:-Math.PI/2;for(let i=0;i<4;i++)g.add(mesh(new THREE.BoxGeometry(1.8,.05,.11),benchM,[0,.45,-.18+i*.12]));g.add(mesh(new THREE.BoxGeometry(1.8,.4,.05),benchM,[0,.75,-.25]));[-.75,.75].forEach(xx=>g.add(mesh(new THREE.BoxGeometry(.06,.45,.5),dark,[xx,.22,0])));s.add(g)});
   // GTA-style street dressing: tree-lined avenue, lamp posts, hedges and planters
   const TREES=[];const nT=quality==="low"?6:14;
   for(let i=0;i<nT;i++){const z=28+i*(56/nT)*1.0,side=i%2?1:-1;for(const sd of quality==="low"?[side]:[-1,1]){const x=sd*(7.5+r()*1.5),zz=z+r()*2;tree2(x,zz,.85+r()*.35);TREES.push([x,zz,.5])}}
-  [[-26,10],[26,10],[-24,-22],[24,-22],[-34,40],[34,40],[-30,64],[30,64]].forEach(([x,z])=>{tree2(x,z,1.1+r()*.4);TREES.push([x,z,.6])});
+  [[-26,10],[26,10],[-12,-36],[14,-40],[-50,2],[52,2],[-34,44],[34,46],[-30,64],[30,64],[-20,80],[22,78]].forEach(([x,z])=>{tree2(x,z,1.1+r()*.4);TREES.push([x,z,.6])});
   const lampHead=std(0xfff3d9,.3,0,{emissive:0xffe2b0,emissiveIntensity:.9});
   for(let z=30;z<=84;z+=9)[-3.8,3.8].forEach(x=>{const g=new THREE.Group();g.position.set(x,0,z);g.add(mesh(cyl(.06,.1,4.2,10),dark,[0,2.1,0]),mesh(new THREE.BoxGeometry(.9,.08,.12),dark,[x<0?.35:-.35,4.15,0]),mesh(new THREE.SphereGeometry(.2,14,10),lampHead,[x<0?.75:-.75,4.0,0],{cast:false}),mesh(cyl(.18,.24,.3,10),dark,[0,.15,0]));s.add(g);TREES.push([x,z,.25])});
   const hedgeM=std(0x2f4f1c,.95),soil=std(0x5a4030,.95),flw=[0xe0435a,0xf2c14e,0xf28fb0,0xffffff].map(c=>std(c,.7));
   for(let z=26;z<=82;z+=14)[-5.6,5.6].forEach(x=>{const g=new THREE.Group();g.position.set(x,0,z);g.add(mesh(new THREE.BoxGeometry(1.2,.35,6),soil,[0,.17,0]),mesh(new THREE.BoxGeometry(1.0,.55,5.8),hedgeM,[0,.55,0]));for(let k=0;k<10;k++)g.add(mesh(new THREE.SphereGeometry(.09,8,6),flw[k%4],[(r()-.5)*.8,.86,(r()-.5)*5.4],{cast:false}));s.add(g);TREES.push([x,z-2,.7],[x,z,.7],[x,z+2,.7])});
+  // ---- living 3D grass that follows the player (blades sway in the wind) ----
+  const GR={P:{value:new THREE.Vector2(0,84)},T:WIND,D:{value:DEPTS.map(d=>new THREE.Vector2(d.pos[0],d.pos[1]))}};
+  const nBl={high:70000,medium:36000,low:0}[quality];let grassMesh=null;
+  if(nBl){const bg=new THREE.BufferGeometry();const w=.035,h=1;bg.setAttribute("position",new THREE.Float32BufferAttribute([-w,0,0,w,0,0,-w*.75,h*.35,0,w*.75,h*.35,0,-w*.45,h*.7,0,w*.45,h*.7,0,0,h,0],3));bg.setAttribute("normal",new THREE.Float32BufferAttribute(new Array(21).fill(0).map((_,i)=>i%3===1?1:0),3));bg.setIndex([0,1,2,2,1,3,2,3,4,4,3,5,4,5,6]);
+    const ig=new THREE.InstancedBufferGeometry().copy(bg);ig.instanceCount=nBl;const of=new Float32Array(nBl*4),rr=rng(5);for(let i=0;i<nBl;i++){of[i*4]=rr()*50-25;of[i*4+1]=rr()*50-25;of[i*4+2]=.22+rr()*.28;of[i*4+3]=rr()*6.28}ig.setAttribute("ofs",new THREE.InstancedBufferAttribute(of,4));
+    const gm=new THREE.MeshStandardMaterial({roughness:.9,side:THREE.DoubleSide,color:0xffffff});
+    gm.onBeforeCompile=sh=>{Object.assign(sh.uniforms,{uP:GR.P,uT:GR.T,uD:GR.D});
+      sh.vertexShader="attribute vec4 ofs;uniform vec2 uP;uniform float uT;uniform vec2 uD[4];varying float vH;\n"+sh.vertexShader.replace("#include <begin_vertex>",`
+        vec2 b=ofs.xy;vec2 wp=uP+mod(b-uP+25.,50.)-25.;
+        float sc=ofs.z;float d=length(wp-uP);sc*=1.-smoothstep(17.,24.,d);
+        float rr=length(wp);
+        if(abs(wp.x)<2.9&&wp.y>18.)sc=0.;           // avenue
+        if(rr<9.5||abs(rr-19.5)<1.9)sc=0.;          // plaza + ring path
+        if(rr>150.)sc=0.;
+        for(int k=0;k<4;k++){vec2 c=uD[k];float t=clamp(dot(wp,c)/dot(c,c),0.,1.);if(length(wp-c*t)<2.2||length(wp-c)<14.5)sc=0.;}
+        float c=cos(ofs.w),s=sin(ofs.w);vec3 p=position;p.y*=sc;p.xz*=mix(1.,1.6,step(.0001,sc));
+        float bend=p.y*p.y*(.35+.25*sin(uT*1.3+wp.x*.21+wp.y*.17))*(.7+.3*sin(uT*2.9+wp.x*.9));
+        vec3 transformed=vec3(wp.x+p.x*c+bend*.8,p.y,wp.y+p.x*s+bend*.5);vH=position.y;`).replace("#include <beginnormal_vertex>","vec3 objectNormal=vec3(0.,1.,0.);");
+      sh.fragmentShader="varying float vH;\n"+sh.fragmentShader.replace("#include <color_fragment>","#include <color_fragment>\ndiffuseColor.rgb*=mix(vec3(.07,.15,.025),vec3(.34,.52,.12),vH);")};
+    grassMesh=new THREE.Mesh(ig,gm);grassMesh.frustumCulled=false;grassMesh.receiveShadow=true;s.add(grassMesh)}
+  // ---- footstep dust, birds ----
+  const dustT=ctex(64,64,(g)=>{const gr=g.createRadialGradient(32,32,0,32,32,32);gr.addColorStop(0,"rgba(210,190,160,.8)");gr.addColorStop(1,"rgba(210,190,160,0)");g.fillStyle=gr;g.fillRect(0,0,64,64)});
+  const DUST=[];for(let i=0;i<36;i++){const sp=new THREE.Sprite(new THREE.SpriteMaterial({map:dustT,transparent:true,depthWrite:false,opacity:0}));sp.visible=false;s.add(sp);DUST.push({sp,t:0})}let dustI=0,dustAcc=0;
+  const BIRDS=[];const birdM=std(0x1b1d22,.8,0,{side:THREE.DoubleSide});for(let i=0;i<9;i++){const g=new THREE.Group();const wl=new THREE.Mesh(new THREE.PlaneGeometry(.55,.18).translate(-.27,0,0).rotateX(-Math.PI/2),birdM),wr=new THREE.Mesh(new THREE.PlaneGeometry(.55,.18).translate(.27,0,0).rotateX(-Math.PI/2),birdM);g.add(wl,wr,new THREE.Mesh(new THREE.ConeGeometry(.06,.4,6).rotateX(Math.PI/2),birdM));s.add(g);BIRDS.push({g,wl,wr,r:30+i*3,h:22+(i%3)*4,ph:i*.7,sp:.12+.02*(i%4)})}
   // sun
   const sunL=regShadow(new THREE.DirectionalLight(0xffd7a3,2.6));sunL.position.copy(SUN).multiplyScalar(160);s.add(sunL,sunL.target);const sc=sunL.shadow.camera;sc.left=-75;sc.right=75;sc.top=75;sc.bottom=-75;sc.near=20;sc.far=400;sunL.shadow.bias=-.0006;sunL.shadow.normalBias=.05;
   const S=makeStudent();S.g.position.set(0,0,84);S.g.rotation.y=Math.PI;s.add(S.g);DRESS.add(S);dress(S);
@@ -622,6 +661,12 @@ function buildCampus(){
         if(walk.auto&&walk.dept&&S.g.position.distanceTo(walk.auto)<.6&&walk.dept.open){walk.auto=null}}
       else animStudent(S,dt,0);
       updateNPCs(dt);
+      WIND.value=t;GR.P.value.set(S.g.position.x,S.g.position.z);
+      BIRDS.forEach(b=>{const a=t*b.sp+b.ph;b.g.position.set(Math.cos(a)*b.r,b.h+Math.sin(t*.5+b.ph)*2,Math.sin(a)*b.r+20);b.g.rotation.y=-a;const f=Math.sin(t*9+b.ph*3)*.6;b.wl.rotation.z=f;b.wr.rotation.z=-f});
+      if(world===C){const run=S.speed>3;const tf=(C.fov)+(run?7:0);camera.fov+=(tf-camera.fov)*Math.min(1,dt*3);camera.updateProjectionMatrix();
+        if(S.speed>1.2){dustAcc+=dt*(run?14:5);while(dustAcc>1){dustAcc--;const d=DUST[dustI++%DUST.length];d.t=1;d.sp.visible=true;d.sp.position.set(S.g.position.x+(Math.random()-.5)*.4,.15,S.g.position.z+(Math.random()-.5)*.4)}}
+        DUST.forEach(d=>{if(d.t>0){d.t-=dt*1.4;const k=1-d.t;d.sp.scale.setScalar(.3+k*1.1);d.sp.position.y+=dt*.25;d.sp.material.opacity=Math.max(0,d.t)*.45;if(d.t<=0)d.sp.visible=false}});
+        GRADE.uniforms.sat.value=1.16;GRADE.uniforms.con.value=1.05;GRADE.uniforms.vig.value=.32}
       if(world===C&&(t*10|0)%2===0)drawMinimap(S);
       const p=fg.attributes.position;for(let i=0;i<p.count;i++){const x=fbase[i*3],y=fbase[i*3+1];p.setZ(i,Math.sin(x*1.6-t*5+y*.4)*.22*(x/3.6)+Math.sin(x*3.1-t*7)*.05*(x/3.6))}p.needsUpdate=true;fg.computeVertexNormals()},
     tap(o){const id=o.userData.dept;if(id)enterDept(id)}};
