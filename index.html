@@ -1394,8 +1394,8 @@ function expCone(){
    ============================================================= */
 const CURR={
  physics:{
-  9:[["Motion",[["Distance–time and velocity–time graphs of a moving trolley",null,"A"]]],
-     ["Force and Laws of Motion",[["Newton's second law: acceleration of a trolley",null,"A"],["Action and reaction with two spring balances",null,"A"]]],
+  9:[["Motion",[["Distance–time and velocity–time graphs of a moving trolley","motion-graphs","A"]]],
+     ["Force and Laws of Motion",[["Newton's second law: acceleration of a trolley","newton-second","A"],["Action and reaction with two spring balances","action-reaction","A"]]],
      ["Gravitation",[["Loss of weight in water and Archimedes' principle","buoyancy","P"],["Density of a solid with a spring balance and measuring cylinder","buoyancy","P"]]],
      ["Work and Energy",[["Energy changes in a swinging pendulum","pendulum","E"]]],
      ["Sound",[["Velocity of a pulse in a slinky",null,"P"],["Laws of reflection of sound",null,"P"]]]],
@@ -2144,7 +2144,143 @@ function expPollen(){const g10=(p)=>Math.round((p.suc==="0"?8:p.suc==="10"?85:p.
     resultText(rows){const b=rows.reduce((a,r)=>r[4]>a[4]?r:a);return`Best germination ${fmt(b[4],0)}% at ${b[0]}% sucrose.`},
     demoMore:[["suc","0"],["wait",1],["record"],["suc","30"],["wait",1],["record"]]})}
 
-const EXPS=[expOhm(),expProjectile(),expPendulum(),expLens(),expTitration(),expPH(),expMicroscope(),expPhoto(),expPyth(),expCone(),expBuoyancy(),expSlab(),expResistors(),expHooke(),expMeterBridge(),expDiode(),expReactions(),expAcidsBases(),expFlame(),expKinetics(),expFoodTests(),expStomata(),expFission(),expPlasmolysis(),expMitosis(),expPollen()];
+/* ============ CLASS 9: MOTION & FORCE ============ */
+function trolleyMesh(col=0x2d6cdf){const T=new THREE.Group();T.add(mesh(rbox(.16,.04,.09,.008),std(col,.35,.25),[0,.034,0]));
+  [[-.055,-.048],[.055,-.048],[-.055,.048],[.055,.048]].forEach(([x,z])=>{const w=mesh(cyl(.016,.016,.012,20),MAT.rubber,[x,.016,z]);w.rotation.x=Math.PI/2;T.add(w);T.add(mesh(cyl(.005,.005,.014,10),MAT.chrome,[x,.016,z]).rotateX(Math.PI/2))});
+  T.add(mesh(new THREE.BoxGeometry(.02,.02,.03),MAT.chrome,[.085,.03,0]));return T}
+function trackMesh(len){const R=new THREE.Group();R.add(mesh(rbox(len,.012,.14,.003),std(0x7d8794,.5,.5),[0,.006,0]));
+  [-1,1].forEach(s=>R.add(mesh(new THREE.BoxGeometry(len,.012,.008),std(0x4f5864,.45,.6),[0,.016,s*.05])));
+  const sc=ctex(2048,48,(c,w,h)=>{c.fillStyle="#f6f1e2";c.fillRect(0,0,w,h);c.fillStyle="#111";for(let i=0;i<=120;i++){const x=i/120*w;c.fillRect(x,0,i%10?1.5:3,i%10?14:26);if(i%10===0)txt(c,String(i),x+4,44,'700 18px "IBM Plex Mono"',"#111")}});
+  R.add(mesh(new THREE.PlaneGeometry(1.2,.02),std(0xa8a8a8,.8,0,{map:sc}),[0,.0125,.062],{cast:false}).rotateX(-Math.PI/2));return R}
+
+function expMotion(){
+  const L=1.2,S0=.06,SMAX=1.12;let G,track,trol,dots,ticker,p={mode:"accel",ang:2,u:.3,gr:"st"},run=false,t=0,s=0,v=0,nd=0,tick=0;
+  const acc=()=>p.mode==="accel"?9.8*Math.sin(p.ang*DEG)*.92:p.mode==="decel"?-.06:0;
+  const reset0=()=>{run=false;t=0;s=0;v=p.mode==="accel"?0:p.u;nd=0;tick=0;if(dots)dots.count=0};
+  return{id:"motion-graphs",dept:"physics",title:"Distance–Time and Velocity–Time Graphs of a Moving Trolley",cls:"Class 9",chapter:"Motion",kind:"NCERT activity (mapping to verify)",world:"lab",dark:0,
+    board:["Motion","v = s / t   (uniform)","a = (v − u) / t","slope of s–t = speed; slope of v–t = acceleration"],
+    aim:"To study uniform and non-uniform motion of a trolley by plotting distance–time and velocity–time graphs.",
+    principle:"For uniform motion, equal distances are covered in equal intervals of time, so the distance–time graph is a straight line. For uniformly accelerated motion, the velocity–time graph is a straight line whose slope is the acceleration.",
+    apparatus:["Trolley","Track (1.2 m) with scale; can be tilted as a ramp","Ticker timer (makes a dot every 0.1 s on the tape)","Stopwatch / data logger"],
+    theory:`<div class="eq">v = u + at</div><div class="eq">s = ut + ½at²</div><div class="eq">v² = u² + 2as</div><p>On a level track with friction compensated, a pushed trolley moves with nearly uniform velocity. On a ramp it speeds up (positive acceleration); on a rough track it slows down (negative acceleration, retardation). The ticker-tape dots are equally spaced for uniform motion and spread out for accelerated motion.</p>`,
+    procedure:["Choose the type of motion and set the ramp angle or the push speed.","Release the trolley (Start). The ticker timer marks a dot every 0.1 s.","While it moves, press Record at intervals to note time, distance and velocity. Use the Pause button and ¼× speed to take readings carefully.","Take at least five readings for each type of motion.","Plot distance–time and velocity–time graphs (use the Graph selector) and find the speed or acceleration from the slope."],
+    precautions:["Start the stopwatch at the instant the trolley is released.","Keep the track straight and the trolley wheels free.","Read the scale with your eye directly above the trolley's front edge."],
+    mistakes:["Starting the timer late.","Reading distance from the back of the trolley one time and the front another time.","Mixing up distance and displacement when the trolley rolls back."],
+    applications:["Speedometers and odometers in vehicles.","Traffic police use speed–time data to study accidents.","Graphs of motion are used to design trains and lifts that start and stop smoothly."],
+    viva:[["What does the slope of a distance–time graph give?","The speed."],["What does the area under a velocity–time graph give?","The distance travelled (displacement)."],["What is uniform motion?","Covering equal distances in equal intervals of time."],["What does a horizontal line on a v–t graph mean?","Constant velocity (zero acceleration)."]],
+    quiz:[{q:"For uniform motion the distance–time graph is",o:["a curve","a straight line","parallel to the time axis always","a circle"],a:1},{q:"The slope of a velocity–time graph gives",o:["distance","acceleration","speed","force"],a:1},{q:"Ticker-tape dots getting farther apart show",o:["uniform motion","acceleration","rest","retardation"],a:1}],
+    controls:[{k:"mode",label:"Type of motion",type:"select",opts:[["accel","Ramp: uniformly accelerated"],["uniform","Level track: uniform motion"],["decel","Rough track: retardation"]]},{k:"ang",label:"Ramp angle",min:1,max:8,step:.5,unit:"°",d:1,def:2},{k:"u",label:"Push speed (level / rough)",min:.1,max:.6,step:.05,unit:"m/s",d:2,def:.3},{k:"gr",label:"Graph",type:"select",opts:[["st","Distance–time"],["vt","Velocity–time"]]}],
+    startLabel:"Release trolley",stopLabel:"Stop",cols:["#","Motion","t (s)","s (m)","v (m/s)"],
+    views:[()=>({n:"Track",p:[-.15,1.55,1.6],t:[-.15,.95,0]}),()=>({n:"Trolley",p:[-.6+S0+s+.15,1.08,.35],t:[-.6+S0+s,.93,0]}),()=>({n:"Ticker tape",p:[-.3,1.25,.25],t:[-.2,.93,.04]})],
+    hand(k){return k==="start"?{h:"R",t:()=>wp(trol).add(V(-.08,.05,0)),hold:1}:k==="ang"?{h:"L",t:()=>V(-.6,BENCH+.05,0),hold:1}:null},
+    demo:[["mode","accel"],["ang",2],["speed",.25],["start"],["record"],["record"],["record"],["record"],["record"],["speed",1],["gr","vt"],["wait",2]],
+    build(lab){G=new THREE.Group();G.position.y=BENCH;lab.scene.add(G);
+      track=new THREE.Group();track.position.set(.6,0,0);G.add(track);const tr=trackMesh(L);tr.position.x=-.6;track.add(tr);
+      const blk=mesh(rbox(.06,.08,.12,.006),MAT.woodLight,[-.6+L,.04,0]);track.add(blk);
+      ticker=new THREE.Group();ticker.position.set(-1.2+.01,.03,0);track.add(ticker);ticker.add(mesh(rbox(.06,.05,.06,.006),std(0x333a44,.4,.3),[-.03,.0,0]));
+      trol=trolleyMesh();track.add(trol);
+      dots=new THREE.InstancedMesh(new THREE.CylinderGeometry(.004,.004,.002,10),std(0x111111,.6),80);dots.count=0;dots.frustumCulled=false;track.add(dots);
+      track.add(mesh(new THREE.PlaneGeometry(L,.02),std(0xb8b09a,.9),[-.6,.013,-.03],{cast:false}).rotateX(-Math.PI/2));
+      G.userData.prop=mesh(rbox(.05,.1,.12,.006),MAT.woodLight,[0,.05,0]);G.add(G.userData.prop);reset0();return G},
+    onParam(k,v_){p[k]=k==="mode"||k==="gr"?v_:+v_;if(k!=="gr")reset0()},
+    start(){reset0();run=true;return p.mode==="accel"?"Trolley released from rest down the ramp.":"Trolley given a push of "+p.u+" m/s."},
+    stop(){run=false;return"Trolley stopped."},reset(){reset0()},running:()=>run,
+    update(dt){if(!G)return;const th=p.mode==="accel"?p.ang*DEG:0;track.rotation.z+=(-th-track.rotation.z)*Math.min(1,dt*6);
+      const pr=G.userData.prop;pr.visible=th>0;pr.scale.y=Math.max(.1,Math.sin(th)*1.2/.1);pr.position.set(-.6,Math.sin(th)*1.2/2,0);
+      if(run){const a=acc(),u=p.mode==="accel"?0:p.u;t+=dt;if(p.mode==="decel"&&u+a*t<=0){t=-u/a;run=false}v=u+a*t;s=u*t+.5*a*t*t;if(s>=SMAX-S0){s=SMAX-S0;v=0;run=false}
+        tick+=dt;while(tick>=.1&&nd<80){tick-=.1;dots.setMatrixAt(nd,new THREE.Matrix4().makeTranslation(-1.2+S0+s-.08,.0135,-.03));nd++;dots.count=nd;dots.instanceMatrix.needsUpdate=true}}
+      trol.position.set(-1.2+S0+s,.012,0);trol.children.forEach((c,i)=>{if(i>0&&i<9)c.rotation.y=0})},
+    readout(){return[["Time",fmt(t,2)+" s"],["Distance",fmt(s,3)+" m"],["Velocity",fmt(v,2)+" m/s"]]},
+    record(){if(t<=0)return{err:"Release the trolley first, then record while it moves."};if(!run&&s>=SMAX-S0-.001)return{err:"The trolley has reached the end stop. Release it again and record while it is moving (try ¼× speed or Pause)."};return{row:[p.mode,Math.round(t*100)/100,Math.round(s*1000)/1000,Math.round(v*100)/100],tag:p.mode+p.ang+p.u}},
+    rowFmt:r=>[{accel:"accelerated",uniform:"uniform",decel:"retarded"}[r[0]],fmt(r[1],2),fmt(r[2],3),fmt(r[3],2)],
+    graph(rows){const vt=p.gr==="vt";const pts=rows.map(r=>[r[1],vt?r[3]:r[2]]);const f=vt?fitLine(pts):null;return{pts,xl:"Time t (s)",yl:vt?"Velocity v (m/s)":"Distance s (m)",line:f?{m:f.m,c:f.c}:null}},
+    result(rows){if(rows.length<3)return"Record at least five readings while the trolley moves.";const f=fitLine(rows.map(r=>[r[1],r[3]]));const m=rows[0][0];
+      if(m==="uniform")return`Velocity stays nearly constant at <b>${fmt(rows.reduce((a,r)=>a+r[3],0)/rows.length,2)} m/s</b>: the distance–time graph is a straight line — uniform motion.`;
+      return`Slope of the velocity–time graph = acceleration = <b>${fmt(f?f.m:0,2)} m/s²</b>. ${m==="accel"?"The v–t graph is a straight line rising with time and the s–t graph is a curve — uniformly accelerated motion.":"The v–t graph slopes down — the trolley is retarding (negative acceleration)."}`},
+    resultText(rows){const f=fitLine(rows.map(r=>[r[1],r[3]]));return"Acceleration from v–t slope = "+fmt(f?f.m:0,2)+" m/s²."}}}
+
+function expNewton2(){
+  const D=1.0;let G,trol,hang,str,blocks=[],p={M:"1.0",m:40},run=false,s=0,v=0,t=0,tEnd=0;
+  const Mk=()=>+p.M,mk=()=>p.m/1000,acc=()=>mk()*9.8/(Mk()+mk());
+  return{id:"newton-second",dept:"physics",title:"Newton's Second Law: Acceleration of a Trolley",cls:"Class 9",chapter:"Force and Laws of Motion",kind:"NCERT activity (mapping to verify)",world:"lab",dark:0,
+    board:["Newton's second law","F = m a","a ∝ F (mass constant)","a ∝ 1/m (force constant)"],
+    aim:"To study how the acceleration of a trolley depends on the applied force and on its mass.",
+    principle:"The rate of change of momentum is proportional to the applied force: F = ma. For a fixed mass, acceleration is directly proportional to force; for a fixed force, acceleration is inversely proportional to mass.",
+    apparatus:["Trolley with extra mass blocks","Level track with friction compensated","Pulley clamped at the end","String and slotted masses (10 g)","Two light gates 1.0 m apart with timer"],
+    theory:`<div class="eq">a = F / (M + m) = m g / (M + m)</div><div class="eq">a = 2s / t²  (from rest, s = 1.0 m)</div><p>The falling mass m provides the pulling force F = mg, which accelerates both the trolley M and the falling mass.</p>`,
+    procedure:["Place the trolley at the start gate and hang the chosen mass over the pulley.","Release the trolley. The timer measures the time t to cover 1.0 m.","Calculate a = 2s/t².","Repeat with 20, 40, 60, 80 and 100 g, keeping the trolley mass the same.","Plot a against F; then change the trolley mass and compare."],
+    precautions:["Keep the string parallel to the track.","Catch the trolley before it hits the pulley.","Compensate friction by tilting the track very slightly."],
+    mistakes:["Forgetting that the hanging mass also accelerates.","Releasing the trolley with a push.","Using a string that stretches."],
+    applications:["Heavy trucks need bigger engines to reach the same acceleration.","Seat belts and airbags reduce the force by increasing stopping time.","Rocket design balances thrust against mass."],
+    viva:[["State Newton's second law.","The rate of change of momentum is proportional to the applied force and takes place in the direction of the force."],["What is the SI unit of force?","The newton (N) = 1 kg m/s²."],["What happens to acceleration if the mass is doubled for the same force?","It is halved."],["Why is the a–F graph a straight line?","Because acceleration is directly proportional to force for a constant mass."]],
+    quiz:[{q:"A force of 10 N acts on a 2 kg body. Its acceleration is",o:["20 m/s²","5 m/s²","0.2 m/s²","12 m/s²"],a:1},{q:"For a fixed mass, acceleration is",o:["inversely proportional to force","directly proportional to force","independent of force","proportional to F²"],a:1},{q:"1 newton equals",o:["1 kg m/s","1 kg m/s²","1 g cm/s²","1 kg/s²"],a:1}],
+    controls:[{k:"M",label:"Trolley mass",type:"select",opts:[["0.5","0.5 kg"],["1.0","1.0 kg"],["1.5","1.5 kg"]]},{k:"m",label:"Hanging mass",min:10,max:100,step:10,unit:"g",d:0,def:40}],
+    startLabel:"Release trolley",stopLabel:"Stop",cols:["#","M (kg)","m (g)","F = mg (N)","t for 1.0 m (s)","a = 2s/t² (m/s²)"],
+    views:[()=>({n:"Track",p:[.05,1.55,1.6],t:[.05,.9,0]}),()=>({n:"Pulley",p:[.85,1.0,.4],t:[.66,.85,0]})],
+    hand(k){return k==="start"?{h:"R",t:()=>wp(trol).add(V(-.08,.05,0)),hold:1}:k==="m"?{h:"L",t:()=>wp(hang).add(V(0,.03,.03)),hold:1.1}:null},
+    demo:[["M","1.0"],["m",20],["start"],["wait",1],["until"],["record"],["m",40],["start"],["wait",1],["until"],["record"],["m",60],["start"],["wait",1],["until"],["record"],["m",80],["start"],["wait",1],["until"],["record"]],
+    build(lab){G=new THREE.Group();G.position.y=BENCH;lab.scene.add(G);const tr=trackMesh(1.2);G.add(tr);
+      G.add(mesh(new THREE.BoxGeometry(.02,.06,.02),MAT.iron,[.62,.03,0]));const pul=mesh(cyl(.025,.025,.012,24),MAT.brass,[.64,.075,0]);pul.rotation.x=Math.PI/2;G.add(pul);
+      [-.5,.5].forEach(x=>{G.add(mesh(new THREE.BoxGeometry(.012,.09,.012),std(0x222833,.4),[x,.045,-.07]),mesh(new THREE.BoxGeometry(.012,.012,.15),std(0x222833,.4),[x,.09,0]));G.add(mesh(new THREE.BoxGeometry(.008,.008,.008),new THREE.MeshStandardMaterial({color:0xff2020,emissive:0xff2020,emissiveIntensity:2}),[x,.085,-.06]))});
+      trol=trolleyMesh(0xe2552d);G.add(trol);for(let i=0;i<2;i++){const b=mesh(rbox(.1,.025,.06,.004),MAT.iron,[0,.067+i*.026,0]);trol.add(b);blocks.push(b)}
+      hang=new THREE.Group();G.add(hang);hang.add(mesh(cyl(.002,.002,.05,8),MAT.steel,[0,-.025,0]));for(let k=0;k<10;k++){const d=mesh(cyl(.016,.016,.006,24),MAT.brass,[0,-.048-k*.0065,0]);hang.add(d)}
+      str=new THREE.Group();G.add(str);run=false;s=0;v=0;t=0;tEnd=0;return G},
+    onParam(k,val){p[k]=k==="M"?val:+val;if(!run){s=0;v=0}},
+    start(){s=0;v=0;t=0;tEnd=0;run=true;return"Trolley released. Timer starts at the first light gate."},
+    stop(){run=false;return""},reset(){run=false;s=0;v=0;t=0;tEnd=0},running:()=>run,finished(){return!run&&tEnd>0?"Trolley passed the second gate.":null},
+    update(dt){if(!G)return;if(run){const a=acc();t+=dt;v=a*t;s=.5*a*t*t;if(s>=D&&!tEnd)tEnd=Math.sqrt(2*D/a);if(s>=1.06){s=1.06;v=0;run=false}}
+      const x=-.5+s;trol.position.set(x,.012,0);blocks.forEach((b,i)=>b.visible=i<Math.round((Mk()-.5)/.5));
+      const hy=.075-.05-s*.5-.02;hang.position.set(.665,Math.max(-.7,.04-s*.6),0);hang.children.forEach((c,i)=>{if(i>0)c.visible=i<=p.m/10});
+      str.clear();const a1=V(x+.09,.045,0),a2=V(.64,.1,0),a3=V(.665,.075,0),a4=V(.665,hang.position.y,0);[[a1,a2],[a3,a4]].forEach(([u,w])=>{const m_=mesh(cyl(.0008,.0008,u.distanceTo(w),6),std(0xf4efe0,.8),null,{cast:false});m_.position.copy(u).lerp(w,.5);m_.quaternion.setFromUnitVectors(V(0,1,0),w.clone().sub(u).normalize());str.add(m_)})},
+    readout(){return[["Timer",tEnd?fmt(tEnd,3)+" s":run&&s>0?fmt(t,2)+" s":"0.000 s"],["Force F",fmt(mk()*9.8,3)+" N"],["Total mass",fmt(Mk()+mk(),2)+" kg"]]},
+    record(){if(run)return{err:"Wait until the trolley passes the second light gate."};if(!tEnd)return{err:"Release the trolley first."};const tt=Math.round(tEnd*1000)/1000;return{row:[Mk(),p.m,mk()*9.8,tt,2*D/(tt*tt)],tag:"n2"}},
+    rowFmt:r=>[fmt(r[0],1),String(r[1]),fmt(r[2],3),fmt(r[3],3),fmt(r[4],3)],
+    graph(rows){const sameM=rows.filter(r=>r[0]===rows[rows.length-1]?.[0]);const pts=sameM.map(r=>[r[2],r[4]]),m=fitThroughOrigin(pts);return{pts,xl:"Force F (N)",yl:"Acceleration a (m/s²)",line:Number.isFinite(m)?{m,c:0}:null}},
+    result(rows){if(rows.length<3)return"Record at least three different hanging masses with the same trolley mass.";const M=rows[rows.length-1][0],pts=rows.filter(r=>r[0]===M).map(r=>[r[2],r[4]]),m=fitThroughOrigin(pts);return`The a–F graph is a straight line through the origin: acceleration is directly proportional to force. Slope = <b>${fmt(m,3)} kg⁻¹</b>, so the mass being accelerated ≈ <b>${fmt(1/m,2)} kg</b> (trolley ${M} kg + hanging mass). This verifies F = ma.`},
+    resultText(rows){const M=rows[rows.length-1][0],m=fitThroughOrigin(rows.filter(r=>r[0]===M).map(r=>[r[2],r[4]]));return"a is proportional to F; slope "+fmt(m,3)+" per kg gives mass "+fmt(1/m,2)+" kg."}}}
+
+function expReaction(){
+  let G,b1,b2,p1,p2,arrows,p={F:4,mode:"both"},pull=false,shown=0;
+  function balance(){const B=new THREE.Group();const body=mesh(cyl(.016,.016,.16,24),std(0xd8dde3,.35,.6),[0,0,0]);body.rotation.z=Math.PI/2;B.add(body);
+    const sc=ctex(512,64,(c,w,h)=>{c.fillStyle="#fbf8ee";c.fillRect(0,0,w,h);c.fillStyle="#111";for(let i=0;i<=20;i++){const x=10+i/20*(w-20);c.fillRect(x,0,1.5,i%2?14:26);if(i%2===0)txt(c,String(i/2*2>10?"":i/2),x-5,58,'700 20px "IBM Plex Sans"',"#111")}});
+    B.add(mesh(new THREE.PlaneGeometry(.14,.018),std(0xffffff,.6,0,{map:sc}),[0,.0162,0],{cast:false}).rotateX(-Math.PI/2));
+    const ptr=mesh(new THREE.BoxGeometry(.003,.004,.02),std(0xd01818,.4),[-.07,.018,0],{cast:false});B.add(ptr);
+    [-1,1].forEach(s=>{const h=mesh(new THREE.TorusGeometry(.008,.0018,8,16),MAT.steel,[s*.092,0,0]);h.rotation.y=Math.PI/2;B.add(h)});return{g:B,ptr}}
+  function arrow(col){const A=new THREE.Group();const m=new THREE.MeshStandardMaterial({color:col,emissive:col,emissiveIntensity:.8});const sh=mesh(cyl(.006,.006,1,10),m);sh.rotation.z=Math.PI/2;A.add(sh);const hd=mesh(new THREE.ConeGeometry(.016,.035,16),m);hd.rotation.z=-Math.PI/2;A.add(hd);A.userData={sh,hd};return A}
+  return{id:"action-reaction",dept:"physics",title:"Action and Reaction with Two Spring Balances",cls:"Class 9",chapter:"Force and Laws of Motion",kind:"NCERT activity (mapping to verify)",world:"lab",dark:0,
+    board:["Newton's third law","F(A on B) = − F(B on A)","action and reaction are equal","and opposite, on different bodies"],
+    aim:"To show that action and reaction are equal in magnitude and opposite in direction using two spring balances.",
+    principle:"Newton's third law: to every action there is an equal and opposite reaction. When balance A pulls balance B, B pulls A back with exactly the same force.",
+    apparatus:["Two identical spring balances (0–10 N)","A hook fixed to a wall or rigid stand"],
+    theory:`<div class="eq">F_AB = − F_BA</div><p>Both balances always show the same reading, however hard you pull, whether one end is fixed to a wall or both are pulled by people. The forces act on different bodies, so they do not cancel each other.</p>`,
+    procedure:["Hook the two spring balances together.","Fix the free end of one balance to the wall hook (or ask a partner to hold it).","Pull the other balance gently and note both readings.","Increase the pull and record the readings again.","Compare the two readings each time."],
+    precautions:["Use identical balances with zero error corrected.","Keep both balances in a straight line.","Do not pull beyond 10 N."],
+    mistakes:["Not checking the zero error before starting.","Pulling at an angle.","Reading one balance while the force is changing."],
+    applications:["Recoil of a gun when a bullet is fired.","Swimming: you push water back, the water pushes you forward.","Rockets push gas down; the gas pushes the rocket up."],
+    viva:[["State Newton's third law.","To every action there is an equal and opposite reaction."],["Why don't action and reaction cancel each other?","They act on two different bodies."],["What happens when you jump off a boat?","The boat moves backwards — reaction to your push."],["Do the balances read the same if one end is fixed to a wall?","Yes; the wall pulls back with an equal force."]],
+    quiz:[{q:"If balance A reads 6 N, balance B reads",o:["3 N","6 N","12 N","0 N"],a:1},{q:"Action and reaction act on",o:["the same body","different bodies","only moving bodies","only fixed bodies"],a:1},{q:"The recoil of a gun is explained by",o:["Newton's first law","Newton's second law","Newton's third law","Archimedes' principle"],a:2}],
+    controls:[{k:"mode",label:"Set-up",type:"select",opts:[["both","Two students pull"],["wall","One end hooked to the wall"]]},{k:"F",label:"Pull",min:0,max:10,step:.5,unit:"N",d:1,def:4}],
+    startLabel:"Pull steadily",stopLabel:"Let go",cols:["#","Set-up","Balance A (N)","Balance B (N)"],
+    views:[()=>({n:"Bench",p:[0,1.3,.7],t:[0,.95,0]}),()=>({n:"Scales",p:[0,1.08,.25],t:[0,.95,0]})],
+    hand(k){return k==="F"||k==="start"?{h:"R",t:()=>wp(b2.g).add(V(.12,0,0)),hold:1.2}:null},
+    demo:[["mode","both"],["F",2],["start"],["wait",1.2],["record"],["F",4],["wait",1.2],["record"],["F",6],["wait",1.2],["record"],["F",8],["wait",1.2],["record"],["mode","wall"],["F",5],["wait",1.2],["record"]],
+    build(lab){G=new THREE.Group();G.position.y=BENCH+.12;lab.scene.add(G);b1=balance();b2=balance();G.add(b1.g,b2.g);
+      const wall=new THREE.Group();wall.add(mesh(rbox(.04,.24,.2,.006),MAT.woodLight,[-.42,0,0]),mesh(new THREE.TorusGeometry(.012,.002,8,16),MAT.steel,[-.395,0,0]).rotateY(Math.PI/2));G.add(wall);G.userData.wall=wall;
+      arrows=[arrow(0xff4040),arrow(0x40a0ff)];G.add(...arrows);return G},
+    onParam(k,v){p[k]=k==="mode"?v:+v},
+    start(){pull=true;return"Pulling steadily."},stop(){pull=false;return"Let go: both balances return to zero."},reset(){pull=false},running:()=>pull,
+    update(dt){if(!G)return;const F=pull?p.F:0;shown+=(F-shown)*Math.min(1,dt*5);const ext=shown/10*.12;
+      b1.g.position.set(-.25-(p.mode==="wall"?0:ext*0),0,0);b2.g.position.set(-.25+.184+ext,0,0);
+      [b1,b2].forEach(b=>b.ptr.position.x=-.07+shown/10*.14);G.userData.wall.visible=p.mode==="wall";
+      const s=Math.max(.001,shown/10*.25);arrows.forEach((a,i)=>{const dir=i?1:-1;const x0=i?b2.g.position.x+.1:b1.g.position.x-.1;a.userData.sh.scale.y=s;a.userData.sh.position.x=dir*s/2;a.userData.hd.position.x=dir*(s+.015);a.userData.hd.rotation.z=dir>0?-Math.PI/2:Math.PI/2;a.position.set(x0,.04,0);a.visible=shown>.05})},
+    readout(){const r=Math.round(shown*10)/10;return[["Balance A",fmt(r,1)+" N"],["Balance B",fmt(r,1)+" N"],["Set-up",p.mode==="wall"?"hooked to wall":"two students"]]},
+    record(){if(!pull||p.F<=0)return{err:"Pull steadily first (and set the pull above zero)."};if(Math.abs(shown-p.F)>.05)return{err:"Wait for the pointers to settle."};const r=Math.round(p.F*10)/10;return{row:[p.mode,r,r],tag:"ar"}},
+    rowFmt:r=>[r[0]==="wall"?"wall":"two students",fmt(r[1],1),fmt(r[2],1)],
+    graph(rows){const pts=rows.map(r=>[r[1],r[2]]),m=fitThroughOrigin(pts);return{pts,xl:"Balance A (N)",yl:"Balance B (N)",line:Number.isFinite(m)?{m,c:0}:null}},
+    result(rows){return rows.length?"In every reading both balances show the same force, whether pulled by two students or hooked to a wall. Action and reaction are equal in magnitude and opposite in direction — Newton's third law.":"Pull and record a few readings."},
+    resultText(){return"Both balances always read the same: action = reaction (Newton's third law)."}}}
+
+const EXPS=[expOhm(),expProjectile(),expPendulum(),expLens(),expTitration(),expPH(),expMicroscope(),expPhoto(),expPyth(),expCone(),expBuoyancy(),expSlab(),expResistors(),expHooke(),expMeterBridge(),expDiode(),expReactions(),expAcidsBases(),expFlame(),expKinetics(),expFoodTests(),expStomata(),expFission(),expPlasmolysis(),expMitosis(),expPollen(),expMotion(),expNewton2(),expReaction()];
 const DEMOS={"ohms-law":[["V",2],["start"],["wait",1.5],["record"],["V",4],["wait",1.2],["record"],["V",6],["wait",1.2],["record"],["V",8],["wait",1.2],["record"]],"ph-indicator":[0,3,6,4].flatMap(i=>[["i",String(i)],["start"],["wait",3.5],["record"]]),microscope:[["start"],["f",46],["wait",1.5],["record"],["obj","40"],["f",63],["wait",1.5],["record"],["sp","cheek"],["wait",1.5],["record"]]};EXPS.forEach(e=>{if(DEMOS[e.id])e.demo=DEMOS[e.id]});
 const NEEDS={"fission-budding":2,stomata:3,"flame-test":4,"food-tests":4};EXPS.forEach(e=>e.dept=e.dept||"physics");
 let NEED=4;
@@ -2239,6 +2375,7 @@ async function runDemo(){if($("#bDemo").textContent.startsWith("■")){stopDemo(
   const steps=x.demo||[["start"],["wait",1.5],["until"],["wait",1],["record"]];const cap=$("#demoCap");cap.hidden=false;
   for(const st of steps){if(id!==demoRun||X!==x)return;const [k,v]=st;
     if(k==="until"){cap.textContent="Watching… (waiting for the end point)";for(let q=0;q<200;q++){await sleep(300);if(id!==demoRun)return;if((x.finished&&x.finished())||!x.running())break}continue}
+    if(k==="speed"){SIM.speed=v;syncSim();cap.textContent=v<1?"Slow motion "+v+"× so we can take readings":"Normal speed";await sleep(600);continue}
     if(k==="wait"){await sleep(v*1000/Math.max(.25,SIM.speed));continue}
     let label;if(CAPS[k])label=CAPS[k](x);else{const c=x.controls.find(c=>c.k===k);let vv=v;if(c&&c.opts){const o=c.opts.find(o=>o[0]===String(v));vv=o?o[1]:v}else if(c)vv=v+" "+(c.unit||"");label=(c?c.label:k)+" → "+vv}
     cap.textContent="Step: "+label;await sleep(700);if(id!==demoRun)return;
