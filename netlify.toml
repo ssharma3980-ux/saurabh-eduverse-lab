@@ -1,0 +1,22 @@
+# Saurabh Eduverse Laboratory – Netlify settings
+[build]
+  publish = "."
+
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Content-Type-Options = "nosniff"
+
+# Large 3D model and texture files never change between deploys of the same name: cache them in the browser.
+[[headers]]
+  for = "/bio/models/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+[[headers]]
+  for = "/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=604800"
+[[headers]]
+  for = "/bio/assets/*"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
