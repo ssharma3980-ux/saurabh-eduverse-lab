@@ -164,6 +164,49 @@ body.game .drawerClose{display:block;position:absolute;right:12px;top:12px;borde
 @media(max-width:700px){body.game .minimap{width:112px;height:112px}body.game .runBtn{left:140px;width:64px;height:64px;bottom:30px}body.game header.top img{width:34px;height:34px}}
 /* experiments: use the full screen height on tablets and computers */
 @media(min-width:980px){.lab .stage{height:calc(100dvh - 96px)}.lab>:last-child{max-height:calc(100dvh - 96px);overflow-y:auto;position:sticky;top:12px;padding-right:4px}}
+
+
+#xlist>.ctabs,#xlist>.note,#xlist>.bioFeature,#xlist>.bioLinks{grid-column:1/-1}
+#xlist .ctabs button{height:auto}
+#xlist:has(.chap){grid-template-columns:repeat(auto-fill,minmax(340px,1fr));align-items:start}
+#xlist .chap{margin-bottom:0}
+body.game .hud{display:none}
+body.game .chg{bottom:auto;top:calc(var(--hdr,70px) + 104px);right:auto;left:12px;height:32px}
+@media(hover:hover) and (pointer:fine){body.game .joy,body.game .runBtn{display:none}body.game #campusHint{display:block;left:50%;transform:translateX(-50%);bottom:16px}}
+/* ===== responsive: phone & tablet vs computer ===== */
+.crumbs{align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:100%}
+.crumbs::-webkit-scrollbar{display:none}
+.chip{white-space:nowrap;flex:0 0 auto;line-height:1.2}
+.lab>*{min-width:0}
+.tabs{scrollbar-width:none}.tabs::-webkit-scrollbar{display:none}.tabs button{flex:0 0 auto;white-space:nowrap}
+.panel table,#obsT,.obs table{max-width:100%}
+@media(max-width:700px){
+  header.top{gap:8px 10px;padding:8px 0}
+  header.top img{width:36px;height:36px}
+  .brand{font-size:14px;letter-spacing:.04em}
+  .brand small{font-size:9px;letter-spacing:.1em}
+  .crumbs{margin-left:0;width:100%;order:3}
+  .chip{padding:6px 11px;font-size:12.5px}
+  .meta{gap:6px}.meta>*{font-size:11px}
+  body.game .hud{display:none}
+  body.game .brand small{display:none}
+  body.game .menuBtn{top:calc(var(--hdr,70px) + 8px)}
+  body.game .minimap{top:calc(var(--hdr,70px) + 8px)}
+  body.game #v-campus .tools{bottom:auto;top:calc(var(--hdr,70px) + 128px);right:12px;flex-direction:column;align-items:flex-end}
+  body.game .chg{bottom:auto;top:calc(var(--hdr,70px) + 128px);right:auto;left:12px;height:30px;font-size:11px}
+  .simbar{left:6px;right:6px;bottom:6px;max-width:none;justify-content:center;gap:3px}
+  .simbar button{height:30px;padding:0 7px;font-size:12px}
+  .lab .stage .views{top:8px}
+  #readout{transform:scale(.88);transform-origin:top left}
+  .lab .stage .tools{bottom:auto;top:46px;right:8px;flex-direction:column;align-items:flex-end;gap:4px}
+  .stage .tools button{height:30px;min-width:30px;width:auto;padding:0 8px;font-size:11px}
+  .lab .stage{height:42vh}
+}
+@media(min-width:1280px){
+  .lab{grid-template-columns:minmax(0,1.6fr) minmax(400px,1fr)}
+  .brand{font-size:19px}
+}
+@media(hover:hover) and (pointer:fine){.chip:hover,.tabs button:hover{border-color:var(--glow);color:var(--ink,#fff)}}
 </style>
 </head>
 <body>
@@ -185,7 +228,7 @@ body.game .drawerClose{display:block;position:absolute;right:12px;top:12px;borde
     <div class="stage" id="campusStage">
       <div class="loading"><div>BUILDING THE CAMPUS</div></div>
       <div class="hud"><div class="title">VIRTUAL STEM CAMPUS<small>CBSE Classes 9 to 12</small></div></div>
-      <div class="hint" id="campusHint">Walk with the joystick or W A S D. Drag to turn the camera.</div>
+      <div class="hint" id="campusHint"><span class="kbd">Walk: W A S D or arrow keys · Run: hold Shift · Look around: drag the mouse · Map and departments: ☰ Menu</span></div>
       <div class="joy" id="joy"><small>WALK</small><div class="knob"></div></div>
       <button class="enter" id="enterBtn" hidden>Enter Physics Lab</button>
       <button class="chg" id="chgBtn">Change character</button>
@@ -308,6 +351,7 @@ controls.enableDamping=true;controls.dampingFactor=.08;controls.rotateSpeed=.7;c
 const QUAL={high:{pr:2,sh:true,map:2048,bloom:true,ao:true},medium:{pr:1.5,sh:true,map:1024,bloom:true,ao:true},low:{pr:1,sh:false,map:512,bloom:false,ao:false}};
 const coarse=matchMedia("(pointer:coarse)").matches;
 let quality=(coarse||innerWidth<820)?"medium":"high";
+if(Math.min(innerWidth,innerHeight)<600)QUAL.medium.ao=false; /* phones: skip the heaviest effect */
 const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4}));
 const renderPass=new RenderPass(new THREE.Scene(),camera);
 const bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.38,.45,1.35);
