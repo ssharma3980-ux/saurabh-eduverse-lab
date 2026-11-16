@@ -276,6 +276,7 @@ import {RenderPass} from "three/addons/postprocessing/RenderPass.js";
 import {UnrealBloomPass} from "three/addons/postprocessing/UnrealBloomPass.js";
 import {OutputPass} from "three/addons/postprocessing/OutputPass.js";
 import {ShaderPass} from "three/addons/postprocessing/ShaderPass.js";
+import {GTAOPass} from "three/addons/postprocessing/GTAOPass.js";
 import {Sky} from "three/addons/objects/Sky.js";
 import {GroundedSkybox} from "three/addons/objects/GroundedSkybox.js";
 import {RGBELoader} from "three/addons/loaders/RGBELoader.js";
@@ -303,13 +304,16 @@ const canvas=renderer.domElement;
 const camera=new THREE.PerspectiveCamera(45,1,.01,4000);
 const controls=new OrbitControls(camera,canvas);
 controls.enableDamping=true;controls.dampingFactor=.08;controls.rotateSpeed=.7;controls.zoomSpeed=.9;
-const QUAL={high:{pr:2,sh:true,map:2048,bloom:true},medium:{pr:1.5,sh:true,map:1024,bloom:true},low:{pr:1,sh:false,map:512,bloom:false}};
+const QUAL={high:{pr:2,sh:true,map:2048,bloom:true,ao:true},medium:{pr:1.5,sh:true,map:1024,bloom:true,ao:true},low:{pr:1,sh:false,map:512,bloom:false,ao:false}};
 const coarse=matchMedia("(pointer:coarse)").matches;
 let quality=(coarse||innerWidth<820)?"medium":"high";
 const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4}));
 const renderPass=new RenderPass(new THREE.Scene(),camera);
 const bloom=new UnrealBloomPass(new THREE.Vector2(256,256),.38,.45,1.35);
-composer.addPass(renderPass);composer.addPass(bloom);composer.addPass(new OutputPass());
+composer.addPass(renderPass);
+/* HD ambient occlusion: soft contact shadows where apparatus meets the bench */
+const gtao=new GTAOPass(new THREE.Scene(),camera,4,4);gtao.updateGtaoMaterial({radius:.09,distanceExponent:1.4,thickness:.6,scale:1.15,samples:12});gtao.updatePdMaterial({lumaPhi:10,depthPhi:2,normalPhi:3,radius:6,rings:2,samples:10});gtao.blendIntensity=1;gtao.enabled=false;composer.addPass(gtao);
+composer.addPass(bloom);composer.addPass(new OutputPass());
 /* game-style colour grade: richer colour, gentle contrast, soft vignette */
 const GRADE=new ShaderPass({uniforms:{tDiffuse:{value:null},sat:{value:1.0},con:{value:1.0},vig:{value:0}},vertexShader:"varying vec2 vUv;void main(){vUv=uv;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.);}",
  fragmentShader:"uniform sampler2D tDiffuse;uniform float sat,con,vig;varying vec2 vUv;void main(){vec4 c=texture2D(tDiffuse,vUv);float l=dot(c.rgb,vec3(.2126,.7152,.0722));vec3 r=mix(vec3(l),c.rgb,sat);r=(r-.5)*con+.5;float d=distance(vUv,vec2(.5));r*=1.-vig*smoothstep(.35,.85,d);gl_FragColor=vec4(clamp(r,0.,1.),c.a);}"});
@@ -368,9 +372,9 @@ function stool(x,z){const g=new THREE.Group();g.position.set(x,0,z);g.add(mesh(c
 /* =============== camera fly-to & stage mounting =============== */
 let world=null,tween=null,camDriver=null,host=null;
 function flyTo(p,t,dur=1.4,done,lift=0){if(window.__eduFast)dur=.05;tween={p0:camera.position.clone(),t0:controls.target.clone(),p1:V(...p),t1:V(...t),k:0,dur,done,lift};controls.enabled=false}
-function setWorld(w){world=w;if(typeof GRADE!=="undefined"){GRADE.uniforms.sat.value=1.06;GRADE.uniforms.con.value=1.02;GRADE.uniforms.vig.value=.12}camera.fov=w.fov||45;camera.updateProjectionMatrix();w.scene.add(camera);renderer.toneMappingExposure=w.exposure;bloom.strength=w.bloom??.38;renderPass.scene=w.scene;controls.minDistance=w.lim.min;controls.maxDistance=w.lim.max;controls.maxPolarAngle=w.lim.polar;controls.minPolarAngle=w.lim.minPolar||0}
+function setWorld(w){world=w;if(typeof GRADE!=="undefined"){const gr=w.grade||[1.06,1.02,.12];GRADE.uniforms.sat.value=gr[0];GRADE.uniforms.con.value=gr[1];GRADE.uniforms.vig.value=gr[2]}camera.fov=w.fov||45;camera.updateProjectionMatrix();w.scene.add(camera);renderer.toneMappingExposure=w.exposure;renderer.toneMapping=w.tone||THREE.ACESFilmicToneMapping;gtao.scene=w.scene;gtao.enabled=!!w.ao&&QUAL[quality].ao;bloom.strength=w.bloom??.38;renderPass.scene=w.scene;controls.minDistance=w.lim.min;controls.maxDistance=w.lim.max;controls.maxPolarAngle=w.lim.polar;controls.minPolarAngle=w.lim.minPolar||0}
 function resize(){if(!host)return;const w=host.clientWidth,h=host.clientHeight;if(!w||!h)return;const pr=Math.min(devicePixelRatio||1,QUAL[quality].pr);renderer.setPixelRatio(pr);renderer.setSize(w,h,false);composer.setPixelRatio(pr);composer.setSize(w,h);camera.aspect=w/h;camera.fov=w/h<1.1?60:45;camera.updateProjectionMatrix()}
-function applyQuality(){const q=QUAL[quality];renderer.shadowMap.enabled=q.sh;shadowLights.forEach(l=>{l.castShadow=q.sh;if(l.shadow.mapSize.x!==q.map){l.shadow.mapSize.set(q.map,q.map);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null}}});Object.values(WORLDS).forEach(w=>w&&w.scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>m.needsUpdate=true)}));document.querySelectorAll(".qbtn").forEach(b=>b.textContent="Quality: "+quality);resize()}
+function applyQuality(){const q=QUAL[quality];if(world)gtao.enabled=!!world.ao&&q.ao;renderer.shadowMap.enabled=q.sh;shadowLights.forEach(l=>{l.castShadow=q.sh;if(l.shadow.mapSize.x!==q.map){l.shadow.mapSize.set(q.map,q.map);if(l.shadow.map){l.shadow.map.dispose();l.shadow.map=null}}});Object.values(WORLDS).forEach(w=>w&&w.scene.traverse(o=>{if(o.material)[].concat(o.material).forEach(m=>m.needsUpdate=true)}));document.querySelectorAll(".qbtn").forEach(b=>b.textContent="Quality: "+quality);resize()}
 function mount(stage){
   if(host!==stage){host=stage;stage.prepend(canvas)}
   if(!stage.querySelector(".tools")){
@@ -480,7 +484,7 @@ function buildLab(){
   {const g=new THREE.Group();g.position.set(1.0,BENCH,-3.2);s.add(g);g.add(mesh(new THREE.BoxGeometry(.4,.01,.32),MAT.steel,[0,.002,0]));g.add(mesh(new THREE.TorusGeometry(.12,.012,10,24,Math.PI),MAT.chrome,[0,.28,-.12]).rotateY(Math.PI/2));g.add(mesh(cyl(.012,.014,.28,12),MAT.chrome,[0,.14,-.24]))}
   /* dark-room control */
   let dark=0,darkT=0;
-  const L={scene:s,exposure:.72,lim:{min:.15,max:6,polar:1.5},active:null,
+  const L={scene:s,exposure:.95,tone:THREE.AgXToneMapping,ao:true,grade:[1.22,1.07,.2],lim:{min:.15,max:6,polar:1.5},active:null,
     setDark(f){darkT=f},
     setBoard(lines){drawBoard(boardT.g,lines);boardT.needsUpdate=true},
     setDept(d){const g=doorT.g;g.fillStyle="#103a7a";g.fillRect(0,0,400,112);txt(g,{physics:"PHYSICS LAB",chemistry:"CHEMISTRY LAB",biology:"BIOLOGY LAB",maths:"MATHS LAB"}[d],200,72,'700 40px "Chakra Petch"',"#fff","center");doorT.needsUpdate=true},
@@ -2854,7 +2858,7 @@ function expResonance(){
     quiz:[{q:"For a 512 Hz fork, l₁ = 15.6 cm and l₂ = 49.2 cm. v is",o:["344 m/s","330 m/s","256 m/s","512 m/s"],a:0},{q:"At the closed end of the air column there is",o:["an antinode","a node","no air","a compression only"],a:1},{q:"The first resonance length is about",o:["λ/4","λ/2","λ","2λ"],a:0}],
     controls:[{k:"f",label:"Tuning fork",type:"select",opts:[["320","320 Hz"],["384","384 Hz"],["480","480 Hz"],["512","512 Hz"]]},{k:"l",label:"Air column length l",min:8,max:92,step:.2,unit:"cm",d:1,def:20}],
     startLabel:"Strike the fork",cols:["#","f (Hz)","l (cm)","Resonance"],
-    views:[()=>({n:"Tube",p:[.15,1.6,1.1],t:[0,BENCH+.55,0]}),()=>({n:"Water level",p:[.12,BENCH+TOPY-p.l/100,.2],t:[0,BENCH+TOPY-p.l/100,0]})],
+    views:[()=>({n:"Tube",p:[.75,1.55,1.5],t:[0,BENCH+.5,0]}),()=>({n:"Water level",p:[.12,BENCH+TOPY-p.l/100,.2],t:[0,BENCH+TOPY-p.l/100,0]})],
     demo:[["f","512"],["l",15.6],["start"],["wait",1.5],["record"],["l",49.2],["start"],["wait",1.5],["record"],["f","384"],["l",21.2],["start"],["wait",1.5],["record"],["l",66],["start"],["wait",1.5],["record"]],
     build(lab){G=new THREE.Group();G.position.y=BENCH;lab.scene.add(G);G.add(mesh(rbox(.2,.02,.16,.006),MAT.wood,[0,.01,0]),mesh(new THREE.BoxGeometry(.03,1.05,.02),MAT.wood,[-.05,.535,-.03]));
       G.add(mesh(cyl(.021,.021,TOPY-.02,40,true),MAT.glass,[0,.02+(TOPY-.02)/2,0]));water=mesh(cyl(.0195,.0195,1,32),new THREE.MeshPhysicalMaterial({color:0x7fc4ff,transmission:.7,roughness:.05,transparent:true,opacity:.8}),null,{cast:false});G.add(water);
