@@ -112,20 +112,20 @@ function render(){
   if(info.font){useFont(info.font);document.body.style.fontFamily=`'${info.font}','Exo 2',system-ui,sans-serif`}else document.body.style.fontFamily='';
   $('lang').value=lang;$('tag').textContent=t('tag');$('q').placeholder=t('search');
   $('install').textContent=t('install');$('labTitle').textContent='🔬 '+t('lab');$('off').textContent=t('offline');
-  const tabs=['0',...CLASSES.filter(c=>G.some(g=>g.cls===c)).map(String)];if(G.some(g=>g.fun))tabs.push('fun');
+  const tabs=['0',...CLASSES.filter(c=>G.some(g=>g.cls===c)).map(String)];if(G.some(g=>g.fun))tabs.push('fun');if(G.some(g=>g.app))tabs.push('apps');
   if(!tabs.includes(cls))cls='0';
-  $('tabs').innerHTML=tabs.map(c=>{const n=c==='0'?G.length:c==='fun'?G.filter(g=>g.fun).length:G.filter(g=>g.cls===+c).length;
-    const label=c==='0'?t('all'):c==='fun'?'🎲 '+t('fun'):t('cls')+' '+c;
+  $('tabs').innerHTML=tabs.map(c=>{const n=c==='0'?G.length:c==='fun'?G.filter(g=>g.fun).length:c==='apps'?G.filter(g=>g.app).length:G.filter(g=>g.cls===+c).length;
+    const label=c==='0'?t('all'):c==='fun'?'🎲 '+t('fun'):c==='apps'?'🧰 '+t('apps'):t('cls')+' '+c;
     return `<button class="tab${c===cls?' on':''}" data-c="${c}">${label}<small>${n}</small></button>`}).join('');
   const q=query.trim().toLowerCase();
-  const list=G.filter(g=>(cls==='0'||(cls==='fun'?g.fun:g.cls===+cls))&&(!q||(g.title+' '+topic(g)+' '+TX.en.topics[g.topic]).toLowerCase().includes(q)));
+  const list=G.filter(g=>(cls==='0'||(cls==='fun'?g.fun:cls==='apps'?g.app:g.cls===+cls))&&(!q||(g.title+' '+topic(g)+' '+TX.en.topics[g.topic]).toLowerCase().includes(q)));
   const info2=L.find(l=>l.code===lang);
   $('grid').innerHTML=list.length?list.map(g=>{
     const url=g.path+'/index.html';
     const tr=(lang!=='en'&&info2.gt&&online())?`<a class="btn ghost small" href="https://translate.google.com/translate?sl=en&tl=${info2.gt}&u=${encodeURIComponent(new URL(url,location.href).href)}" rel="noopener">🌐 ${esc(t('trans'))}</a>`:'';
     const sv=('serviceWorker' in navigator&&online())?`<button class="btn ghost small" data-save="${g.path}">${savedSet.has(g.path)?'✔ '+esc(t('saved')):'⬇ '+esc(t('save'))}</button>`:'';
     return `<article class="card">
-      <a class="thumb" href="${url}"><img loading="lazy" src="${g.path}/thumbnail.webp" alt="${esc(g.title)}"><span class="badge">${g.fun?esc(t('fun')):esc(t('cls'))+' '+g.cls}</span></a>
+      <a class="thumb" href="${url}"><img loading="lazy" src="${g.path}/thumbnail.webp" alt="${esc(g.title)}"><span class="badge">${g.fun?esc(t('fun')):g.app?esc(t('apps')):esc(t('cls'))+' '+g.cls}</span></a>
       <div class="body">
         <div class="title">${g.emoji||''} ${esc(g.title)}</div>
         <div class="topic">${g.ch?esc(t('ch'))+' '+g.ch+' · ':''}${esc(topic(g))}</div>

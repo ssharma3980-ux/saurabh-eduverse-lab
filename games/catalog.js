@@ -30,12 +30,21 @@ window.EDU_GAMES = [
     files: ['../../vendor/three-r128/three.min.js','../../vendor/three-r128/postprocessing/EffectComposer.js','../../vendor/three-r128/postprocessing/RenderPass.js','../../vendor/three-r128/postprocessing/ShaderPass.js','../../vendor/three-r128/postprocessing/UnrealBloomPass.js','../../vendor/three-r128/shaders/CopyShader.js','../../vendor/three-r128/shaders/GammaCorrectionShader.js','../../vendor/three-r128/shaders/LuminosityHighPassShader.js'] },
   { cls: 0, fun: true, path: 'fun/typenova-typing-trainer', title: 'TypeNova — Typing Trainer',    topic: 'type', emoji: '⌨️' },
   { cls: 0, fun: true, path: 'fun/hanami-koi-pond',         title: 'Hanami Koi Pond',              topic: 'koi',  emoji: '🎏',
-    files: ['../../vendor/three-r128/three.min.js'] }
+    files: ['../../vendor/three-r128/three.min.js'] },
+
+  /* Projects & Apps */
+  { cls: 0, app: true, path: 'apps/ai-crop-doctor-pro',         title: 'AI Crop Doctor Pro',                       topic: 'crop',   emoji: '🌿' },
+  { cls: 0, app: true, path: 'apps/ai-crop-doctor-3-languages', title: 'AI Crop Doctor (English · हिन्दी · ગુજરાતી)', topic: 'crop',   emoji: '🌾' },
+  { cls: 0, app: true, path: 'apps/ai-crop-doctor-web',         title: 'AI Crop Doctor Web',                       topic: 'crop',   emoji: '🍃' },
+  { cls: 0, app: true, path: 'apps/ai-crop-doctor-gujarati',    title: 'AI Crop Doctor (ગુજરાતી · English)',         topic: 'crop',   emoji: '🌱' },
+  { cls: 0, app: true, path: 'apps/career-genius',              title: 'Career Genius',                            topic: 'career', emoji: '🎓' },
+  { cls: 0, app: true, path: 'apps/trainable-bot-studio',       title: 'Trainable Bot Studio',                     topic: 'bot',    emoji: '🤖' }
 ];
 
 /* 3D labs that are already on the website */
 window.EDU_LABS = [
   { title: 'Saurabh Eduverse Laboratory', url: '../index.html',     emoji: '🔬' },
   { title: '3D Biology Discovery Lab',    url: '../bio/index.html#/',     emoji: '🫀' },
-  { title: 'Chemistry Lab — Titration',   url: '../chemlab/index.html', emoji: '⚗️' }
+  { title: 'Chemistry Lab — Titration',   url: '../chemlab/index.html', emoji: '⚗️' },
+  { title: 'Periodic Table 3D',           url: '../ptable/index.html',  emoji: '🧪' }
 ];
