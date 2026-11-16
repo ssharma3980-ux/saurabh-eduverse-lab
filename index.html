@@ -181,6 +181,7 @@ body.game .chg{bottom:auto;top:calc(var(--hdr,70px) + 104px);right:auto;left:12p
 .listen.on{background:rgba(55,214,122,.4)}
 html[lang=hi] body{font-family:"Noto Sans Devanagari","Mangal","Nirmala UI",var(--body),sans-serif}
 html[lang=hi] .tabs button,html[lang=hi] h3{letter-spacing:0;text-transform:none}
+.tline{margin:2px 0 10px;padding:8px 12px;border-radius:12px;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);font-size:13.5px;line-height:1.4}.tline b{color:#7fd6ff}
 /* ===== responsive: phone & tablet vs computer ===== */
 .crumbs{align-items:center;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch;max-width:100%}
 .crumbs::-webkit-scrollbar{display:none}
@@ -283,7 +284,7 @@ html[lang=hi] .tabs button,html[lang=hi] h3{letter-spacing:0;text-transform:none
       </div>
       <div>
         <h2 id="xTitle"></h2><button class="listen" id="bListen" title="Read aloud">🔈 Listen</button>
-        <div class="meta" id="xMeta"></div>
+        <div class="meta" id="xMeta"></div><div class="tline" id="tLine" hidden></div>
         <div class="tabs" role="tablist">
           <button role="tab" data-tab="run" aria-selected="true">EXPERIMENT</button>
           <button role="tab" data-tab="theory" aria-selected="false">THEORY</button>
@@ -572,7 +573,7 @@ function buildLab(){
       spot.intensity=lerp(3,22,k);fill.intensity=6*k;hemi.intensity=lerp(.03,.4,k);sun.intensity=1.0*k;panelM.emissiveIntensity=lerp(.02,2.6,k);paneMats.forEach(m=>m.emissiveIntensity=lerp(.12,1.5,k));s.environmentIntensity=lerp(.04,.55,k);
       const ang=lerp(.2,1.48,dark);slats.forEach(sl=>sl.rotation.x=ang);
       const d=new Date(),sec=d.getSeconds()+d.getMilliseconds()/1000,mi=d.getMinutes()+sec/60,hr=(d.getHours()%12)+mi/60;hS.rotation.z=-sec*6*DEG;hM.rotation.z=-mi*6*DEG;hH.rotation.z=-hr*30*DEG;
-      if(L.active)L.active.update(simDt(dt))}};
+      if(L.active)L.active.update(simDt(dt));LP.ensure(s);LP.update(dt)}};
   return L;
 }
 
@@ -3854,6 +3855,22 @@ function expArea(){return boardExp({id:"area-under-curve",title:"Area Under a Cu
   result(rows){return rows.length<3?"Record the sums for at least three values of n.":"As n increases, the lower and upper sums close in on <b>9 = ∫₀³ x² dx</b>: the area under the curve is the definite integral."},resultText(){return"Area under y = x² from 0 to 3 = 9 sq units."}})}
 
 
+
+/* =============== lab people: a teacher who demonstrates, and classmates working at other benches =============== */
+const LP={scene:null,teacher:null,studs:[],cur:null,bubble:null,bubT:0,talkUntil:0,
+  ensure(scene){if(this.scene)return;this.scene=scene;
+    loadPerson("Male_Adult_08").then(g=>{const P=makePerson(g);P.g.position.set(1.0,0,-.82);P.g.rotation.y=-.42;scene.add(P.g);this.teacher=P;this.cur="idle";this.play("wave");this.tell(LANG==="hi"?"नमस्ते! चलिए प्रयोग करते हैं।":"Hello! Let's do this experiment.")}).catch(()=>{});
+    [["Female_Adult_02",-4.25,.42,Math.PI,"work"],["Male_Adult_01",3.6,-2.38,Math.PI,"work"]].forEach(([id,x,z,ry,a],i)=>loadPerson(id).then(g=>{const P=makePerson(g);P.g.position.set(x,0,z);P.g.rotation.y=ry;scene.add(P.g);Object.values(P.act).forEach(ac=>ac.setEffectiveWeight(0));const w=P.act[a]||P.act.idle;w.reset().setEffectiveWeight(1).play();P.mixer.update(i*3.7);P.base=a;P.t=6+i*5;this.studs.push(P)}).catch(()=>{}))},
+  play(name,loop=false){const P=this.teacher;if(!P||!P.act[name])return;const from=P.act[this.cur]||P.act.idle,to=P.act[name];if(from===to&&loop)return;to.reset();to.setLoop(loop?THREE.LoopRepeat:THREE.LoopOnce,loop?Infinity:1);to.clampWhenFinished=true;to.setEffectiveWeight(1);to.play();from.crossFadeTo(to,.35,false);this.cur=name;this.until=loop?Infinity:performance.now()/1000+to.getClip().duration-.35},
+  tell(text,sec=4.5){const tl=document.getElementById("tLine");if(tl){tl.innerHTML="<b>👨‍🏫 "+(LANG==="hi"?"सर":"Sir")+":</b> "+String(text).replace(/</g,"&lt;");tl.hidden=false}},
+  update(dt){const now=performance.now()/1000,P=this.teacher;if(P){P.mixer.update(dt);if(this.cur!=="idle"&&now>this.until)this.play("idle",true);if(this.bubble){this.bubT-=dt;if(this.bubT<=0){P.g.remove(this.bubble);this.bubble=null}}
+      const ss=window.speechSynthesis;if(ss&&ss.speaking&&this.cur!=="talk")this.play("talk",true);else if(ss&&!ss.speaking&&this.cur==="talk")this.play("idle",true)}
+    this.studs.forEach(S=>{S.mixer.update(dt);S.t-=dt;if(S.t<=0){S.t=8+Math.random()*8;const pick=Math.random()<.6?S.base:(Math.random()<.5?"note":"think");const to=S.act[pick];if(to&&!to.isRunning()){Object.entries(S.act).forEach(([k,ac])=>{if(ac!==to&&ac.getEffectiveWeight()>0)ac.fadeOut(.5)});to.reset().setEffectiveWeight(1).fadeIn(.5).play()}}})},
+  onOpen(x){const TX=TXT(x);this.play("present");this.tell((LANG==="hi"?"आज का प्रयोग: ":"Today: ")+TX.title,5)},
+  onStart(){this.play("present")},
+  onRecord(ok,msg){if(ok){this.play("nod");this.tell(LANG==="hi"?"बहुत अच्छा! रीडिंग सही है।":["Good reading!","Well done!","Correct — note it down."][Math.floor(Math.random()*3)],2.5)}else{this.play("shrug");this.tell(msg,5)}},
+  onDone(){this.play("clap");this.tell(LANG==="hi"?"शाबाश! प्रयोग पूरा हुआ।":"Excellent! Experiment complete.",4)}};
+
 /* =============== languages: English / हिंदी =============== */
 const I18X={hi:{}};
 let LANG=(()=>{try{return localStorage.getItem("eduLang")||"en"}catch(e){return"en"}})();
@@ -3972,9 +3989,9 @@ async function openExp(x){
     else{lab=el("label",{htmlFor:id});const o=el("output"),r=el("input",{id,type:"range",min:c.min,max:c.max,step:c.step});r.value=c.def;const show=()=>o.textContent=fmt(+r.value,c.d)+" "+c.unit;r.oninput=()=>{show();x.onParam(c.k,r.value);say("");const sp=x.hand&&x.hand(c.k);if(sp){sp.key=x.id+c.k;reach(sp)}};lab.append(el("span",{textContent:c.label}),o,r);show();x.onParam(c.k,r.value)}
     ctl.append(lab)});
   x.reset();
-  const vw=$("#views");vw.innerHTML="";x.views.forEach((f,i)=>{const b=el("button",{textContent:f().n});b.onclick=()=>viewGo(i);vw.append(b)});
+  const vw=$("#views");vw.innerHTML="";x.views.forEach((f,i)=>{const b=el("button",{textContent:f().n});b.onclick=()=>viewGo(i);vw.append(b)});{const b=el("button",{textContent:"👨‍🏫",title:"Look at the teacher"});b.onclick=()=>{vw.querySelectorAll("button").forEach(q=>q.setAttribute("aria-pressed","false"));b.setAttribute("aria-pressed","true");flyTo([-.35,BENCH+.62,1.5],[.55,BENCH+.42,-.45],1.2)};vw.append(b)}
   const v0=x.views[0]();const P=V(...v0.p),Tg=V(...v0.t);camera.position.copy(Tg.clone().add(P.clone().sub(Tg).multiplyScalar(2.6)).add(V(0,P.distanceTo(Tg)*.6,0)));controls.target.copy(Tg);viewGo(0,2.2);
-  const TX=TXT(x);$("#xTitle").textContent=TX.title;$("#xMeta").innerHTML=[x.cls+" "+SUBJ[x.dept],"Chapter: "+x.chapter,x.kind].map(t=>`<span class="tag">${t}</span>`).join("");
+  const TX=TXT(x);$("#xTitle").textContent=TX.title;setTimeout(()=>LP.onOpen(x),900);$("#xMeta").innerHTML=[x.cls+" "+SUBJ[x.dept],"Chapter: "+x.chapter,x.kind].map(t=>`<span class="tag">${t}</span>`).join("");
   $("#bStart").textContent=TX.startLabel;$("#bStop").hidden=x.id==="convex-lens";
   $("#p-theory").innerHTML=`<h3>Aim</h3><p>${TX.aim}</p><h3>Principle</h3><p>${TX.principle}</p><h3>Apparatus</h3><ul>${(x.apparatus||[]).map(a=>`<li>${a}</li>`).join("")}</ul><h3>Theory</h3>${x.theory}<h3>Precautions</h3><ul>${(TX.precautions||[]).map(a=>`<li>${a}</li>`).join("")}</ul>${(x.mistakes||[]).length?"<h3>Common mistakes</h3>":""}<ul>${(x.mistakes||[]).map(a=>`<li>${a}</li>`).join("")}</ul><h3>Real-life applications</h3><ul>${(x.applications||[]).map(a=>`<li>${a}</li>`).join("")}</ul>`;
   NEED=NEEDS[x.id]||4;stopDemo();SIM.paused=false;SIM.sw=0;SIM.swOn=false;syncSim();$("#bStop").textContent=x.stopLabel||"Stop";
@@ -3994,16 +4011,16 @@ function drawObs(){
   const t=$("#obs");t.innerHTML="<tr>"+X.cols.map((c,i)=>`<th class="${i?"num":""}">${c}</th>`).join("")+"</tr>"+(rows.length?rows.map((r,i)=>`<tr><td>${i+1}</td>${X.rowFmt(r).map(v=>`<td class="num">${v}</td>`).join("")}</tr>`).join(""):`<tr><td colspan="${X.cols.length}" style="color:var(--mute)">No readings yet. Take at least ${NEED}.</td></tr>`);
   {const gg=X.graph(rows);$("#plot").hidden=!!gg.none;if(!gg.none)plot($("#plot"),gg)}$("#result").innerHTML="<h3>Result</h3><p style='margin-top:6px'>"+X.result(rows)+"</p>";
   const pr=progress[X.id]=progress[X.id]||{};pr.rows=Math.max(pr.rows||0,rows.length);checkDone();saveProgress();drawRecord()}
-function checkDone(){const pr=progress[X.id]||{};pr.done=(pr.rows||0)>=NEED&&(pr.quiz||0)>=2;
+function checkDone(){const pr=progress[X.id]||{};const was=!!pr.done;pr.done=(pr.rows||0)>=NEED&&(pr.quiz||0)>=2;if(pr.done&&!was)LP.onDone();
   $("#status").innerHTML=pr.done?`<div class="done-banner">Experiment complete: ${NEED}+ readings recorded and quiz passed.</div>`:`<div class="todo">Not complete yet. Readings ${Math.min(pr.rows||0,NEED)} of ${NEED}. Quiz ${pr.quiz||0} of 3 (2 needed).</div>`}
 function drawRecord(){const x=X,pad=(s,n)=>String(s).padStart(n);
   const lines=["SAURABH EDUVERSE LABORATORY","PRACTICAL RECORD","","Experiment : "+x.title,"Class      : "+x.cls+" "+SUBJ[x.dept],"Chapter    : "+x.chapter,"Date       : "+new Date().toLocaleDateString("en-IN"),"","AIM",x.aim,"","APPARATUS",x.apparatus.join("; "),"","PRINCIPLE",x.principle,"","PROCEDURE",...x.procedure.map((p,i)=>(i+1)+". "+p),"","OBSERVATIONS",x.cols.map(c=>pad(c,14)).join(" "),...(rows.length?rows.map((r,i)=>[i+1,...x.rowFmt(r)].map(v=>pad(v,14)).join(" ")):["(no readings recorded)"]),"","RESULT",rows.length>=2?x.resultText(rows):"(record at least two readings)","","PRECAUTIONS",...x.precautions.map((p,i)=>(i+1)+". "+p)];
   $("#rec").textContent=lines.join("\n")}
 function setTab(n){document.querySelectorAll(".tabs button").forEach(b=>b.setAttribute("aria-selected",b.dataset.tab===n));["run","theory","proc","quiz","res","record"].forEach(t=>$("#p-"+t).hidden=t!==n);if(n==="run"&&X)requestAnimationFrame(()=>{const gg=X.graph(rows);if(!gg.none)plot($("#plot"),gg)});if(n==="record"&&X){drawRecord();checkDone()}}
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>setTab(b.dataset.tab));
-$("#bStart").onclick=()=>{const sp=X.hand&&X.hand("start");if(sp)reach(sp,()=>say(X.start()));else say(X.start())};$("#bStop").onclick=()=>{say(X.stop());const sp=X.hand&&X.hand("stop");if(sp)reach(sp)};
+$("#bStart").onclick=()=>{LP.onStart();const sp=X.hand&&X.hand("start");if(sp)reach(sp,()=>say(X.start()));else say(X.start())};$("#bStop").onclick=()=>{say(X.stop());const sp=X.hand&&X.hand("stop");if(sp)reach(sp)};
 $("#bReset").onclick=()=>{X.reset();rows=[];rowTag=null;say("Apparatus reset and readings cleared.");drawObs()};
-$("#bRec").onclick=()=>{const r=X.record();if(r.err)return say(r.err,true);if(rowTag!==null&&r.tag!==rowTag&&X.id!=="projectile"){rows=[];say("Set-up changed, so a new observation table was started.")}else say(r.msg||("Reading "+(rows.length+1)+" recorded."));rowTag=r.tag;rows.push(r.row);drawObs()};
+$("#bRec").onclick=()=>{const r=X.record();if(r.err){LP.onRecord(false,r.err);return say(r.err,true)}LP.onRecord(true);if(rowTag!==null&&r.tag!==rowTag&&X.id!=="projectile"){rows=[];say("Set-up changed, so a new observation table was started.")}else say(r.msg||("Reading "+(rows.length+1)+" recorded."));rowTag=r.tag;rows.push(r.row);drawObs()};
 $("#bCopy").onclick=async e=>{try{await navigator.clipboard.writeText($("#rec").textContent);e.target.textContent="Copied"}catch(_){e.target.textContent="Select the text below and copy it"}setTimeout(()=>e.target.textContent="Copy practical record",2500)};
 addEventListener("resize",()=>{if(X&&!$("#v-exp").hidden){const gg=X.graph(rows);if(!gg.none)plot($("#plot"),gg)}});
 
