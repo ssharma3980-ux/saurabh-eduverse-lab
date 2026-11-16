@@ -1,0 +1,676 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Boondi's Water Journey 3D</title>
+<style>
+[hidden]{display:none!important}
+/* Layout: one bright "water world" column. A live WebGL scene sits on top (sticky inside a level); lessons, games and quizzes sit on frosted cards beneath it. Single light theme by design. */
+:root{color-scheme:light;--ink:#0f2d44;--mut:#46667e;--card:rgba(255,255,255,.88);--line:#bfe0f2;--sea:#0a8fc2;--sea2:#2fb6e8;--lem:#ffb627;--coral:#ff6f59;--leaf:#21a862;--okbg:#d9f7e6;--nobg:#ffe1dc;
+ --f:"Trebuchet MS","Segoe UI",Verdana,system-ui,sans-serif}
+*{box-sizing:border-box}
+body{background:linear-gradient(180deg,#86cff8 0,#cdeefe 40%,#f1faff 100%) fixed,#e8f7ff;color:var(--ink);font:16px/1.55 var(--f);padding-inline:16px;padding-block:0 48px;margin:0}
+.wrap{max-width:960px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--deep,#0b4f7a)}
+.sp{flex:1}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:700;font-variant-numeric:tabular-nums}
+button{font:inherit;color:var(--ink);cursor:pointer;border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 4px 0 #a9d3e8;transition:transform .12s,box-shadow .12s,background .15s}
+button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 0 #a9d3e8}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #a9d3e8}
+button:focus-visible{outline:3px solid var(--lem);outline-offset:2px}
+button:disabled{cursor:default;opacity:.75}
+button.pri{background:var(--sea);border-color:var(--sea);color:#fff;font-weight:700;box-shadow:0 4px 0 #06688e}
+button.on{background:var(--sea2);border-color:var(--sea2);color:#fff;font-weight:700}
+#view{position:relative;aspect-ratio:16/9;max-height:60vh;width:100%;border-radius:22px;overflow:hidden;border:3px solid #fff;background:#bfe6ff;touch-action:pan-y;cursor:grab;box-shadow:0 14px 40px rgba(10,80,130,.25)}
+body.inzone #view{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;max-height:46vh}
+body.inzone #panel *,body.inzone #tabs *{scroll-margin-top:calc(46vh + 20px)}
+#gl{width:100%;height:100%;display:block}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:700;background:rgba(255,255,255,.88);border:2px solid #fff;border-radius:10px;padding:2px 8px;white-space:nowrap;color:var(--ink);box-shadow:0 2px 6px rgba(0,40,80,.18)}
+.lb.sm{font-size:11px;font-weight:600;color:var(--mut)}
+.lb.big{font-size:16px;background:#fffbe8}
+.lb.mk{background:var(--lem);font-size:14px;animation:pulse 1.2s ease-in-out infinite}
+.lb.mk.done{background:var(--okbg);animation:none}
+.lb.mascot{font-size:40px;background:none;border:0;box-shadow:none;padding:0;filter:drop-shadow(0 4px 4px rgba(0,60,120,.35))}
+.lb.mascot.happy{animation:jump .8s ease}
+@keyframes jump{30%{transform:translate(-50%,-110%) rotate(-15deg) scale(1.3)}60%{transform:translate(-50%,-70%) rotate(12deg)}}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.12)}}
+#hud{position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink);background:rgba(255,255,255,.8);border-radius:10px;padding:3px 10px;pointer-events:none;max-width:calc(100% - 20px)}
+#load{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;background:linear-gradient(180deg,#5fbdf2,#bfe8ff);transition:opacity .6s;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,60,120,.4)}
+#load.gone{opacity:0;pointer-events:none}
+#load .dropl{font-size:64px;animation:drip 1.1s ease-in infinite}
+@keyframes drip{0%{transform:translateY(-30px) scale(.8)}70%{transform:translateY(20px) scale(1,1)}85%{transform:translateY(24px) scale(1.25,.7)}100%{transform:translateY(-30px) scale(.8)}}
+#nogl{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;background:#dff3ff}
+h1{font-size:clamp(30px,6.5vw,52px);line-height:1.05;margin:18px 0 6px;text-wrap:balance;color:var(--sea);text-shadow:0 3px 0 #fff,0 5px 0 rgba(10,100,160,.18);letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 6px;max-width:65ch}
+.mascotline{background:var(--card);border:2px solid #fff;border-radius:18px 18px 18px 4px;padding:10px 14px;margin-top:10px;max-width:640px;box-shadow:0 4px 14px rgba(0,60,110,.1)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:20px}
+.zone{text-align:left;padding:14px;border-radius:20px;background:var(--card);border:3px solid #fff;display:flex;gap:12px;align-items:center;box-shadow:0 6px 0 var(--c),0 10px 20px rgba(0,60,110,.12)}
+.zone:hover:not(:disabled){transform:translateY(-4px) rotate(-.5deg);box-shadow:0 10px 0 var(--c),0 14px 24px rgba(0,60,110,.16)}
+.zone .ic{font-size:40px;width:62px;height:62px;display:grid;place-items:center;border-radius:18px;background:var(--c);flex:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.12)}
+.zone .zt{min-width:0}.zone b{display:block;font-size:17px}.zone small{color:var(--mut);display:block;font-size:12.5px}.zone .st{font-size:14px;letter-spacing:1px}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 8px}.top h2{margin:0;font-size:22px;flex:1;min-width:0}
+#tip{background:var(--card);border-radius:14px;padding:8px 12px;margin-bottom:10px;border:2px solid #fff}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:var(--card);border:3px solid #fff;border-radius:22px;padding:18px;animation:pop .35s ease;box-shadow:0 8px 24px rgba(0,60,110,.1)}
+@keyframes pop{from{opacity:.3;transform:translateY(10px) scale(.98)}}
+.card h3{margin:0 0 8px;color:var(--sea);font-size:21px}
+.card p{margin:0 0 8px;max-width:68ch}
+.seg{display:flex;gap:5px;margin-bottom:10px}.seg i{flex:1;height:7px;border-radius:9px;background:#d5ecf7}.seg i.d{background:var(--sea2)}.seg i.n{background:var(--lem)}
+.ln{color:var(--mut)}.ln.now{color:var(--ink);font-size:17px;border-left:4px solid var(--lem);padding-left:10px;animation:pop .35s ease}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;color:var(--mut);flex-wrap:wrap}.nav.top{margin:0 0 8px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:2px solid var(--line);color:var(--sea);border-radius:999px;padding:1px 9px;margin-bottom:8px;font-weight:700}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ctl.mid{justify-content:center;margin-top:10px}
+.ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--coral)}
+.ctl label{font-weight:700}
+.out{margin-top:12px;background:#eef8fd;border-radius:14px;padding:10px 12px;min-height:46px;border:2px solid var(--line)}
+.out.model{background:#fffbe8;border-color:#ffe7a0}
+.lead{font-weight:700;font-size:17px}
+.q{font-size:19px;font-weight:700;margin:0 0 12px}
+.opts{display:grid;gap:10px}.opts button{text-align:left}
+.ok{background:var(--okbg)!important;border-color:var(--leaf)!important;color:var(--ink)!important}
+.no{background:var(--nobg)!important;border-color:var(--coral)!important;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bar{height:10px;background:#d5ecf7;border-radius:9px;overflow:hidden;margin-bottom:12px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sea2),var(--leaf));transition:width .3s}
+.item{font-size:22px;font-weight:800;text-align:center;padding:20px 10px;background:linear-gradient(180deg,#fff,#e6f6ff);border:2px solid var(--line);border-radius:16px;margin-bottom:12px}
+.cats,.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.two .tall{min-height:84px;font-size:17px;font-weight:700}
+.big{font-size:56px;text-align:center}.center{text-align:center}.mid{margin-inline:auto!important;text-align:center}.stars{font-size:34px;margin:4px 0!important;text-align:center;max-width:none!important}
+.badge{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:var(--lem);color:var(--ink)}
+.dg{display:grid;grid-template-columns:repeat(6,1fr);grid-template-areas:". s1 s1 s2 s2 ." "sA sA sB sB sC sC" ". s3 s3 s4 s4 .";gap:8px;margin:6px 0 14px}
+.slot{border:2px dashed var(--sea2);border-radius:12px;padding:8px;text-align:center;font-weight:700;background:#fff;min-width:0}
+.slot.filled{border-style:solid;background:var(--okbg);border-color:var(--leaf)}.slot.ask{background:#fff3cc;border-color:var(--lem);animation:pulse2 1s infinite}
+@keyframes pulse2{50%{box-shadow:0 0 0 5px rgba(255,182,39,.35)}}
+.sA{grid-area:sA}.sB{grid-area:sB}.sC{grid-area:sC}.s1{grid-area:s1}.s2{grid-area:s2}.s3{grid-area:s3}.s4{grid-area:s4}
+.conf{position:fixed;top:-30px;z-index:9;font-size:24px;animation:fall 2.4s linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (max-width:560px){#view{aspect-ratio:4/3}.lb{font-size:10px;padding:1px 5px;white-space:normal;max-width:46%;text-align:center}.lb.sm{font-size:9px}.lb.mascot{font-size:30px}.two{grid-template-columns:1fr}.item{font-size:19px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.conf{display:none}}
+</style>
+<div class="wrap">
+<header><span class="brand">Saurabh's Eduverse · Class 6 Curiosity · Ch 8</span><span class="sp"></span><span class="pill" id="tot">⭐ 0</span><button id="snd" aria-label="Toggle sound">🔊</button></header>
+<div id="view"><canvas id="gl"></canvas><div id="labels"></div><div id="hud"></div><div id="load"><div class="dropl">💧</div><p>Filling the water world…</p></div><div id="nogl" hidden>This device cannot show the 3D view (WebGL is off). The lessons, games and quizzes still work. 💧</div></div>
+<section id="home">
+  <h1>Boondi's Water Journey 3D</h1>
+  <p class="sub">A Journey through States of Water 🧊 💧 💨 · 8 levels, all open · every exercise question · a boss round 🏆</p>
+  <div class="mascotline">💧 <b>Boondi:</b> Hi! I'm a water drop. I can be ice, water or vapour! Pick any level and travel with me through the states of water. 🌈</div>
+  <div class="grid" id="grid"></div>
+</section>
+<section id="zone" hidden>
+  <div class="top"><button id="back">🗺️ Levels</button><h2 id="zt"></h2></div>
+  <div id="tip"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panel"></div>
+</section>
+</div>
+<script>
+const $=s=>document.querySelector(s),KEY='eduverse_c6_ch8_water';
+let save={stars:{}};try{Object.assign(save,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+let AC=null,mute=false;
+function beep(f,d=.12,type='sine',v=.08){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const good=()=>{happyT=performance.now();beep(880,.08);setTimeout(()=>beep(1320,.14),70)},bad=()=>beep(170,.25,'sawtooth',.05),win=()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*120));
+$('#snd').onclick=e=>{mute=!mute;e.currentTarget.textContent=mute?'🔇':'🔊'};
+function confetti(){const E=['💧','🧊','☁️','⭐','🌈','🌧️','💨'];for(let i=0;i<30;i++){const s=document.createElement('span');s.className='conf';s.textContent=E[i%E.length];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3300)}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+/* ---------- content: NCERT Curiosity Grade 6, Chapter 8 ---------- */
+const LV=[
+{id:'l1',ic:'🧊',col:'#5ec8f2',t:'Ice or Water?',s:'Chapter opening · Activity 8.1',tip:"Hi! I'm Boondi 💧. Are ice and water the same thing? Let's find out!",
+ learn:[
+ ["Shikanji on a summer day 🍋",["On a bright summer afternoon, Aavi and Thirav enjoy shikanji (lemonade) with ice. 🍋🧊","Thirav says: ice is hard and we can hold it in our hands, but we cannot hold water like that. So they must be different substances! 🤨","Aavi says: no, they are the same substance. 🤔 Who is right? How can we find out?"],'ice',{lemon:1}],
+ ["Activity 8.1: Let us observe 👀",["Put an ice cube in a cup and leave it on the table. 🥤","Keep watching… the ice slowly turns into water! 💧","Aavi's idea: put water in the freezer and check if it turns into ice. ❄️ It does!"],'ice',{}],
+ ["Same substance, different states 🎭",["Ice and water are two forms of the same substance. ✅","These forms are called states. 🧊 💧 💨","Water flows but ice does not. 🌊","Water splashes but ice does not. 💦"],'ice',{rev:1}]],
+ lab:[["🧊 Melt the ice",'ice',{},"<b>Activity 8.1.</b> The ice cube slowly turns into water. Ice and water are two states of the same substance."],
+  ["❄️ Freeze the water",'ice',{rev:1},"In a freezer, water turns back into ice. So ice and water are the <b>same substance</b> in different states."],
+  ["🍋 Shikanji time",'ice',{lemon:1},"On a hot afternoon, the ice cubes in the lemonade melt into water."]],
+ game:{type:'tf',items:[["Ice and water are the same substance.",true,"They are two states of water."],["When an ice cube is left in a cup on the table, it turns into water.",true,"This is what we see in Activity 8.1."],["Ice flows just like water.",false,"Ice keeps its shape. It does not flow."],["Water splashes but ice does not.",true,"The states of water behave differently."],["The different forms of water are called states.",true,"Solid, liquid and gas are states."],["Ice must be a different substance because we can hold it in our hands.",false,"That was Thirav's first idea. Ice melts into water, so it is the same substance."]]},
+ quiz:[
+ ["What happens to an ice cube left in a cup on the table?",["It turns into water 💧","It turns into stone 🪨","It stays the same forever","It turns into milk 🥛"],"Ice melts into water (Activity 8.1).","Activity 8.1"],
+ ["Ice and water are…",["Two states of the same substance","Two different substances","Both gases","Not related at all"],"Ice and water are the same substance in different states.","Text"],
+ ["The different forms of water are called its…",["States","Colours","Shapes","Smells"],"Solid, liquid and gas are the states of water.","Text"],
+ ["Which statement is correct?",["Water flows but ice does not","Ice flows but water does not","Both ice and water flow","Neither ice nor water flows"],"Ice keeps its shape; water flows.","Text"],
+ ["Which one can splash? 💦",["Water","Ice","Both","Neither"],"Water splashes but ice does not.","Text"],
+ ["Thirav first thought ice and water were different because ice…",["Can be held in our hands","Can be poured","Can splash","Is colourless"],"Ice feels hard and can be held, but it is still water in solid form.","Text"],
+ ["Aavi's test: put water in the… and check if it becomes ice.",["Freezer ❄️","Sun ☀️","Soil 🌱","Fan 🌀"],"Water in the freezer turns into ice.","Text"],
+ ["What did Aavi and Thirav drink on the summer afternoon?",["Shikanji (lemonade) 🍋","Hot tea ☕","Milk 🥛","Coconut water 🥥"],"They saw ice cubes in their shikanji.","Text"]]},
+
+{id:'l2',ic:'💨',col:'#7fd6c8',t:'The Disappearing Act',s:'8.1 Investigating Water\'s Disappearing Act',tip:"Puddles vanish, plates dry… where does the water go? 🕵️",
+ learn:[
+ ["Where did the puddles go? 🌧️",["On a rainy morning, the playground has many water puddles.","By evening, some of the water in the puddles has disappeared! 😮","Thirav thinks the soil absorbed it. Is that the only reason? 🤔"],'puddle',{}],
+ ["Activity 8.2: The steel plate test 🍽️",["Put a tablespoon of water on a steel plate.","Check: does water seep through to the other side? ❌ No!","Keep watching at regular intervals… the water disappears completely."],'plate',{}],
+ ["Water vapour 💨",["The water changed into a gas called water vapour.","Water vapour is another state of water.","It is invisible 👻 but it is present in the air around us."],'plate',{}],
+ ["The hot dosa tawa 🥞",["Sprinkle some water on a hot pan and it disappears with a hiss! ♨️","The water changes into steam.","Steam is water vapour; some of it turns into tiny water droplets, which make it visible."],'pan',{}],
+ ["Evaporation ☀️",["The change of water into its vapour state is called evaporation.","It happens all the time, even at room temperature.","Examples: drying of wet clothes 👕, a mopped floor 🧹 and sweat on our body 😓.","Puddles dry up by seeping into the ground AND by evaporation. Hand sanitiser on our hands also evaporates. 🧴"],'examples',{}]],
+ lab:[["🍽️ Steel plate",'plate',{},"<b>Activity 8.2.</b> The water does not seep through the steel plate. It evaporates into the air as water vapour."],
+  ["🥞 Dosa tawa",'pan',{},"Water on a hot tawa quickly turns into steam (water vapour + tiny droplets)."],
+  ["🌧️ Puddles",'puddle',{},"Puddle water goes two ways: some seeps into the soil, and some evaporates into the air."],
+  ["👕 Everyday drying",'examples',{},"Drying clothes, a mopped floor and sweat are all examples of evaporation."]],
+ game:{type:'sort',cats:['💨 Evaporation','🚫 Not evaporation'],items:[["Wet clothes drying 👕",0],["Mopped floor drying 🧹",0],["Sweat drying on skin 😓",0],["Water vanishing on a hot tawa 🥞",0],["Sanitiser vanishing from hands 🧴",0],["Ice melting in a cup 🧊",1],["Water turning to ice in a freezer ❄️",1],["Drops forming on a cold glass 🥤",1]]},
+ quiz:[
+ ["When water disappears from a steel plate, where does it go?",["Into the air as water vapour","Through the plate","Into the plate's colour","It is still on the plate"],"It evaporates and becomes water vapour.","Activity 8.2"],
+ ["In Activity 8.2, does water seep through the steel plate?",["No","Yes","Only at night","Only half of it"],"The other side of the plate stays dry.","Activity 8.2"],
+ ["The change of water into its vapour state is called…",["Evaporation","Condensation","Freezing","Melting"],"Water → water vapour is evaporation.","Text"],
+ ["Does evaporation happen at room temperature?",["Yes, it happens continuously","No, only when water boils","Only in winter","Only inside a freezer"],"Evaporation takes place all the time, even at room temperature.","Text"],
+ ["Water sprinkled on a hot dosa tawa turns into…",["Steam","Ice","Oil","Sand"],"It quickly changes into steam.","Text"],
+ ["Why can we see steam?",["Tiny water droplets in it make it visible","Water vapour has a colour","It is smoke","It is dust"],"Water vapour itself is invisible.","Do you know?"],
+ ["Which of these is an example of evaporation?",["Wet clothes drying","Water freezing in a freezer","Ice melting in a glass","Drops on a cold glass"],"Drying clothes lose water as vapour.","Text"],
+ ["Puddles in the playground disappear because of…",["Both seeping into the ground and evaporation","Only freezing","Only condensation","Only animals drinking"],"Some water seeps in and some evaporates.","Text"],
+ ["Hand sanitiser disappears as we rub it because it…",["Evaporates","Freezes","Condenses","Melts"],"It changes into vapour and goes into the air.","Text"]]},
+
+{id:'l3',ic:'🥤',col:'#8fb8ff',t:'Another Mystery',s:'8.2 Another Mystery',tip:"Water drops are appearing OUTSIDE a glass! Magic? No… science! 🔍",
+ learn:[
+ ["Activity 8.3: The cold glass 🥤",["Take cold water in a glass tumbler and add a few ice cubes. 🧊","Leave it undisturbed for five minutes. Look at it and touch the outer surface. 👆","Tiny water droplets appear on the outside! They join together to form bigger drops. 💧"],'tumbler',{}],
+ ["A chain of reasoning 🗣️",["Aavi: maybe some water seeped out of the glass.","Thirav: no, the water level in the glass has not gone down.","A friend: let's take water at room temperature in another tumbler and see if any water seeps out. 🧪"],'tumbler',{}],
+ ["Dew and the lid 🌸",["We see dew drops on plants, more in the morning. 🌅","Boil water in a half-filled utensil and cover it with a steel plate.","Water drops collect on the inner side of the plate! Where do they come from?"],'dew',{}],
+ ["Condensation 💧",["When water vapour in the air touches a cold surface, it forms water droplets.","The change of water vapour into its liquid state is called condensation. ✅","So the drops on the cold glass come from the air around it!"],'tumbler',{}],
+ ["Activity 8.4: Let us measure ⚖️",["Put a covered glass of water with ice cubes on a digital weighing balance.","Record the mass every 5 minutes for 30 minutes. 📋","The reading increases! ⬆️ Water vapour from the air condenses on the glass.","Mark the water level with a marker: it does not go down. 📏 So water is NOT seeping out; the extra water comes from condensation."],'tumbler',{scale:1,lid:1,mark:1}],
+ ["Humidity 🌫️",["The amount of water vapour in the air is called humidity.","Newspapers report daily humidity. You can collect it for a year and look for patterns. 📰","Atmospheric Water Generator (AWG) machines make drinking water by cooling humid air, so the vapour condenses. 🚰"],'tumbler',{}]],
+ lab:[["🥤 Cold glass",'tumbler',{},"<b>Activity 8.3.</b> Water vapour in the air touches the cold glass and condenses into droplets."],
+  ["⚖️ Weigh it",'tumbler',{scale:1,lid:1},"<b>Activity 8.4.</b> The reading on the balance goes up as water from the air condenses on the glass. (The numbers shown are only for illustration.)"],
+  ["📏 Mark the level",'tumbler',{scale:1,lid:1,mark:1},"The marked water level does not go down, so water is not seeping out. The extra water comes from <b>condensation</b>."],
+  ["🌸 Dew & lid",'dew',{},"Dew on plants and drops under a lid over boiling water are both condensation."]],
+ game:{type:'sort',cats:['💨 Evaporation','💧 Condensation'],items:[["Wet clothes drying 👕",0],["Droplets outside a cold glass 🥤",1],["Dew on plants in the morning 🌸",1],["Drops under the lid of a boiling pot 🍲",1],["Puddles disappearing ☀️",0],["Water vanishing on a hot tawa 🥞",0],["AWG machine making water from air 🚰",1],["Sweat drying 😓",0]]},
+ quiz:[
+ ["Why do drops appear outside a glass of ice-cold water?",["Water vapour in the air condenses on the cold surface","Water seeps out through the glass","Ice comes out and melts","The glass is leaking"],"The cold surface turns vapour into droplets.","Activity 8.3"],
+ ["The change of water vapour into its liquid state is called…",["Condensation","Evaporation","Melting","Freezing"],"Vapour → liquid is condensation.","Text"],
+ ["In Activity 8.4, the reading on the digital balance…",["Increases","Decreases","Stays exactly the same","Becomes zero"],"Extra water from the air collects on the glass.","Activity 8.4"],
+ ["When the water level is marked on the tumbler, it…",["Does not go down","Goes down a lot","Goes up inside","Disappears"],"So water is not seeping out.","Activity 8.4"],
+ ["We see more dew drops on plants in the…",["Morning","Afternoon","Evening","Never"],"Dew forms when vapour touches cool surfaces.","Text"],
+ ["Drops on the inner side of a steel plate covering boiling water form by…",["Condensation","Evaporation","Melting","Freezing"],"Steam touches the cooler plate and becomes water.","Text"],
+ ["The amount of water vapour in the air is called…",["Humidity","Evaporation","Temperature","Rainfall"],"Humidity is reported in newspapers.","More to do!"],
+ ["AWG machines get drinking water from…",["Humid air, by condensing the vapour","Ice, by melting it","The sea, by boiling it","Dust in the air"],"They cool the air so vapour condenses.","More to know!"],
+ ["To test whether water seeps out, a friend used a tumbler of water at…",["Room temperature","Boiling temperature","Freezer temperature","Night only"],"Without ice, little or no condensation forms outside.","Fig. 8.4"]]},
+
+{id:'l4',ic:'🎭',col:'#b9a2ff',t:'Three States',s:'8.3 What are the Different States of Water?',tip:"Solid, liquid, gas… water can be all three! 🧊💧💨",
+ learn:[
+ ["Water in three states",["Solid: ice 🧊","Liquid: water 💧","Gas: water vapour 💨","On heating, ice melts into water. On further heating, water changes into vapour. 🔥"],'states',{}],
+ ["Activity 8.5: Solid 🧊",["Move an ice cube to a container of a different shape.","Its shape does not change! Ice keeps its own shape.","Ice does not flow or spread."],'states',{f:0}],
+ ["Liquid 💧",["Pour water into a container of a different shape: it flows! 🌊","Water takes the shape of its container, but its volume stays the same.","Poured on a clean surface, water also spreads."],'states',{f:1}],
+ ["Gas 💨",["Water vapour spreads out in all the available space.","Gases do not have a fixed shape.","Water vapour is in the air even at room temperature, though we cannot see it. Drying clothes and mopped floors add vapour to the air."],'states',{f:2}],
+ ["Solids, liquids and gases around us 🌍",["Solids: stone 🪨, wood 🪵, glass.","Liquids: milk 🥛, oil. Can you think of five more?","Gases: oxygen and carbon dioxide. 🌬️","We smell food cooking from far away because the smell spreads through the air. 🍛👃","Wax, oil and ghee can also be found in different states. 🕯️"],'states',{}]],
+ lab:[["🧊 Solid",'states',{f:0},"<b>Ice</b> keeps its shape in any container. It does not flow or spread."],
+  ["💧 Liquid",'states',{f:1},"<b>Water</b> flows and takes the shape of its container. Its volume stays the same. It spreads on a flat surface."],
+  ["💨 Gas",'states',{f:2},"<b>Water vapour</b> spreads out to fill all the space available. It has no fixed shape."],
+  ["👀 All three",'states',{},"Table 8.3: compare the shape, flow and spreading of ice, water and water vapour."]],
+ game:{type:'sort',cats:['🧊 Solid','💧 Liquid','💨 Gas'],items:[["Stone 🪨",0],["Wood 🪵",0],["Glass",0],["Ice 🧊",0],["Milk 🥛",1],["Oil",1],["Water 💧",1],["Oxygen",2],["Carbon dioxide",2],["Water vapour 💨",2]]},
+ quiz:[
+ ["Ice is the … state of water.",["Solid","Liquid","Gaseous","Boiling"],"Ice is solid water.","Text"],
+ ["Water vapour is the … state of water.",["Gaseous","Solid","Liquid","Frozen"],"Water vapour is a gas.","Text"],
+ ["Which takes the shape of its container but keeps the same volume?",["Liquid water","Ice","A stone","Wood"],"Liquids flow and take the container's shape.","Activity 8.5"],
+ ["Which keeps its shape in any container?",["Ice","Water","Water vapour","Milk"],"Solids have a fixed shape.","Activity 8.5"],
+ ["Which spreads out into all the available space?",["Water vapour","Ice","Water","Glass"],"Gases spread everywhere.","Activity 8.5"],
+ ["Which of these is a liquid?",["Milk","Stone","Oxygen","Wood"],"Milk flows like water.","Text"],
+ ["Which of these is a gas?",["Carbon dioxide","Oil","Glass","Ice"],"Oxygen and carbon dioxide are gases.","Text"],
+ ["We can smell food cooking in another room because the smell…",["Spreads through the air","Flows like water","Stays in the pot","Freezes"],"It spreads through the air to our nose.","Text"],
+ ["Is water vapour present in the air at room temperature?",["Yes, though we cannot see it","No, only at 100 °C","Only on mountains","Only inside clouds"],"It is invisible but present.","Text"]]},
+
+{id:'l5',ic:'🔥',col:'#ff9f6b',t:'Change the State',s:'8.4 How can We Change the States of Water?',tip:"Heat it up 🔥 or cool it down ❄️ and watch water change!",
+ learn:[
+ ["Heat it up 🔥",["To change ice into water, and water into water vapour, we must supply heat.","Ice melts into water. 🧊➡️💧","Water evaporates into water vapour. 💧➡️💨"],'heat',{cyc:1}],
+ ["Cool it down ❄️",["To change water into ice, put it in a cold place like a freezer.","Water freezes into ice. 💧➡️🧊","Take the ice out of the freezer and it melts back into water."],'heat',{T:-12}],
+ ["Not only water! 🕯️",["A candle is made of wax. Wax melts on heating and becomes solid again on cooling.","Coconut oil turns solid in the winter season. 🥥❄️","Can you name other liquids that become solid?"],'heat',{cyc:1,candle:1}],
+ ["Melting and freezing 🔁",["Solid → liquid is called melting.","Liquid → solid is called freezing.","Water and other substances change their states on heating or cooling. ✅"],'heat',{cyc:1}]],
+ lab:[["🕯️ Candle wax",'heat',{cyc:1,candle:1},"Candle wax melts near the flame and becomes solid again as it cools."]],
+ slider:{label:'🌡️ Temperature',min:-20,max:110,val:20,scene:'heat',fmt:v=>v<0?`<b>${v} °C · Solid.</b> Below 0 °C, water freezes into ice. ❄️`:v<100?`<b>${v} °C · Liquid.</b> Ice has melted into water. 💧 Heat it more to make it boil.`:`<b>${v} °C · Boiling.</b> Water is changing into water vapour. 💨 Steam rises.`},
+ game:{type:'diagram'},
+ quiz:[
+ ["To change ice into water, we must…",["Supply heat","Cool it","Add salt","Shake it"],"Heating makes ice melt.","Text"],
+ ["Water changes into ice when it is kept in a…",["Freezer","Hot pan","Sunny place","Kettle"],"Cold makes water freeze.","Text"],
+ ["Conversion of a solid into a liquid is called…",["Melting","Freezing","Condensation","Evaporation"],"Ice → water is melting.","Text"],
+ ["Conversion of a liquid into a solid is called…",["Freezing","Melting","Evaporation","Condensation"],"Water → ice is freezing.","Text"],
+ ["Liquid wax becomes solid again when it is…",["Cooled","Heated more","Stirred","Lit"],"Cooling turns liquid wax into solid.","Text"],
+ ["Which of these can turn solid in winter?",["Coconut oil","Water vapour","Oxygen","Air"],"Coconut oil freezes in cold weather.","Text"],
+ ["In Fig. 8.5, gas changing into liquid is called…",["Condensation (condenses)","Melting","Freezing","Evaporation"],"Gas → liquid: condenses.","Activity 8.6"],
+ ["Water and other substances change their states on…",["Heating or cooling","Only shaking","Only painting","Only weighing"],"Heat or cold changes the state.","Text"]]},
+
+{id:'l6',ic:'🏃',col:'#ffd166',t:'Faster or Slower?',s:'8.5 How can Water be Evaporated Faster or Slower?',tip:"Let's race! Which water will vanish first? 🏁",
+ learn:[
+ ["What changes the speed? 🤔",["Think about a cold day and a hot day ☀️, a windy day 🌬️ and a rainy day 🌧️.","Words to think with: fan, drying cloth, sweating.","Let's do a fair test to find out!"],'race',{m:'area'}],
+ ["Activity 8.7: Cap vs plate 🧢🍽️",["Take the same amount of water in a small bottle cap and in a plate.","Keep them near each other and record the time taken to evaporate completely. ⏱️","Kept the same: amount of water and place. Changed: exposed area. Measured: time taken. 📏","The plate dries first. A larger exposed area means faster evaporation! 🚀"],'race',{m:'area'}],
+ ["Activity 8.8: Sun vs shade ☀️🌳",["Pour equal water into two identical bottle caps.","Keep one in sunlight and one in shade. Check every 15 minutes.","Water in the sunlight evaporates faster. 🔥"],'race',{m:'sun'}],
+ ["Wind 🌬️",["Clothes dry faster on a windy day.","As air moves more, water evaporates faster. 🌀"],'race',{m:'wind'}],
+ ["Humidity 🌧️",["Clothes dry slowly on a rainy day.","The air already has a lot of water vapour (high humidity), so water evaporates slowly.","Rainy days are more humid. 💦","So exposed area, sunlight (heat), moving air and humidity all change how fast water evaporates."],'race',{m:'humid'}]],
+ lab:[["🧢 Area",'race',{m:'area'},"<b>Activity 8.7.</b> The same water spread on a plate has a larger exposed area, so it evaporates faster than water in a bottle cap."],
+  ["☀️ Sun / shade",'race',{m:'sun'},"<b>Activity 8.8.</b> Water in sunlight evaporates faster than water in shade."],
+  ["🌬️ Wind",'race',{m:'wind'},"Moving air makes water evaporate faster. Clothes dry quicker on a windy day."],
+  ["🌧️ Humidity",'race',{m:'humid'},"On a rainy day the air is humid (full of water vapour), so clothes dry slowly."]],
+ game:{type:'faster',pairs:[["🍽️ Water spread on a plate","🧢 Same water in a bottle cap",0,"A larger exposed area means faster evaporation."],["☀️ Cap kept in sunlight","🌳 Cap kept in shade",0,"Heat from the Sun speeds up evaporation."],["🌬️ Clothes on a windy day","😶 Clothes in still air",0,"Moving air speeds up evaporation."],["🌧️ Clothes on a rainy day","☀️ Clothes on a hot sunny day",1,"Rainy air is humid, so evaporation is slow."],["🌀 Wet hand in front of a fan","✋ Wet hand in still air",0,"Moving air makes water evaporate faster."]]},
+ quiz:[
+ ["Same water in a bottle cap and on a plate: which dries first?",["The plate","The bottle cap","Both together","Neither"],"The plate has a larger exposed area.","Activity 8.7"],
+ ["In Activity 8.7, what did we change?",["The exposed area of water","The amount of water","The type of liquid","The place"],"Only one thing is changed in a fair test.","Activity 8.7"],
+ ["In Activity 8.7, what did we measure?",["Time taken for complete evaporation","Colour of the water","Weight of the plate","Height of the cap"],"We recorded the time in Table 8.4.","Activity 8.7"],
+ ["One cap in sunlight, one in shade: which dries faster?",["The one in sunlight","The one in shade","Both the same","Neither dries"],"Heat speeds up evaporation.","Activity 8.8"],
+ ["Clothes dry faster on a…",["Windy day","Still day","Rainy day","Cold, humid day"],"Moving air speeds up evaporation.","Text"],
+ ["Clothes dry slowly on a rainy day because…",["The air already has more water vapour","The Sun is too strong","There is too much wind","Clothes get heavier"],"High humidity slows evaporation.","Text"],
+ ["Which of these does NOT make water evaporate faster?",["More humidity","More exposed area","Sunlight","Moving air"],"Humid air slows evaporation down.","Summary"],
+ ["Rainy days are more humid because the air has…",["More water vapour","Less water vapour","No air at all","More dust"],"Humidity = amount of water vapour in air.","Do you know?"]]},
+
+{id:'l7',ic:'🏺',col:'#e8a87c',t:'Cooling Effect',s:'8.6 Cooling Effect',tip:"Why is matka water so cool? Let's peek at its tiny pores! 🏺",
+ learn:[
+ ["The magic matka 🏺",["Aavi's mother bought a new matka (earthen pot) for drinking water.","Water in it is much cooler than water in the stainless steel pot. 😮 Why?"],'matka',{}],
+ ["The secret: evaporation 😎",["Water seeps through the surface of the earthen pot.","It evaporates from the outside, and this cools the water inside.","This is called the cooling effect. Evaporation causes cooling! ❄️"],'matka',{}],
+ ["More cooling effects 🌀",["Sprinkling water on the floor or roof in summer cools it.","Rubbing sanitiser on our hands feels cold. 🧴","We feel cool under a fan because the wind helps sweat evaporate. 😓➡️😎"],'matka',{}],
+ ["Activity 8.9: Pot-in-pot cooler 🥕",["Put a layer of sand in a large pot and place a smaller pot in its centre.","Fill the gap between the pots with sand and pour water into the sand. 💧","Cover the small pot with a lid or a wet jute sack.","Evaporation from the wet sand keeps fruits and vegetables fresh. Keep the sand moist! 🍅🥒"],'matka',{v:'pot'}],
+ ["The surahi 🫙",["A surahi is a clay pot with a narrow neck.","It is used in summer to keep water cold, also by evaporation."],'matka',{v:'surahi'}]],
+ lab:[["🏺 Matka vs steel",'matka',{},"Water seeps through the tiny pores of the matka and evaporates outside. This <b>cooling effect</b> keeps the water inside cool. The steel pot has no pores."],
+  ["🥕 Pot-in-pot cooler",'matka',{v:'pot'},"<b>Activity 8.9.</b> Water in the wet sand evaporates through the outer pot and cools the inner pot. Fruits and vegetables stay fresh for days."],
+  ["🫙 Surahi",'matka',{v:'surahi'},"A surahi is a clay pot that keeps water cold in summer."]],
+ game:{type:'sort',cats:['😎 Cooling effect','🚫 No cooling effect'],items:[["Water in a matka 🏺",0],["Water in a steel pot 🥘",1],["Rubbing sanitiser on hands 🧴",0],["Sprinkling water on the roof in summer 🏠",0],["Sitting under a fan when sweaty 🌀",0],["Wet sand in a pot-in-pot cooler 🥕",0],["Water in a surahi 🫙",0],["Dry plastic grass in the sun",1]]},
+ quiz:[
+ ["Why does water stay cool in a matka?",["Water seeps through its pores and evaporates, cooling it","Clay is cold by itself","Ice is hidden inside it","It is kept in a fridge"],"Evaporation causes a cooling effect.","Text"],
+ ["Evaporation causes a…",["Cooling effect","Heating effect","Colour change","Freezing"],"Evaporation takes away heat.","Summary"],
+ ["We feel cool under a fan because the wind helps…",["Sweat to evaporate","Sweat to freeze","Skin to melt","Air to condense"],"Evaporating sweat cools us.","Text"],
+ ["Sprinkling water on the roof in summer…",["Cools it","Heats it","Melts it","Does nothing"],"The water evaporates and cools the roof.","Text"],
+ ["In a pot-in-pot cooler, water is poured into the…",["Sand between the pots","Small pot with vegetables","Lid","Vegetables"],"The wet sand provides water for evaporation.","Activity 8.9"],
+ ["To keep a pot-in-pot cooler working, keep the sand…",["Moist","Dry","Hot","Frozen"],"Without water, there is no evaporation.","Activity 8.9"],
+ ["A clay pot used in summers to keep water cold is a…",["Surahi","Tawa","Kettle","Tumbler"],"Fig. 8.8 shows a surahi.","Text"],
+ ["Rubbing sanitiser on your hands feels…",["Cold","Hot","Sticky forever","Painful"],"It evaporates and cools the skin.","Text"]]},
+
+{id:'l8',ic:'🌧️',col:'#6aa9ff',t:'Clouds & Water Cycle',s:'8.7 How Do Clouds Give Us Rain?',tip:"Up, up, up I go! ☁️ Then I come back down as rain! 🌧️",
+ learn:[
+ ["Water vapour goes up ⬆️",["Water vapour is lighter than air, so it rises, just like a gas balloon. 🎈","As air moves higher above the Earth, it becomes cooler and cooler. 🥶"],'cycle',{lbl:['ev','cool']}],
+ ["Clouds form ☁️",["At certain heights, the air is so cool that water vapour turns into tiny droplets.","The droplets generally form around dust particles. 🌫️","These tiny droplets float in the air and form clouds. This is condensation!"],'cycle',{lbl:['ev','co','cl']}],
+ ["Rain, hail and snow 🌧️❄️",["Many droplets join together to form bigger drops.","Some drops get so heavy that they fall. That is rain! 🌧️","Under special conditions, water may fall as hail or snow. ❄️"],'cycle',{lbl:['cl','ra','sn']}],
+ ["Activity 8.10: Cloud in a bottle 🍾",["Pour about one cup of water into an empty 1-litre plastic bottle. Close the lid tightly.","Squeeze and release it quickly for 2–3 minutes. Not much happens…","Repeat after adding a small burnt piece of newspaper. ⚠️ Handle burning paper carefully.","Now haze (a cloud) forms! The tiny dust particles help water vapour condense."],'bottle',{dust:1}],
+ ["The water cycle 🔄",["Water from oceans and the Earth's surface evaporates into the air as vapour.","It returns as rain, hail or snow, and flows back to the oceans through rivers and groundwater.","This circulation of water is called the water cycle. 🌍"],'cycle',{lbl:['ev','co','cl','ra','sn','ri','la','oc','gw']}],
+ ["Save every drop 🚰",["Only a small part of Earth's water is fit for use by plants, animals and humans.","Most water is in the oceans and cannot be used directly. 🌊","More people means more demand, so many places face water shortage.","Use water wisely, avoid wasting it and keep water bodies clean. 💙"],'cycle',{lbl:['oc','la','ri']}]],
+ lab:[["🔄 Water cycle",'cycle',{lbl:['ev','co','cl','ra','sn','ri','la','oc','gw']},"Evaporation ⬆️ → condensation ☁️ → rain or snow 🌧️❄️ → rivers and groundwater → back to the ocean 🌊."],
+  ["🍾 Bottle, no dust",'bottle',{},"<b>Activity 8.10.</b> Squeezing and releasing the bottle alone shows little or no cloud."],
+  ["🔥 Bottle + burnt paper",'bottle',{dust:1},"With a burnt piece of newspaper, haze (a cloud) forms. Water vapour condenses around the tiny dust particles."]],
+ game:{type:'label3d'},
+ quiz:[
+ ["Why does air containing water vapour rise?",["Water vapour is lighter than air","Water vapour is heavier than air","Wind pushes it down","Clouds pull it with ropes"],"Like a gas balloon, it rises.","Do you know?"],
+ ["As air goes higher above the Earth, it becomes…",["Cooler","Hotter","Heavier","Coloured"],"Higher air is cooler.","Text"],
+ ["Cloud droplets are generally formed around…",["Dust particles","Stones","Leaves","Fish"],"Dust helps vapour condense.","Text"],
+ ["Rain falls when…",["Many droplets join and become too heavy","Clouds become hot","The air becomes dry","The Sun sets"],"Heavy drops fall as rain.","Text"],
+ ["Besides rain, water can fall as…",["Hail or snow","Sand","Smoke","Dust"],"Under special conditions.","Text"],
+ ["In Activity 8.10, haze forms in the bottle after adding…",["A small burnt piece of newspaper","Sugar","Salt","More water"],"It gives tiny dust particles.","Activity 8.10"],
+ ["The circulation of water between the Earth's surface and atmosphere is…",["The water cycle","Humidity","Melting","Freezing"],"Evaporation, condensation, rain and flow back.","Text"],
+ ["Most of the water on Earth is in the…",["Oceans","Rivers","Clouds","Wells"],"Ocean water cannot be used directly.","Text"],
+ ["We should use water wisely because…",["Only a small part is fit for use and demand is rising","Water never runs out","Sea water is drinkable","It rains every day everywhere"],"Many places face water shortage.","Text"]]}
+];
+
+/* "Let us enhance our learning": every exercise question. First option is the textbook answer; ok[] marks other acceptable options. */
+const EX=[
+ {n:'1',q:"Which of the following best describes condensation?",o:["(iv) The conversion of water vapour into its liquid state.","(i) The conversion of water into its vapour state.","(ii) The process of water changing from a liquid into gaseous state.","(iii) The formation of clouds from tiny water droplets."],a:"Condensation is <b>water vapour → liquid water</b>, like drops on a cold glass. Options (i) and (ii) describe evaporation.",sc:['tumbler',{}]},
+ {n:'2 (i)',q:"In which process is evaporation very important? Colouring with…",o:["(b) water colours","(a) crayons","(c) acrylic colours","(d) pencil colours"],ok:[2],a:"<b>Water colours</b> dry only when their water evaporates. Acrylic colours are water-based too, so they also dry by evaporation. Crayons and pencil colours need no drying.",sc:['paint',{}]},
+ {n:'2 (ii)',q:"In which process is evaporation very important? Writing on paper with…",o:["(b) ink pen","(a) pencil","(c) ball point pen"],a:"Ink from an <b>ink pen</b> is wet and dries when its liquid evaporates. Pencil leaves dry graphite marks.",sc:['paint',{pen:1}]},
+ {n:'3',q:"The space around natural grass feels cooler than around plastic grass. Why?",o:["Natural grass gives out water that evaporates and cools the air; plastic grass has no water to evaporate","Plastic grass is a darker green","Natural grass makes its own wind","Plastic grass gives out water vapour"],a:"Plants give out water vapour from their leaves and the soil is moist. This water <b>evaporates and causes a cooling effect</b>. Plastic grass is dry and just heats up in the sun.",sc:['grass',{}]},
+ {n:'4',q:"Give examples of liquids other than water that evaporate.",o:["Hand sanitiser, perfume, petrol and nail-polish remover","Ice, wax and stone","Glass, wood and steel","Oxygen and carbon dioxide"],a:"<b>Sanitiser, perfume, petrol, kerosene and nail-polish remover</b> all evaporate. That is why we can smell them and why they dry quickly.",sc:['examples',{}]},
+ {n:'5',q:"Fans make us feel cool, yet we use them to dry wet clothes. Evaporation needs heat, not cold air. How?",o:["The fan moves away the moist air near the clothes, so more water can evaporate; the heat comes from the surroundings","The fan heats the clothes","The fan freezes the water out","The fan adds water vapour to the clothes"],a:"Moving air carries away the water vapour around the wet cloth, so evaporation keeps going faster. The heat needed comes from the cloth and the surrounding air. That same evaporation is what makes us feel cool.",sc:['race',{m:'wind'}]},
+ {n:'6',q:"Sludge from drains is left in heaps for 3–4 days before being taken to a garden as manure. How does this help?",o:["Water in it evaporates, so it becomes lighter and drier: cheaper to transport and safer to handle","It freezes and becomes hard","It soaks up more rain","It turns completely into gas"],a:"In 3–4 days much of the water <b>evaporates</b>. Drier sludge is lighter, so transport costs less, and it does not drip or spill, so it is safer for the people handling it.",sc:['sludge',{}]},
+ {n:'7',q:"Which activities in your house involve evaporation?",o:["Drying clothes, mopping floors, drying washed utensils and cooking","Freezing ice cubes","Switching on a light","Folding dry clothes"],a:"Drying clothes, mopped floors, washed utensils, wet hair, and steam while cooking all involve evaporation. Knowing this helps us dry things faster: spread them out, use sunlight and moving air.",sc:['examples',{}]},
+ {n:'8',q:"How is water present in the solid state in nature?",o:["As ice and snow on mountains, glaciers, polar ice and hail","As water vapour in the air","As rivers and lakes","As groundwater"],a:"Solid water in nature: <b>snow and ice on high mountains, glaciers, polar ice caps, frozen lakes and hailstones</b>.",sc:['cycle',{lbl:['sn']}]},
+ {n:'9',q:"\"Water is our responsibility before it is our right.\" What does this mean?",o:["We must save water and keep water bodies clean before we expect to use it freely","We can waste water because it is our right","Only the government must save water","Water will never run out"],a:"Only a small part of Earth's water is usable and demand keeps rising. Each of us must <b>save water, stop wasting it and keep rivers and lakes clean</b>; only then can everyone enjoy their right to water.",sc:['cycle',{lbl:['la','ri']}]},
+ {n:'10',q:"The seat of a two-wheeler parked on a sunny day has become very hot. How can you cool it down?",o:["Sprinkle a little water or wipe it with a wet cloth; as the water evaporates it cools the seat","Cover it with a black plastic sheet","Leave it in the sun for longer","Rub it with dry sand"],a:"Wipe it with a <b>wet cloth or sprinkle a little water</b>. As the water evaporates, it takes heat away: the cooling effect. Next time, park in the shade.",sc:['bike',{}]}];
+const FURTHER=["✋💧 Wet one hand and keep the other dry. Blow air across both. The wet hand feels cooler, because evaporation causes cooling.","🎲 Make a board game to travel through the states of water, with challenge cards on evaporation, condensation and the water cycle.","🎭 Act out the stages of the water cycle in your school assembly with your teacher."];
+
+/* ================= WebGL 3D engine (hand-written, no libraries) ================= */
+let SC=['cycle',{hub:1}],yaw=0,happyT=0,MP=null;
+const cv=$('#gl'),gl=cv.getContext('webgl',{antialias:true,alpha:false})||cv.getContext('experimental-webgl');
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mulS=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]};
+const M4={
+ mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o},
+ persp(f,as,n,fa){const t=1/Math.tan(f/2),o=new Float32Array(16);o[0]=t/as;o[5]=t;o[10]=(fa+n)/(n-fa);o[11]=-1;o[14]=2*fa*n/(n-fa);return o},
+ look(e,c,u){const z=norm(sub(e,c)),x=norm(cross(u,z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,e),-dot(y,e),-dot(z,e),1])},
+ trs(p,s,ry=0){const c=Math.cos(ry),n=Math.sin(ry),[sx,sy,sz]=typeof s=='number'?[s,s,s]:s;return new Float32Array([c*sx,0,-n*sx,0,0,sy,0,0,n*sz,0,c*sz,0,p[0],p[1],p[2],1])},
+ basis(p,x,y,z,s){return new Float32Array([x[0]*s[0],x[1]*s[0],x[2]*s[0],0,y[0]*s[1],y[1]*s[1],y[2]*s[1],0,z[0]*s[2],z[1]*s[2],z[2]*s[2],0,p[0],p[1],p[2],1])}};
+const hsh=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5453;return s-Math.floor(s)};
+function vn(x,y){const i=Math.floor(x),j=Math.floor(y),f=x-i,g=y-j,u=f*f*(3-2*f),v=g*g*(3-2*g);return(hsh(i,j)*(1-u)+hsh(i+1,j)*u)*(1-v)+(hsh(i,j+1)*(1-u)+hsh(i+1,j+1)*u)*v}
+const ss=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
+const loop=(t,sp,hold=1.3)=>Math.min(1,(t*sp)%hold);
+/* landscape: mountain on the right, land and lake in the middle, ocean on the left */
+function WH(x,z){return 1.9*Math.exp(-((x-2.7)**2+(z+.5)**2*.6)/1.2)+1.1*Math.exp(-((x-1.3)**2+(z+1.9)**2)/.9)+.28+.1*vn(x*2+3,z*2+7)+.12*vn(x*.8,z*.8)-1.1*ss(-1.3,-3.2,x)-.5*Math.exp(-((x-.2)**2+(z-.5)**2)/.3)}
+
+const NOISE=`
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+float h(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float n3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),
+  mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}
+float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*n3(p);p=p*2.03+vec3(1.7);a*=.5;}return s;}
+`;
+const VS_OBJ=`attribute vec3 aP,aN;attribute vec4 aC;uniform mat4 uVP,uM;varying vec3 vW,vN;varying vec4 vC;
+void main(){vec4 w=uM*vec4(aP,1.);vW=w.xyz;vN=(uM*vec4(aN,0.)).xyz;vC=aC;gl_Position=uVP*w;}`;
+const FS_OBJ=NOISE+`uniform vec3 uSun,uCam,uFog;uniform vec4 uTint;uniform float uAmb,uMode,uSnow,uFogD,uSpec,uT;varying vec3 vW,vN;varying vec4 vC;
+void main(){vec3 N=normalize(vN);vec3 c=vC.rgb*uTint.rgb;float em=vC.a+uTint.a,sp=uSpec;
+ if(uMode==1.){float n=n3(vW*3.);vec3 g=mix(vec3(.2,.55,.17),vec3(.36,.64,.2),n);
+  c=mix(g,vec3(.5,.44,.38)*(.85+.3*n),smoothstep(.75,1.15,vW.y+n*.25));
+  c=mix(c,vec3(.96,.98,1.),smoothstep(uSnow,uSnow+.15,vW.y+n*.2));
+  c=mix(c,vec3(.9,.8,.56),smoothstep(.12,.03,vW.y));
+  c=mix(c,vec3(.47,.31,.18)*(.8+.4*n),smoothstep(-.05,-.25,vW.y));em=0.;sp=0.;}
+ if(uMode==2.){float r=n3(vec3(vW.xz*6.,uT*.8))+.5*n3(vec3(vW.xz*13.,uT*1.3));N=normalize(N+vec3(r-.75,0.,n3(vec3(vW.zx*7.,uT))-.5)*.3);sp=1.3;}
+ vec3 V=normalize(uCam-vW);float df=max(dot(N,uSun),0.);
+ vec3 col=c*(uAmb+df*(1.-uAmb))+c*em+pow(max(dot(N,normalize(uSun+V)),0.),40.)*sp*vec3(1.,.97,.9);
+ if(uMode==2.)col+=vec3(.55,.8,1.)*pow(1.-max(dot(N,V),0.),3.)*.45;
+ col=mix(col,uFog,1.-exp(-length(uCam-vW)*uFogD));gl_FragColor=vec4(col,1.);}`;
+const FS_GL=`precision mediump float;uniform vec3 uCam,uCol;uniform float uPow,uA,uB,uInv;varying vec3 vW,vN;
+void main(){vec3 N=normalize(vN),V=normalize(uCam-vW);float d=dot(N,V),a;
+ if(uInv>.5){if(d<0.)discard;a=uA*pow(d,uPow);}else a=clamp(uB+uA*pow(1.-abs(d),uPow),0.,1.);gl_FragColor=vec4(uCol*a,a);}`;
+const VS_PT=`attribute vec3 aP;attribute vec4 aC;uniform mat4 uVP;uniform float uScale;varying vec3 vC;
+void main(){gl_Position=uVP*vec4(aP,1.);vC=aC.rgb;gl_PointSize=aC.a<0.?-aC.a:max(1.5,aC.a*uScale/gl_Position.w);}`;
+const FS_PT=`precision mediump float;varying vec3 vC;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),1.3)*.95;gl_FragColor=vec4(vC*a,a);}`;
+const VS_BG=`attribute vec3 aP;varying vec2 vP;void main(){vP=aP.xy;gl_Position=vec4(aP.xy,0.,1.);}`;
+const FS_BG=NOISE+`varying vec2 vP;uniform vec3 uF,uR,uU,uSun,uGr;uniform float uAs,uTan,uT,uGrey;
+void main(){vec3 d=normalize(uF+vP.x*uAs*uTan*uR+vP.y*uTan*uU);float s=max(dot(d,uSun),0.);
+ vec3 sky=mix(vec3(.84,.94,1.),vec3(.2,.53,.93),clamp(d.y*1.8+.05,0.,1.));
+ if(d.y>0.){vec2 q=d.xz/(d.y+.15);float c=smoothstep(.5,.82,fbm(vec3(q*.9+vec2(uT*.01,0.),1.)));sky=mix(sky,vec3(1.),c*.85*smoothstep(0.,.15,d.y));}
+ sky+=vec3(1.,.9,.6)*pow(s,400.)*3.+vec3(1.,.85,.6)*pow(s,10.)*.25;
+ sky=mix(sky,vec3(.52,.57,.64)*(.65+.35*clamp(d.y+.5,0.,1.)),uGrey);
+ sky=mix(sky,uGr,smoothstep(0.,-.05,d.y));gl_FragColor=vec4(sky,1.);}`;
+
+function prog(vs,fs){const p=gl.createProgram();[[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]].forEach(([t,s])=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);
+  if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))console.error('shader',gl.getShaderInfoLog(sh));gl.attachShader(p,sh)});
+ gl.bindAttribLocation(p,0,'aP');gl.bindAttribLocation(p,1,'aN');gl.bindAttribLocation(p,2,'aC');gl.linkProgram(p);
+ if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error('link',gl.getProgramInfoLog(p));
+ p.u={};const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const nm=gl.getActiveUniform(p,i).name;p.u[nm]=gl.getUniformLocation(p,nm)}
+ p.n=gl.getAttribLocation(p,'aN')>=0;p.c=gl.getAttribLocation(p,'aC')>=0;return p}
+function set(p,o){for(const k in o){const l=p.u[k],v=o[k];if(l==null)continue;if(typeof v=='number')gl.uniform1f(l,v);else if(v.length==3)gl.uniform3fv(l,v);else if(v.length==4)gl.uniform4fv(l,v);else gl.uniformMatrix4fv(l,false,v)}}
+function MB(){const a=[],o={a,
+ v(p,n,c){a.push(p[0],p[1],p[2],n[0],n[1],n[2],c[0],c[1],c[2],c[3])},
+ tri(p,q,r,c){const n=norm(cross(sub(q,p),sub(r,p)));o.v(p,n,c);o.v(q,n,c);o.v(r,n,c)},
+ quad(p,q,r,s,c){o.tri(p,q,r,c);o.tri(p,r,s,c)},
+ box(c,s,col){const w=s[0]/2,h=s[1]/2,d=s[2]/2,P=(i,j,k)=>[c[0]+i*w,c[1]+j*h,c[2]+k*d];
+  o.quad(P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1),col);o.quad(P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1),col);
+  o.quad(P(1,-1,1),P(1,-1,-1),P(1,1,-1),P(1,1,1),col);o.quad(P(-1,-1,-1),P(-1,-1,1),P(-1,1,1),P(-1,1,-1),col);
+  o.quad(P(-1,1,1),P(1,1,1),P(1,1,-1),P(-1,1,-1),col);o.quad(P(-1,-1,-1),P(1,-1,-1),P(1,-1,1),P(-1,-1,1),col)},
+ cone(c,r,h,col,n=8){for(let i=0;i<n;i++){const a0=i/n*6.2832,a1=(i+1)/n*6.2832;o.tri([c[0]+Math.cos(a1)*r,c[1],c[2]+Math.sin(a1)*r],[c[0]+Math.cos(a0)*r,c[1],c[2]+Math.sin(a0)*r],[c[0],c[1]+h,c[2]],col)}},
+ done(){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);return{b,n:a.length/10}}};return o}
+function lathe(pr,n=32){const m=MB(),W=[1,1,1,0];for(let i=0;i<pr.length-1;i++){const[r0,y0]=pr[i],[r1,y1]=pr[i+1];let nr=y1-y0,ny=-(r1-r0);const l=Math.hypot(nr,ny)||1;nr/=l;ny/=l;
+ for(let j=0;j<n;j++){const a0=j/n*6.2832,a1=(j+1)/n*6.2832,V=(r,y,a)=>[r*Math.cos(a),y,r*Math.sin(a)],N=a=>[nr*Math.cos(a),ny,nr*Math.sin(a)];
+  const A=V(r0,y0,a0),B=V(r1,y1,a0),C=V(r1,y1,a1),D=V(r0,y0,a1);m.v(A,N(a0),W);m.v(B,N(a0),W);m.v(C,N(a1),W);m.v(A,N(a0),W);m.v(C,N(a1),W);m.v(D,N(a1),W)}}return m.done()}
+
+let BAND,PO,PG,PT,PB,SPH,BOX,CYL,CONE,MATKA,BIGPOT,SMALLPOT,SURAHI,BOTTLE,POT,RING,BOWL,TERR,TREES,GRASS1,GRASS2,QUAD,ptBuf,VP,camE,env,cF,cR,cU,cAs,cTan,T=0;
+const PD=new Float32Array(7*6000);let pn=0;const LBS=[],GQ=[],HQ=[];
+function initGL(){
+ PO=prog(VS_OBJ,FS_OBJ);PG=prog(VS_OBJ,FS_GL);PT=prog(VS_PT,FS_PT);PB=prog(VS_BG,FS_BG);
+ let m=MB();const W=[1,1,1,0],N=40,K=24,sp=(i,j)=>{const th=i/K*Math.PI,ph=j/N*6.2832;return[Math.sin(th)*Math.sin(ph),Math.cos(th),Math.sin(th)*Math.cos(ph)]};
+ for(let i=0;i<K;i++)for(let j=0;j<N;j++){const a=sp(i,j),b=sp(i+1,j),c=sp(i+1,j+1),d=sp(i,j+1);[a,b,c,a,c,d].forEach(p=>m.v(p,p,W))}SPH=m.done();
+ m=MB();m.box([0,0,0],[1,1,1],W);BOX=m.done();
+ CYL=lathe([[0,0],[1,0],[1,1],[0,1]]);CONE=lathe([[0,0],[1,0],[0,1]],12);
+ MATKA=lathe([[0,0],[.35,0],[.55,.08],[.74,.3],[.78,.5],[.66,.75],[.4,.88],[.32,.95],[.38,1.02],[.3,1.03]]);
+ BIGPOT=lathe([[0,0],[.45,0],[.6,.2],[.69,.6],[.72,.9],[.78,.95],[.74,.97]]);SMALLPOT=lathe([[0,0],[.3,0],[.42,.25],[.46,.6],[.5,.72],[.47,.74]]);
+ SURAHI=lathe([[0,0],[.3,0],[.42,.06],[.55,.25],[.58,.42],[.45,.62],[.2,.72],[.14,1.05],[.21,1.15],[.13,1.16]]);
+ BOTTLE=lathe([[0,0],[.3,0],[.32,.03],[.32,.7],[.26,.82],[.12,.93],[.1,1.05],[.1,1.1]]);
+ POT=lathe([[.47,.03],[.47,.6],[.5,.6],[.5,0],[0,0]]);RING=lathe([[.72,0],[.5,0]]);BAND=lathe([[1,0],[1,1]]);BOWL=lathe([[0,0],[.85,0],[1,.15],[1,1]]);
+ let sd=11;const R=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ m=MB();const GX=80,GZ=60,TP=(i,j)=>{const x=-5+i/GX*10,z=-4+j/GZ*8;return[x,WH(x,z),z]},dn=p=>[p[0],-1.5,p[2]];
+ for(let i=0;i<GX;i++)for(let j=0;j<GZ;j++)m.quad(TP(i,j),TP(i,j+1),TP(i+1,j+1),TP(i+1,j),W);
+ for(let i=0;i<GX;i++){let a=TP(i,GZ),b=TP(i+1,GZ);m.quad(a,dn(a),dn(b),b,W);a=TP(i+1,0);b=TP(i,0);m.quad(a,dn(a),dn(b),b,W)}
+ for(let j=0;j<GZ;j++){let a=TP(0,j),b=TP(0,j+1);m.quad(a,dn(a),dn(b),b,W);a=TP(GX,j+1);b=TP(GX,j);m.quad(a,dn(a),dn(b),b,W)}TERR=m.done();
+ m=MB();for(let i=0,k=0;i<900&&k<110;i++){const x=-1.4+R()*6,z=-3.6+R()*7.2,y=WH(x,z);if(y<.15||y>.85)continue;k++;const s=.7+R()*.6;m.box([x,y+.06*s,z],[.04*s,.14*s,.04*s],[.36,.22,.1,0]);m.cone([x,y+.1*s,z],.12*s,.34*s,[.06,.3+R()*.15,.1,0],7)}TREES=m.done();
+ m=MB();for(let i=0;i<300;i++)m.cone([-1.4+(R()-.5)*2.1,.05,(R()-.5)*1.9],.035,.1+R()*.14,[.12+R()*.15,.42+R()*.22,.1,0],4);GRASS1=m.done();
+ m=MB();for(let i=0;i<22;i++)for(let j=0;j<20;j++)m.cone([1.4-1.05+i*.1,.04,-.95+j*.1],.04,.11,[.12,.9,.3,0],4);GRASS2=m.done();
+ QUAD=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,0,3,-1,0,-1,3,0]),gl.STATIC_DRAW);
+ ptBuf=gl.createBuffer();gl.enableVertexAttribArray(0)}
+function bindMesh(p,m){gl.bindBuffer(gl.ARRAY_BUFFER,m.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,40,0);
+ if(p.n){gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,40,12)}else gl.disableVertexAttribArray(1);
+ if(p.c){gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,40,24)}else gl.disableVertexAttribArray(2)}
+const IN={sun:norm([.4,.85,.5]),amb:.5,fogD:0,fog:[.85,.93,1],gr:[.8,.86,.82],grey:0},OUT={sun:norm([.45,.7,.55]),amb:.45,fogD:.018,fog:[.8,.9,.98],gr:[.6,.77,.55],grey:0};
+function begin(eye,tgt,e){env=Object.assign({},IN,e||{});
+ cAs=cv.width/cv.height;const k=Math.max(1,1.6/cAs),c=Math.cos(yaw),s=Math.sin(yaw),d=mulS(sub(eye,tgt),k);
+ camE=[tgt[0]+d[0]*c+d[2]*s,tgt[1]+d[1],tgt[2]-d[0]*s+d[2]*c];const fov=.8;cTan=Math.tan(fov/2);
+ VP=M4.mul(M4.persp(fov,cAs,.05,300),M4.look(camE,tgt,[0,1,0]));cF=norm(sub(tgt,camE));cR=norm(cross(cF,[0,1,0]));cU=cross(cR,cF);
+ gl.viewport(0,0,cv.width,cv.height);gl.clear(gl.DEPTH_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);
+ gl.useProgram(PB);gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.disableVertexAttribArray(1);gl.disableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+ set(PB,{uF:cF,uR:cR,uU:cU,uSun:env.sun,uAs:cAs,uTan:cTan,uT:T,uGrey:env.grey,uGr:env.gr});gl.drawArrays(gl.TRIANGLES,0,3);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
+function draw(mesh,M,tint,mode,o){gl.useProgram(PO);bindMesh(PO,mesh);set(PO,Object.assign({uVP:VP,uM:M,uSun:env.sun,uCam:camE,uFog:env.fog,uFogD:env.fogD,uAmb:env.amb,uTint:tint||[1,1,1,0],uMode:mode||0,uSnow:1.35,uSpec:.15,uT:T},o||{}));gl.drawArrays(gl.TRIANGLES,0,mesh.n)}
+function shells(Q,addv){if(!Q.length)return;gl.useProgram(PG);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,addv?gl.ONE:gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+ for(const[mesh,M,col,pw,A,B,inv]of Q){bindMesh(PG,mesh);set(PG,{uVP:VP,uM:M,uCam:camE,uCol:col,uPow:pw,uA:A,uB:B||0,uInv:inv||0});gl.drawArrays(gl.TRIANGLES,0,mesh.n)}
+ gl.depthMask(true);gl.disable(gl.BLEND);Q.length=0}
+function drawPts(){if(!pn)return;gl.useProgram(PT);gl.bindBuffer(gl.ARRAY_BUFFER,ptBuf);gl.bufferData(gl.ARRAY_BUFFER,PD.subarray(0,pn*7),gl.DYNAMIC_DRAW);
+ gl.disableVertexAttribArray(1);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,28,0);gl.vertexAttribPointer(2,4,gl.FLOAT,false,28,12);
+ set(PT,{uVP:VP,uScale:cv.height*1.15});gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,pn);gl.depthMask(true);gl.disable(gl.BLEND)}
+function P(x,y,z,r,g,b,s){if(pn>=6000)return;PD.set([x,y,z,r,g,b,s],pn*7);pn++}
+function LB(t,p,c){LBS.push([t,p,c||''])}
+function mascot(p){const b=Math.sin(T*2.2)*.06;MP=[p[0],p[1]+b,p[2]];LB('💧',MP,'mascot'+(performance.now()-happyT<900?' happy':''))}
+
+/* ---------- reusable props ---------- */
+const WATER=[.3,.66,1,.06];
+function table(){draw(BOX,M4.trs([0,-.09,0],[7.4,.18,4.6]),[.72,.5,.3,0]);draw(BOX,M4.trs([0,-.2,0],[7.5,.06,4.7]),[.55,.36,.2,0])}
+function lawn(){draw(BOX,M4.trs([0,-.1,0],[18,.2,13]),[.45,.72,.32,0])}
+function cup(pos,r,h,lvl,wc){if(lvl>.005)draw(CYL,M4.trs([pos[0],pos[1]+.01,pos[2]],[r*.92,h*lvl,r*.92]),wc||WATER,2);GQ.push([CYL,M4.trs(pos,[r,h,r]),[.82,.93,1],2.2,.75,.07])}
+function ice(pos,s,ry){draw(BOX,M4.trs(pos,s,ry||0),[.82,.94,1,.3],0,{uSpec:1.3});GQ.push([BOX,M4.trs(pos,s*1.05,ry||0),[.85,.95,1],1.4,.6,.12])}
+function steel(mesh,M){draw(mesh,M,[.72,.75,.8,0],0,{uSpec:1.6})}
+function sunBall(pos,r){draw(SPH,M4.trs(pos,r),[1,.86,.45,2.3]);HQ.push([SPH,M4.trs(pos,r*2.8),[1,.75,.3],2,.9,0,1])}
+function cloud(c,s,g){const col=g?[.62,.66,.74,.15]:[1,1,1,.4];[[0,0,0,1],[.8,-.1,.1,.75],[-.8,-.1,0,.8],[.35,.35,-.1,.75],[-.35,.3,.15,.7],[0,-.15,.5,.7]].forEach(o=>draw(SPH,M4.trs([c[0]+o[0]*s,c[1]+o[1]*s,c[2]+o[2]*s],[o[3]*s,o[3]*s*.8,o[3]*s]),col,0))}
+function cloth(pos,col,wet,sw){const k=.55+.45*(1-wet);draw(BOX,M4.trs(pos,[.6,.75,.03],sw||0),[col[0]*k,col[1]*k,col[2]*k,0])}
+function tree(pos,s){draw(CYL,M4.trs(pos,[.1*s,1.1*s,.1*s]),[.45,.3,.16,0]);[[0,1.3,0,.6],[.35,1.1,.1,.45],[-.35,1.1,-.1,.45],[0,1.6,0,.45]].forEach(o=>draw(SPH,M4.trs([pos[0]+o[0]*s,pos[1]+o[1]*s,pos[2]+o[2]*s],o[3]*s),[.18,.5,.2,0]))}
+function vapour(cx,cy,cz,rad,n,sp,ht,seed){for(let i=0;i<n;i++){const u=(T*sp+hsh(i,seed||1))%1;P(cx+(hsh(i,2)-.5)*rad*2+Math.sin(T+i)*.04,cy+u*ht,cz+(hsh(i,3)-.5)*rad*1.6,.5,.75,1,.06*(1-u)+.012)}}
+
+/* ---------- scenes ---------- */
+const MK={Ocean:[-3.5,.12,1.8],Lake:[.2,.12,.7],River:[1.4,.7,.7],Groundwater:[-.6,-.7,4.05],Cloud:[.8,3.35,-.2],Evaporation:[-3.3,1.1,.8],Condensation:[-2.6,2.05,.5],Rain:[1.1,1.6,.4],Snow:[2.75,2.75,-.5]};
+const LBL={ev:['⬆️ Evaporation','Evaporation'],co:['☁️ Condensation','Condensation'],cl:['☁️ Cloud','Cloud'],ra:['🌧️ Rain','Rain'],sn:['❄️ Snow','Snow'],ri:['🏞️ River','River'],la:['💧 Lake','Lake'],oc:['🌊 Ocean','Ocean'],gw:['💧 Groundwater','Groundwater']};
+const RIVER=[[2.3,-.2],[1.6,.4],[.9,.6],[.2,.5],[-.6,.8],[-1.5,1.1],[-2.3,1.3]];
+const SCN={
+cycle(p,t){const a=p.hub?t*.06:0,R=8.4;begin([Math.sin(a)*R,3.4,Math.cos(a)*R],[0,.6,0],Object.assign({},OUT,{fogD:.012}));
+ sunBall([-9,9,-14],1.6);draw(TERR,M4.trs([0,0,0],1),null,1);draw(TREES,M4.trs([0,0,0],1));
+ draw(BOX,M4.trs([0,-.45,0],[9.98,.9,7.98]),[.12,.45,.78,.04],2);
+ for(let i=0;i<70;i++){const u=(t*.18+hsh(i,1))%1;P(-4.2+hsh(i,2)*2.2,u*2.2,-1.5+hsh(i,3)*3.5,.55,.8,1,.07*(1-u*.6))}
+ for(let i=0;i<14;i++){const u=(t*.16+hsh(i,4))%1;P(-.1+hsh(i,5)*.6,u*1.6,.3+hsh(i,6)*.5,.55,.8,1,.05)}
+ cloud([-2.7+Math.sin(t*.1)*.2,2.55,0],.55);cloud([.9+Math.sin(t*.13)*.25,2.85,-.2],.6,1);cloud([2.8,3.25,-.7],.55,1);
+ for(let i=0;i<90;i++){const u=(t*.9+hsh(i,7))%1,x=.3+hsh(i,8)*1.3,z=-.6+hsh(i,9)*.9,y0=2.5,y1=Math.max(0,WH(x,z));P(x,y0-(y0-y1)*u,z,.35,.6,1,.035)}
+ for(let i=0;i<60;i++){const u=(t*.25+hsh(i,10))%1,x=2.3+hsh(i,11)*1+Math.sin(t+i)*.08,z=-1.1+hsh(i,12)*.9,y0=2.9,y1=WH(x,z);P(x,y0-(y0-y1)*u,z,1,1,1,.05)}
+ for(let i=0;i<70;i++){const u=(t*.12+i/70)%1,f=u*(RIVER.length-1),k=Math.floor(f),g=f-k,a=RIVER[k],b=RIVER[k+1],x=a[0]+(b[0]-a[0])*g,z=a[1]+(b[1]-a[1])*g;P(x,Math.max(.03,WH(x,z)+.04),z,.15,.5,1,.07)}
+ for(let i=0;i<40;i++){const u=(t*.08+hsh(i,13))%1;P(2.5-u*6.5,-.35-hsh(i,14)*.55,4.03,.2,.55,1,.07)}
+ if(p.markers)Object.keys(MK).forEach((k,i)=>LB(`${i+1} ${p.markers[i]||'❓'}`,MK[k],p.markers[i]?'mk done':'mk'));
+ (p.lbl||[]).forEach(k=>{if(k=='cool')LB('🥶 Cooler higher up',[-2.2,3.3,0],'sm');else LB(LBL[k][0],MK[LBL[k][1]])});
+ mascot([-.8,2.6,1.2])},
+ice(p,t){begin([0,1.55,3.5],[0,.5,0]);table();let m=loop(t,.09);if(p.rev)m=1-m;
+ if(p.lemon){[-.75,.75].forEach((x,j)=>{cup([x,0,0],.42,1,.62,[1,.92,.55,.12]);ice([x-.1,.55,.05],.24,t*.2+j);ice([x+.12,.58,-.08],.22,j*2);draw(SPH,M4.trs([x+.33,.98,0],[.2,.2,.04]),[1,.86,.2,.15])});
+  LB('🍋 Shikanji with ice 🧊',[0,1.45,0]);LB('🤨 Thirav: different substances?',[-1.5,.3,0],'sm');LB('🙂 Aavi: the same substance!',[1.5,.3,0],'sm');mascot([-1.8,1.1,-.2]);return}
+ const r=.5,h=1,lvl=.04+.42*m,s=.62*(1-m*.92)+.03,y=Math.max(s/2+.01,h*lvl-s*.3);
+ cup([0,0,0],r,h,lvl);if(s>.06)ice([0,y,0],s,t*.15);
+ if(p.rev){draw(BOX,M4.trs([1.9,.7,-.6],[1.1,1.4,1]),[.92,.96,1,.05]);for(let i=0;i<18;i++)P(-.6+hsh(i,2)*1.2,.2+hsh(i,3)*1,-.3+hsh(i,4)*.6,.85,.95,1,.03+.02*Math.sin(t*3+i));LB('❄️ Freezer',[1.9,1.5,-.6])}
+ LB('🧊 Ice (solid)',[0,y+s/2+.15,0]);LB('💧 Water (liquid)',[r+.5,.15,0]);LB(p.rev?'❄️ Cold: water → ice':'☀️ On the table: ice → water',[0,1.4,0],'sm');mascot([-1.4,1,0])},
+plate(p,t){begin([0,1.9,2.9],[0,0,0]);table();steel(CYL,M4.trs([0,0,0],[1.15,.05,1.15]));const m=loop(t,.08),rr=.55*(1-m)+.001;
+ if(m<1){draw(CYL,M4.trs([0,.05,0],[rr,.014,rr*.85]),WATER,2);vapour(0,.08,0,rr*.7,40,.3,1.4)}
+ LB('🍽️ Steel plate',[1.35,.1,.5],'sm');LB(m<1?'💨 Water → water vapour (invisible)':'✨ All the water is gone!',[0,1.45,0]);LB('⬇️ Underside stays dry ✅',[0,-.25,1.25],'sm');mascot([-1.5,.9,0])},
+pan(p,t){begin([0,1.7,3],[0,.35,0]);table();draw(BOX,M4.trs([0,.15,0],[2.1,.3,1.7]),[.22,.22,.25,0]);
+ for(let i=0;i<10;i++){const a=i/10*6.283;draw(CONE,M4.trs([Math.cos(a)*.4,.3,Math.sin(a)*.4],[.07,.16+.06*Math.sin(t*14+i),.07]),[1,.5,.1,1.6])}
+ draw(CYL,M4.trs([0,.42,0],[1,.05,1]),[.13,.13,.14,0],0,{uSpec:.7});HQ.push([CYL,M4.trs([0,.36,0],[.9,.06,.9]),[1,.35,.05],1.5,.5,0,1]);
+ for(let i=0;i<12;i++){const u=(t*.55+i/12)%1,x=(hsh(i,1)-.5)*1.2,z=(hsh(i,2)-.5)*1.1;if(u<.35)P(x,1.5-u/.35*1.03,z,.3,.6,1,.06);else{const v=(u-.35)/.65;for(let k=0;k<4;k++)P(x+(hsh(i,k)-.5)*.3*v,.5+v*1.3+k*.05,z+(hsh(k,i)-.5)*.3*v,.95,.97,1,.12+.22*v)}}
+ LB('🥞 Hot dosa tawa',[1.4,.45,.4]);LB('💦 Sprinkled water',[-1.1,1.4,0],'sm');LB('♨️ Steam: water vapour + tiny droplets',[0,2,0]);mascot([-1.7,.9,0])},
+examples(p,t){begin([0,2.2,5.6],[0,.8,0],OUT);lawn();sunBall([-5,6,-8],.8);const m=loop(t,.07);
+ draw(BOX,M4.trs([-2.5,1,-.5],[.08,2,.08]),[.5,.35,.2,0]);draw(BOX,M4.trs([.1,1,-.5],[.08,2,.08]),[.5,.35,.2,0]);draw(BOX,M4.trs([-1.2,1.96,-.5],[2.6,.02,.02]),[.9,.9,.9,0]);
+ [[-2,[.9,.25,.25]],[-1.25,[.25,.45,.95]],[-.5,[1,.8,.2]]].forEach(([x,c],i)=>{cloth([x,1.55,-.5],c,1-m,Math.sin(t*1.5+i)*.08);if(m<1)vapour(x,1.6,-.4,.25,10,.35,1.2,i+3)});
+ draw(BOX,M4.trs([1.9,.02,.7],[2,.04,1.5]),[.86,.86,.84,0]);if(m<1){draw(CYL,M4.trs([1.9,.045,.7],[.75*(1-m),.01,.5*(1-m)]),WATER,2);vapour(1.9,.08,.7,.5*(1-m),14,.3,1,9)}
+ LB('👕 Wet clothes dry',[-1.25,2.45,-.5]);LB('🧹 Mopped floor dries',[1.9,.35,1.45]);LB('😓 Sweat dries on skin',[2.5,1.7,-.6],'sm');LB('🧴 Sanitiser vanishes',[1.2,2.4,-.6],'sm');mascot([.9,1.4,1])},
+puddle(p,t){begin([0,1.9,4.6],[0,-.1,.3],OUT);draw(BOX,M4.trs([0,-.6,0],[6,1.2,3.6]),[.5,.34,.2,0]);draw(BOX,M4.trs([0,-.01,0],[6.02,.04,3.62]),[.42,.62,.3,0]);
+ const m=loop(t,.06);[[-1.4,.4,.7],[.4,.9,.55],[1.6,-.2,.45]].forEach(([x,z,r],i)=>{const k=1-m;if(k>.02){draw(CYL,M4.trs([x,.012,z],[r*k,.012,r*.7*k]),WATER,2);vapour(x,.05,z,r*k*.6,12,.3,1.3,i+4);for(let j=0;j<8;j++){const u=(t*.2+hsh(j,i+9))%1;P(x+(hsh(j,i)-.5)*r,-.05-u*.9,1.82,.3,.6,1,.06)}}});
+ LB('🌧️ Puddles after rain',[0,.4,-1.2],'sm');LB('💨 Evaporation: up into the air',[-.4,1.4,.6]);LB('⬇️ Seeping into the soil',[.4,-.75,1.9]);LB(m>=1?'✨ Dry by evening!':'🤔 Both happen!',[1.9,1,.2],'sm');mascot([-2.4,1,.6])},
+tumbler(p,t){begin([0,1.7,3.6],[0,.65,0]);table();const b=p.scale?.28:0,r=.5,h=1.2,lvl=.62,m=loop(t,.08,1.15);
+ if(p.scale){draw(BOX,M4.trs([0,.14,0],[1.6,.28,1.4]),[.26,.28,.32,0]);draw(BOX,M4.trs([0,.15,.705],[.8,.16,.01]),[.08,.22,.14,.6]);LB(`⚖️ ${(312+3.6*m).toFixed(1)} g ⬆️`,[0,.15,.76],'big')}
+ cup([0,b,0],r,h,lvl);[[.12,.1,0],[-.15,-.1,1],[.05,-.2,2]].forEach(([x,z,k])=>ice([x,b+h*lvl-.06+.02*Math.sin(t+k),z],.25,k+t*.1));
+ if(p.lid)steel(CYL,M4.trs([0,b+h,0],[.6,.03,.6]));
+ if(p.mark){draw(BAND,M4.trs([0,b+h*lvl-.015,0],[r*1.02,.03,r*1.02]),[.85,.15,.15,.25]);LB('📏 Water level stays the same',[-1.25,b+h*lvl,0])}
+ for(let i=0;i<160;i++){const st=hsh(i,5)*.9;if(st<m){const a=hsh(i,6)*6.283,g=Math.min(1,(m-st)*3),yy=b+.08+hsh(i,7)*(h*lvl-.05)-(g>.9?(m-st-.3)*.6:0);if(yy>b)P(Math.cos(a)*r*1.035,yy,Math.sin(a)*r*1.035,.55,.82,1,.025+.045*g)}}
+ for(let i=0;i<34;i++){const u=(t*.22+hsh(i,8))%1,a=hsh(i,9)*6.283,d=r+.05+1.3*(1-u);P(Math.cos(a)*d,b+.25+hsh(i,10)*.8,Math.sin(a)*d,.75,.88,1,.035)}
+ LB('🌫️ Water vapour in the air',[1.45,b+1.45,0],'sm');LB('💧 Droplets on the outside',[r+.55,b+.35,.3]);LB('🧊 Ice-cold water',[0,b+h+.25,0],'sm');mascot([-1.6,1.3,0])},
+dew(p,t){begin([0,1.7,3.8],[0,.6,0],Object.assign({},OUT,{sun:norm([.9,.35,.3])}));lawn();
+ const x0=-1.1;draw(CYL,M4.trs([x0,0,0],[.03,1,.03]),[.2,.5,.15,0]);
+ for(let i=0;i<6;i++){const a=i*2.1,y=.25+i*.12;draw(SPH,M4.trs([x0+Math.cos(a)*.22,y,Math.sin(a)*.22],[.24,.035,.1],-a),[.15,.48,.18,0]);for(let k=0;k<4;k++)P(x0+Math.cos(a)*(.1+k*.08),y+.035,Math.sin(a)*(.1+k*.08)+hsh(i,k)*.04,.85,.95,1,.03+.012*Math.sin(t*3+i+k))}
+ for(let i=0;i<5;i++){const a=i*1.2566;draw(SPH,M4.trs([x0+Math.cos(a)*.12,1.02,Math.sin(a)*.12],[.11,.03,.11]),[.75,.35,.85,.1])}draw(SPH,M4.trs([x0,1.04,0],.05),[1,.85,.2,.2]);
+ draw(BOX,M4.trs([1.2,.12,0],[1.2,.24,1]),[.25,.25,.28,0]);for(let i=0;i<6;i++){const a=i/6*6.283;draw(CONE,M4.trs([1.2+Math.cos(a)*.25,.24,Math.sin(a)*.25],[.05,.12+.04*Math.sin(t*12+i),.05]),[1,.5,.1,1.6])}
+ steel(POT,M4.trs([1.2,.26,0],1));draw(CYL,M4.trs([1.2,.3,0],[.46,.3,.46]),WATER,2);steel(CYL,M4.trs([1.2,.88,0],[.58,.03,.58]));
+ for(let i=0;i<20;i++){const u=(t*.4+hsh(i,3))%1;P(1.2+(hsh(i,1)-.5)*.7,.62+u*.24,(hsh(i,2)-.5)*.6,.9,.95,1,.07)}
+ for(let i=0;i<18;i++){const a=hsh(i,4)*6.283,rr=hsh(i,5)*.42,d=(t*.3+hsh(i,6))%1;P(1.2+Math.cos(a)*rr,.86-(d>.8?(d-.8)*2:0),Math.sin(a)*rr,.4,.7,1,.04)}
+ LB('🌸 Dew drops in the morning',[x0,1.4,0]);LB('🍲 Boiling water + steel plate lid',[1.2,1.3,0]);LB('💧 Drops under the plate',[1.2,.7,.75],'sm');mascot([0,1.5,.3])},
+states(p,t){const f=p.f;if(f==null)begin([0,2.3,5.4],[0,.45,0]);else{const fx=[-2.2,0,2.2][f];begin([fx,1.55,3],[fx,.35,0])}table();
+ GQ.push([BOX,M4.trs([-2.65,.25,0],[.75,.5,.75]),[.82,.93,1],2,.7,.06]);ice([-2.65,.19,0],.36,.3);GQ.push([BOWL,M4.trs([-1.75,0,0],[.42,.45,.42]),[.82,.93,1],2,.7,.06]);ice([-1.75,.19,0],.36,.3+t*.4);
+ draw(BOX,M4.trs([-.45,.17,0],[.68,.32,.68]),WATER,2);GQ.push([BOX,M4.trs([-.45,.25,0],[.74,.5,.74]),[.82,.93,1],2,.7,.06]);draw(CYL,M4.trs([.45,0,0],[.36,.32,.36]),WATER,2);GQ.push([CYL,M4.trs([.45,0,0],[.4,.5,.4]),[.82,.93,1],2,.7,.06]);
+ for(let i=0;i<14;i++){const u=(t*.8+i/14)%1;P(.45+Math.sin(t*3+i)*.02,1.3-u*1,0,.3,.62,1,.06)}const sp=.25+.25*((t*.2)%1);draw(CYL,M4.trs([0,.003,.95],[sp*1.6,.008,sp*.7]),WATER,2);
+ GQ.push([BOX,M4.trs([2.2,.55,0],[1.1,1.1,1.1]),[.82,.93,1],2,.7,.05]);for(let i=0;i<60;i++){const tri=v=>Math.abs(((v%2)+2)%2-1);P(2.2+(tri(t*(.15+hsh(i,1)*.2)+hsh(i,2)*2)-.5)*.95,.06+tri(t*(.12+hsh(i,3)*.2)+hsh(i,4)*2)*.95,(tri(t*(.13+hsh(i,5)*.2)+hsh(i,6)*2)-.5)*.95,.45,.72,1,.05)}
+ LB('🧊 Solid: keeps its shape',[-2.2,.85,0]);LB('💧 Liquid: flows, takes the container shape',[0,1.45,0]);LB('💦 spreads on a surface',[0,.1,1.45],'sm');LB('💨 Gas: spreads everywhere',[2.2,1.35,0]);mascot([0,1.9,-1])},
+heat(p,t){const Tc=p.T!=null?p.T:Math.round(45+65*Math.sin(t*.35));begin([.3,1.75,3.7],[.4,.5,0]);table();
+ draw(BOX,M4.trs([0,.15,0],[1.5,.3,1.3]),[.24,.24,.27,0]);if(Tc>25)for(let i=0;i<9;i++){const a=i/9*6.283;draw(CONE,M4.trs([Math.cos(a)*.3,.3,Math.sin(a)*.3],[.06,(.1+.08*Math.min(1,(Tc-25)/60))+.04*Math.sin(t*14+i),.06]),[1,.5,.1,1.6])}
+ steel(POT,M4.trs([0,.32,0],1));
+ if(Tc<0){ice([0,.53,0],.6,.2);for(let i=0;i<30;i++)P((hsh(i,1)-.5)*1.4,.4+hsh(i,2)*.9,(hsh(i,3)-.5)*1.2,.85,.95,1,.03+.015*Math.sin(t*4+i));LB('❄️ Freezing cold',[-1,1.25,0],'sm')}
+ else{draw(CYL,M4.trs([0,.35,0],[.46,.4,.46]),WATER,2);if(Tc>=100){for(let i=0;i<30;i++){const u=(t*.6+hsh(i,4))%1;P((hsh(i,5)-.5)*.7,.4+u*.35,(hsh(i,6)-.5)*.7,.85,.95,1,.04)}for(let i=0;i<40;i++){const u=(t*.3+hsh(i,7))%1;P((hsh(i,8)-.5)*.6*(1+u),.8+u*1.4,(hsh(i,9)-.5)*.5*(1+u),.95,.97,1,.1+.2*u)}}}
+ LB(Tc<0?'🧊 Solid (ice)':Tc<100?'💧 Liquid (water)':'💨 Boiling: water → vapour',[0,1.25,0]);LB(`🌡️ ${Tc} °C`,[-1.05,.75,0],'big');
+ if(p.candle){const x=1.7,wh=.62;draw(CYL,M4.trs([x,0,0],[.15,wh,.15]),[.98,.96,.9,.15]);draw(CYL,M4.trs([x,wh,0],[.12,.012,.12]),[1,.92,.6,.4]);draw(CONE,M4.trs([x,wh+.03,0],[.05,.2+.03*Math.sin(t*18),.05]),[1,.65,.15,2.5]);HQ.push([SPH,M4.trs([x,wh+.12,0],.22),[1,.6,.2],2,.7,0,1]);
+  const u=(t*.25)%1;P(x+.15,wh-u*.4,.02,1,.95,.8,.04);LB('🕯️ Wax melts, then sets again',[x,1.15,0],'sm');LB('🥥 Coconut oil sets in winter',[x+.2,.25,.8],'sm')}
+ mascot([-1.6,1.2,0])},
+race(p,t){const md=p.m||'area',m=loop(t,.07,1.25);
+ if(md=='area'){begin([0,1.9,3.5],[0,.1,0]);table();draw(BOWL,M4.trs([-1,0,0],[.22,.14,.22]),[.96,.96,.98,0]);const cl=1-m*.45;draw(CYL,M4.trs([-1,.02,0],[.19,.11*cl,.19]),WATER,2);vapour(-1,.14,0,.12,5,.25,.9,2);
+  steel(CYL,M4.trs([.8,0,0],[.95,.04,.95]));if(m<1){draw(CYL,M4.trs([.8,.04,0],[.85*(1-m)+.02,.012,.85*(1-m)+.02]),WATER,2);vapour(.8,.06,0,.6*(1-m),30,.3,1.2,5)}
+  LB('🧢 Bottle cap: small exposed area 🐢',[-1,.55,.4]);LB(m>=1?'🏁 Plate dried first! 🚀':'🍽️ Plate: large exposed area 🚀',[.8,.5,.9]);LB('⚖️ Same amount of water in both',[0,1.5,0],'sm');mascot([-1.9,1,0])}
+ else if(md=='sun'){begin([0,2.2,5],[0,.4,0],OUT);lawn();sunBall([-4,5.5,-7],.8);tree([1.5,0,-.3],1);draw(CYL,M4.trs([1.4,.002,.2],[1.1,.004,.85]),[.2,.38,.17,0]);
+  [[-1.3,.2,1],[1.3,.4,.42]].forEach(([x,z,k],i)=>{draw(BOWL,M4.trs([x,0,z],[.22,.14,.22]),[.96,.96,.98,0]);const lv=Math.max(0,1-m*k*1.3);if(lv>0){draw(CYL,M4.trs([x,.02,z],[.19,.11*lv,.19]),WATER,2);vapour(x,.15,z,.12,i?4:12,.3,1,i+6)}});
+  LB('☀️ Cap in sunlight: dries faster',[-1.3,.6,.4]);LB('🌳 Cap in shade: dries slower',[1.3,.75,.8]);mascot([-.1,1.5,.5])}
+ else{const hum=md=='humid';begin([0,2.1,5.2],[0,1,0],Object.assign({},OUT,{grey:hum?.28:0}));lawn();if(!hum)sunBall([-4,5.5,-7],.8);
+  [-1.6,1.6].forEach(x=>{draw(BOX,M4.trs([x-.7,1,-.3],[.06,2,.06]),[.5,.35,.2,0]);draw(BOX,M4.trs([x+.7,1,-.3],[.06,2,.06]),[.5,.35,.2,0]);draw(BOX,M4.trs([x,1.96,-.3],[1.45,.02,.02]),[.9,.9,.9,0])});
+  const wl=Math.min(1,m*1.6),wr=Math.min(1,m*.7);cloth([-1.6,1.5,-.3],[.3,.5,.95],1-wl,hum?0:Math.sin(t*6)*.18);cloth([1.6,1.5,-.3],[.95,.4,.3],1-wr,0);
+  if(wl<1)vapour(-1.6,1.5,-.2,.3,hum?12:18,.4,1.1,3);if(wr<1)vapour(1.6,1.5,-.2,.3,5,.25,.8,4);
+  if(hum){cloud([1.6,3.2,-.6],.7,1);for(let i=0;i<80;i++){const u=(t*1.1+hsh(i,7))%1;P(.6+hsh(i,8)*2,3-u*3,-.9+hsh(i,9)*1.4,.4,.6,1,.03)}
+   LB('☀️ Dry, sunny air: fast',[-1.6,2.35,-.3]);LB('🌧️ Humid, rainy air: slow',[1.6,2.35,-.3])}
+  else{draw(CYL,M4.trs([-3.1,0,-.3],[.04,1.2,.04]),[.3,.3,.35,0]);draw(BOX,M4.trs([-3.1,1.25,-.3],[.3,.25,.25]),[.3,.6,.9,0]);
+   for(let k=0;k<3;k++){const a=t*14+k*2.094,yv=[0,Math.cos(a),Math.sin(a)];draw(BOX,M4.basis(add([-2.92,1.25,-.3],mulS(yv,.28)),[1,0,0],yv,cross([1,0,0],yv),[.02,.56,.14]),[.95,.95,.98,0])}
+   for(let i=0;i<40;i++){const u=(t*.9+hsh(i,7))%1;P(-2.8+u*1.9,.9+hsh(i,8)*1,-.7+hsh(i,9)*.8,.7,.85,1,.025)}
+   LB('🌀 Moving air: dries faster',[-1.8,2.35,-.3]);LB('😶 Still air: dries slower',[1.6,2.35,-.3])}
+  mascot([0,1.6,.6])}},
+matka(p,t){const v=p.v||'matka';begin([0,1.7,3.9],[0,.65,0]);table();
+ if(v=='matka'){draw(MATKA,M4.trs([-1,0,0],1),[.76,.38,.2,0]);steel(CYL,M4.trs([1.1,0,0],[.5,.95,.5]));steel(CYL,M4.trs([1.1,.95,0],[.53,.03,.53]));
+  for(let i=0;i<70;i++){const u=(t*.35+hsh(i,1))%1,a=hsh(i,2)*6.283,y=.15+hsh(i,3)*.7,r=y<.5?.55+.45*y:.78-(y-.5)*.9;P(-1+Math.cos(a)*(r+.03+u*.25),y+u*.45,Math.sin(a)*(r+.03+u*.25),.45,.72,1,.04*(1-u)+.015)}
+  for(let i=0;i<40;i++){const a=hsh(i,4)*6.283,y=.12+hsh(i,5)*.7,r=y<.5?.55+.45*y:.78-(y-.5)*.9;P(-1+Math.cos(a)*(r+.008),y,Math.sin(a)*(r+.008),.35,.55,.9,.02)}
+  LB('🏺 Matka: water seeps out and evaporates',[-1,1.35,0]);LB('🌡️ Cool water 😎',[-1,.45,.95],'big');LB('🥘 Steel pot: no seeping',[1.1,1.3,0]);LB('🌡️ Not cool 🥵',[1.1,.45,.65],'big');mascot([0,1.5,-.3])}
+ else if(v=='pot'){draw(BIGPOT,M4.trs([0,0,0],1),[.76,.38,.2,0]);draw(SMALLPOT,M4.trs([0,.22,0],1),[.82,.45,.25,0]);draw(RING,M4.trs([0,.9,0],[1.02,1,1.02]),[.62,.48,.3,0]);
+  [[.15,.85,.05,[.9,.15,.1]],[-.15,.86,-.1,[.9,.2,.1]],[0,.84,.18,[.2,.65,.2]],[-.12,.88,.15,[1,.55,.1]]].forEach(([x,y,z,c])=>draw(SPH,M4.trs([x,y,z],.12),[c[0],c[1],c[2],0],0,{uSpec:.6}));
+  const lift=.35+.12*Math.sin(t*.8);draw(BOX,M4.trs([0,.97+lift,0],[1.15,.03,1.15],.3),[.72,.6,.38,0]);draw(CYL,M4.trs([1.75,0,.4],[.42,.05,.42]),[.76,.38,.2,0]);draw(SPH,M4.trs([1.75,.07,.4],.07),[.76,.38,.2,0]);
+  for(let i=0;i<12;i++){const u=(t*.7+i/12)%1;P(-.62+Math.sin(t+i)*.02,1.7-u*.8,.05,.3,.6,1,.05)}vapour(0,.92,0,.55,20,.3,.9,3);
+  for(let i=0;i<40;i++){const u=(t*.35+hsh(i,1))%1,a=hsh(i,2)*6.283,y=.1+hsh(i,3)*.8;P(Math.cos(a)*(.72+u*.25),y+u*.4,Math.sin(a)*(.72+u*.25),.45,.72,1,.035*(1-u)+.01)}
+  LB('Wet jute sack',[0,1.5+lift*.5,0],'sm');LB('🍅🥒 Small pot: fresh vegetables',[.8,1.15,.5],'sm');LB('🏖️ Layer of wet sand',[-1,.95,.6],'sm');LB('Large pot',[.9,.4,.6],'sm');LB('Lid',[1.75,.25,.75],'sm');LB('💧 Pour water into the sand',[-.65,1.9,0],'sm');mascot([-1.7,1.2,0])}
+ else{draw(SURAHI,M4.trs([0,0,0],1.1),[.78,.42,.22,0]);for(let i=0;i<50;i++){const u=(t*.35+hsh(i,1))%1,a=hsh(i,2)*6.283,y=.15+hsh(i,3)*.5,r=.6;P(Math.cos(a)*(r+u*.25),y+u*.45,Math.sin(a)*(r+u*.25),.45,.72,1,.035*(1-u)+.01)}
+  LB('🫙 Surahi: keeps water cold in summer',[0,1.55,0]);mascot([-1.3,1.1,0])}},
+bottle(p,t){begin([0,1.4,3.2],[0,.75,0]);table();const q=Math.max(0,Math.sin(t*5)),s=1-.13*q;
+ draw(CYL,M4.trs([0,.01,0],[.29*s,.3,.29]),WATER,2);GQ.push([BOTTLE,M4.trs([0,0,0],[s,1.4,1]),[.8,.92,1],2,.8,.05]);draw(CYL,M4.trs([0,1.52,0],[.13,.12,.13]),[.85,.2,.2,0]);
+ LB('🤏',[.62*s,.75,0],'big');LB('🤏',[-.62*s,.75,0],'big');
+ if(p.dust){draw(BOX,M4.trs([.08,.32,.05],[.12,.01,.08],.4),[.1,.08,.07,0]);draw(BOX,M4.trs([-.1,.32,-.06],[.08,.01,.06],1),[.12,.1,.08,0]);
+  for(let i=0;i<70;i++){const a=hsh(i,1)*6.283,r=hsh(i,2)*.24;P(Math.cos(a)*r*s+Math.sin(t*.7+i)*.02,.45+hsh(i,3)*.75+Math.sin(t*.5+i)*.03,Math.sin(a)*r,.82,.84,.88,.09+.06*(1-q))}
+  LB('☁️ Haze forms around tiny dust particles!',[0,1.95,0]);LB('⚠️ Handle burning paper carefully',[1.3,.2,.4],'sm')}
+ else LB('😐 Squeeze and release… no cloud yet',[0,1.95,0]);mascot([-1.3,1.1,0])},
+grass(p,t){begin([0,2.1,4.6],[0,.2,0],OUT);lawn();sunBall([-4,5.5,-7],.8);draw(BOX,M4.trs([-1.4,0,0],[2.3,.1,2.1]),[.42,.3,.18,0]);draw(GRASS1,M4.trs([0,0,0],1));draw(BOX,M4.trs([1.4,0,0],[2.3,.08,2.1]),[.15,.8,.3,0]);draw(GRASS2,M4.trs([0,0,0],1));
+ vapour(-1.4,.25,0,.9,40,.25,1.3,2);for(let i=0;i<30;i++){const u=(t*.4+hsh(i,4))%1;P(1.4+(hsh(i,5)-.5)*2+Math.sin(t*4+i)*.05,.15+u*.9,(hsh(i,6)-.5)*1.8,1,.5,.2,.03*(1-u)+.01)}
+ LB('🌱 Natural grass: water evaporates → cool 😎',[-1.4,1.5,0]);LB('🟩 Plastic grass: no water, gets hot 🥵',[1.4,1.5,0]);mascot([0,1.9,1])},
+bike(p,t){begin([0,1.5,3.8],[0,.55,0],OUT);lawn();sunBall([-4,5.5,-7],.8);const u=(t*.15)%1,heat=u<.45?1:Math.max(0,1-(u-.45)*3);
+ draw(BOX,M4.trs([0,.55,0],[1.6,.32,.42]),[.85,.18,.2,0],0,{uSpec:.8});draw(BOX,M4.trs([-.15,.78,0],[.75,.1,.38]),[.12+.5*heat*(.8+.2*Math.sin(t*6)),.08,.06,0]);draw(BOX,M4.trs([.75,1,0],[.06,.6,.06]),[.3,.3,.32,0]);draw(BOX,M4.trs([.75,1.3,0],[.06,.06,.7]),[.2,.2,.22,0]);
+ [-.6,.6].forEach(x=>draw(CYL,M4.basis([x,.28,-.06],[1,0,0],[0,0,1],[0,-1,0],[.28,.12,.28]),[.1,.1,.11,0]));
+ if(heat>.5)for(let i=0;i<20;i++){const v=(t*.5+hsh(i,1))%1;P(-.15+(hsh(i,2)-.5)*.7+Math.sin(t*5+i)*.03,.85+v*.6,(hsh(i,3)-.5)*.3,1,.45,.2,.03*(1-v)+.01)}
+ if(u>.4&&u<.6)for(let i=0;i<20;i++){const v=((u-.4)*5+hsh(i,4))%1;P(-.15+(hsh(i,5)-.5)*.6,1.6-v*.75,(hsh(i,6)-.5)*.3,.3,.6,1,.04)}
+ if(u>.5)vapour(-.15,.85,0,.3,25,.35,1,7);
+ LB(heat>.5?'🛵 Seat is very hot 🔥':u<.62?'💦 Sprinkle water or wipe with a wet cloth':'💨 Water evaporates → seat cools 😎',[-.15,1.75,0]);LB('🌳 Or park in the shade!',[1.5,.35,.6],'sm');mascot([-1.5,1.1,.3])},
+sludge(p,t){begin([0,1.8,4.4],[0,.2,0],OUT);lawn();sunBall([-4,5.5,-7],.8);const m=loop(t,.1,1.2);
+ draw(BOX,M4.trs([-2.4,-.04,0],[.9,.1,4]),[.4,.4,.42,0]);draw(BOX,M4.trs([-2.4,.015,0],[.6,.02,3.9]),[.28,.33,.22,.02],2);
+ draw(SPH,M4.trs([0,0,.4],[1*(1-.15*m),.5*(1-.3*m),.8]),[.28+.22*m,.2+.15*m,.12+.08*m,0]);if(m<1)vapour(0,.35,.4,.6,30,.3,1.1,3);
+ LB('🪣 Sludge heap from the drain',[0,.9,.4]);LB('Drain',[-2.4,.3,1.2],'sm');LB(m<1?'💨 Water evaporates for 3–4 days':'✅ Dry, light and safe to carry',[0,1.75,0]);LB('🚚 Lighter load = cheaper transport',[2,.4,.9],'sm');mascot([-2,1,.5])},
+paint(p,t){begin([0,1.9,2.9],[0,0,0]);table();draw(BOX,M4.trs([0,.006,0],[2.2,.01,1.5]),[.98,.98,.96,0]);const m=loop(t,.12,1.2);
+ if(!p.pen){[[-.6,-.2,[.2,.5,1]],[0,.25,[1,.3,.3]],[.6,-.1,[1,.8,.2]]].forEach(([x,z,c])=>{draw(CYL,M4.trs([x,.012,z],[.32,.004,.18]),[c[0],c[1],c[2],.1],m<1?2:0)});if(m<1)vapour(0,.05,0,.7,30,.3,1.2,4);
+  LB(m<1?'🎨 Wet water colours':'✅ Dry painting',[0,.6,0]);LB('💨 Water evaporates so the paint dries',[0,1.3,0],'sm')}
+ else{draw(CYL,M4.basis([-.6,.06,.3],[0,-1,0],[1,0,0],[0,0,1],[.05,1,.05]),[.15,.2,.5,0],0,{uSpec:1});draw(BOX,M4.trs([-.1,.012,-.1],[1.2*Math.min(1,m*2),.004,.03]),[.1,.15,.6,.1],m<.6?2:0);if(m<1)vapour(-.1,.03,-.1,.5,14,.3,.9,5);
+  LB('🖋️ Ink pen: wet ink must dry',[0,.6,0]);LB('✏️ Pencil: no drying needed',[0,1.3,0],'sm')}
+ mascot([-1.4,.8,0])}
+};
+/* ---------- frame + overlay ---------- */
+const lbBox=$('#labels'),lbEl=[];let first=true;
+function frame(ms){requestAnimationFrame(frame);const w=cv.clientWidth,hh=cv.clientHeight;if(!w||document.hidden)return;const dpr=Math.min(devicePixelRatio||1,1.5),W=Math.round(w*dpr),H=Math.round(hh*dpr);
+ if(cv.width!=W||cv.height!=H){cv.width=W;cv.height=H}
+ T=ms/1000;pn=0;LBS.length=0;MP=null;(SCN[SC[0]]||SCN.cycle)(SC[1]||{},T);
+ if(MP&&performance.now()-happyT<900){const k=(performance.now()-happyT)/900;for(let i=0;i<30;i++){const a=i*.21,r=.15+k*.6;P(MP[0]+Math.cos(a)*r,MP[1]+Math.sin(a*1.3)*r*.8,MP[2]+Math.sin(a)*r*.4,1,.85-.4*(i%2),.3+.6*(i%3==0),.05*(1-k)+.01)}}
+ shells(GQ,0);shells(HQ,1);drawPts();
+ let k=0;for(const[tx,p,c]of LBS){const x=VP[0]*p[0]+VP[4]*p[1]+VP[8]*p[2]+VP[12],y=VP[1]*p[0]+VP[5]*p[1]+VP[9]*p[2]+VP[13],q=VP[3]*p[0]+VP[7]*p[1]+VP[11]*p[2]+VP[15];if(q<=0)continue;
+  let e=lbEl[k];if(!e){e=lbEl[k]=document.createElement('div');lbBox.appendChild(e)}k++;if(e._t!==tx){e.textContent=tx;e._t=tx}const cl='lb '+c;if(e.className!==cl)e.className=cl;e.hidden=false;
+  e.style.left=Math.max(6,Math.min(94,(x/q*.5+.5)*100))+'%';e.style.top=Math.max(6,Math.min(94,(1-(y/q*.5+.5))*100))+'%'}
+ for(;k<lbEl.length;k++)lbEl[k].hidden=true;
+ if(first){first=false;setTimeout(()=>$('#load').classList.add('gone'),300)}}
+if(gl){initGL();let px=null;const v=$('#view');v.addEventListener('pointerdown',e=>{px=e.clientX});addEventListener('pointerup',()=>px=null);
+ v.addEventListener('pointermove',e=>{if(px!=null){yaw+=(e.clientX-px)*.008;px=e.clientX}});requestAnimationFrame(frame)}
+else{$('#nogl').hidden=false;$('#load').classList.add('gone')}
+function hud(s){$('#hud').textContent=s}
+function go(k,p,title){SC=[k,p||{}];yaw=0;if(title)hud(title)}
+
+/* ---------- UI, games and quizzes ---------- */
+let cur=null;
+const BOSS={id:'boss',ic:'🏆',col:'#ffb627',t:'Water Champion',s:'Boss round · 15 mixed questions · 3 hearts',tip:"The final challenge! Show what you know about water. 💪"};
+const EXZ={id:'ex',ic:'📝',col:'#2fbf71',t:'Exercise Zone',s:'Let us enhance our learning · all 10 questions',tip:"Every textbook exercise question, with a model answer after you try. 📘"};
+const ALL=[...LV,EXZ,BOSS];
+const starsFor=id=>save.stars[id]||0;
+function drawHome(){let tot=0;const g=$('#grid');g.innerHTML='';
+ ALL.forEach((z,i)=>{const s=starsFor(z.id);tot+=s;const b=document.createElement('button');b.className='zone';b.style.setProperty('--c',z.col);
+  b.innerHTML=`<span class="ic">${z.ic}</span><span class="zt"><small>${i<LV.length?'Level '+(i+1):z.id=='ex'?'Exercises':'Final'}</small><b>${z.t}</b><small>${z.s}</small><span class="st">${'⭐'.repeat(s)}${'☆'.repeat(3-s)}</span></span>`;
+  b.onclick=()=>openZone(z);g.appendChild(b)});
+ $('#tot').textContent=`⭐ ${tot} / ${ALL.length*3}`}
+function show(home){$('#home').hidden=!home;$('#zone').hidden=home;document.body.classList.toggle('inzone',!home);scrollTo(0,0)}
+$('#back').onclick=()=>{go('cycle',{hub:1},'💧 The water world · drag to look around');drawHome();show(true)};
+function openZone(z){cur=z;beep(520,.08);$('#zt').textContent=z.ic+' '+z.t;$('#tip').innerHTML=`<span>💧</span> <b>Boondi:</b> ${z.tip}`;show(false);
+ const T=$('#tabs');T.innerHTML='';let tabs;
+ if(z.id=='boss'){T.hidden=true;go('cycle',{hub:1},'🏆 Water Champion');bossIntro();return}
+ tabs=z.id=='ex'?[['ex','📝 Exercises'],['far','🚀 Learning further']]:[['learn','📖 Learn'],['lab','🔬 3D Lab'],['game','🎮 Play'],['quiz','❓ Quiz']];
+ T.hidden=false;tabs.forEach(([k,l])=>{const b=document.createElement('button');b.textContent=l;b.dataset.k=k;b.onclick=()=>setTab(k);T.appendChild(b)});setTab(tabs[0][0])}
+function setTab(k){[...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k==k));({learn,lab,game,quiz,ex:runEx,far:further})[k]()}
+const panel=h=>{$('#panel').innerHTML=h};
+
+function learn(i=0,ln=0){const[tt,L,sc,pr]=cur.learn[i];if(ln==0)go(sc,pr,cur.t+' · '+tt);const last=ln>=L.length-1,end=i>=cur.learn.length-1;
+ panel(`<div class="card"><div class="seg">${cur.learn.map((_,j)=>`<i class="${j<i?'d':j==i?'n':''}"></i>`).join('')}</div><span class="tag">${cur.s} · part ${i+1} of ${cur.learn.length}</span><h3>${tt}</h3>${L.slice(0,ln+1).map((x,j)=>`<p class="ln${j==ln?' now':''}">${x}</p>`).join('')}<div class="nav"><button id="pv" ${i||ln?'':'disabled'}>◀ Back</button><span>Line ${ln+1} / ${L.length}</span><button id="nx" class="pri">${!last?'Next line ▶':end?'Open the 3D Lab 🔬':'Next part ⏩'}</button></div></div>`);
+ $('#pv').onclick=()=>ln?learn(i,ln-1):learn(i-1,0);$('#nx').onclick=()=>{beep(600,.06);!last?learn(i,ln+1):end?setTab('lab'):learn(i+1,0)}}
+function lab(){const S=cur.slider;hud(cur.t+' · 3D Lab');
+ panel(`<div class="card"><h3>🔬 Try it in 3D</h3><div class="ctl">${S?`<label for="sl">${S.label}</label><input id="sl" type="range" min="${S.min}" max="${S.max}" value="${S.val}">`:''}${cur.lab.map((b,j)=>`<button data-j="${j}">${b[0]}</button>`).join('')}</div><div class="out" id="labout"></div><div class="nav"><span>👆 Drag the 3D view to look around.</span><button id="nx" class="pri">Play the game 🎮</button></div></div>`);
+ const out=h=>$('#labout').innerHTML=h,pick=j=>{const b=cur.lab[j];go(b[1],b[2]);out(b[3]);document.querySelectorAll('.ctl button').forEach(x=>x.classList.toggle('on',+x.dataset.j==j))};
+ document.querySelectorAll('.ctl button').forEach(b=>b.onclick=()=>{beep(700,.06);pick(+b.dataset.j)});
+ if(S){const r=$('#sl'),f=()=>{const v=+r.value;go(S.scene,{T:v});out(S.fmt(v));document.querySelectorAll('.ctl button').forEach(x=>x.classList.remove('on'))};r.oninput=f;f()}else pick(0);
+ $('#nx').onclick=()=>setTab('game')}
+function gameEnd(sc,n){panel(`<div class="card center"><div class="big">🎯</div><h3>Game complete!</h3><p class="mid">${sc} of ${n} right on the first try.</p><div class="ctl mid"><button id="ag">🔁 Play again</button><button id="nx" class="pri">Take the quiz ❓</button></div></div>`);win();if(sc==n)confetti();$('#ag').onclick=game;$('#nx').onclick=()=>setTab('quiz')}
+function bar(i,n){return`<div class="bar"><i style="width:${i/n*100}%"></i></div>`}
+function game(){const G=cur.game;hud(cur.t+' · 🎮 Play');({tf:gTF,sort:gSort,diagram:gDiagram,faster:gFaster,label3d:gLabel})[G.type](G)}
+function gTF(G){const it=shuffle(G.items);let i=0,sc=0;go('ice',{});
+ const step=()=>{if(i>=it.length)return gameEnd(sc,it.length);const[s,v,why]=it[i];
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">✅ True or false? ❌</p><div class="item">${s}</div><div class="ans two"><button data-v="1">✅ True</button><button data-v="0">❌ False</button></div><div class="out" id="go" hidden></div><div class="nav"><span></span><button id="gnx" class="pri" hidden>Next ▶</button></div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{const ok=(b.dataset.v=='1')==v;ok?(sc++,good()):bad();b.classList.add(ok?'ok':'no');document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);
+   const o=$('#go');o.hidden=false;o.innerHTML=(ok?'🎉 <b>Yes!</b> ':'💡 <b>Not quite.</b> ')+`It is <b>${v?'true':'false'}</b>. ${why}`;const n=$('#gnx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+function gSort(G){const it=shuffle(G.items);let i=0,sc=0,first;
+ const step=()=>{if(i>=it.length)return gameEnd(sc,it.length);first=true;
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">🧺 Sort it! Where does this belong?</p><div class="item pop">${it[i][0]}</div><div class="ans cats">${G.cats.map((c,j)=>`<button data-j="${j}">${c}</button>`).join('')}</div><div class="out" id="go">Tap the right group.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(+b.dataset.j==it[i][1]){good();if(first)sc++;b.classList.add('ok');document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);$('#go').innerHTML='🎉 <b>Correct!</b>';setTimeout(()=>{i++;step()},650)}
+   else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML='🤔 Not this one. Think again!'}})};step()}
+function gDiagram(){const Q=[['B','Liquid',50],['C','Gas',105],['2','Evaporates',105],['3','Freezes',-12],['4','Condenses',105]],W=shuffle(['Liquid','Freezes','Evaporates','Gas','Condenses']),F={};let i=0,sc=0,first;
+ const box=k=>`<div class="slot s${k} ${F[k]?'filled':''} ${Q[i]&&Q[i][0]==k?'ask':''}">${k=='3'||k=='4'?'⬅️ ':''}${k}. ${F[k]||'❓'}${k=='2'?' ➡️':''}</div>`;
+ const step=()=>{if(i>=Q.length){return gameEnd(sc,Q.length)}first=true;go('heat',{T:Q[i][2]},cur.t+' · Fig. 8.5');
+  panel(`<div class="card"><p class="lead">🧩 Activity 8.6: Complete Fig. 8.5. Fill box <b>${Q[i][0]}</b>.</p><div class="dg"><div class="slot sA filled">A. Solid 🧊</div>${box('B')}${box('C')}<div class="slot s1 filled arrow">1. Melts ➡️</div>${box('2')}${box('3')}${box('4')}</div><div class="ans chips">${W.map(w=>`<button ${Object.values(F).includes(w)?'disabled':''}>${w}</button>`).join('')}</div><div class="out" id="go">Pick the word for box ${Q[i][0]}.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(b.textContent==Q[i][1]){good();if(first)sc++;F[Q[i][0]]=Q[i][1];i++;document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);b.classList.add('ok');setTimeout(step,450)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML='🤔 Not here. Think: which change of state is this?'}})};step()}
+function gFaster(G){const it=shuffle(G.pairs);let i=0,sc=0;
+ const step=()=>{if(i>=it.length)return gameEnd(sc,it.length);const[a,b,c,why]=it[i],sw=hsh(i,9)>.5,op=sw?[[b,c==1],[a,c==0]]:[[a,c==0],[b,c==1]];
+  go('race',{m:['area','sun','wind','humid'][i%4]});
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">🏁 Which one dries faster?</p><div class="ans two">${op.map((o,j)=>`<button data-j="${j}" class="tall">${o[0]}</button>`).join('')}</div><div class="out" id="go" hidden></div><div class="nav"><span></span><button id="gnx" class="pri" hidden>Next ▶</button></div></div>`);
+  document.querySelectorAll('.ans button').forEach((x,j)=>x.onclick=()=>{const ok=op[j][1];ok?(sc++,good()):bad();document.querySelectorAll('.ans button').forEach((y,k)=>{y.disabled=true;if(op[k][1])y.classList.add('ok')});if(!ok)x.classList.add('no');
+   const o=$('#go');o.hidden=false;o.innerHTML=(ok?'🚀 <b>Right!</b> ':'💡 <b>Not quite.</b> ')+why;const n=$('#gnx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+function gLabel(){const keys=Object.keys(MK),arr=keys.map(()=>null),words=shuffle(keys);let i=0,sc=0,first;go('cycle',{markers:arr},cur.t+' · Activity 8.11');
+ const step=()=>{if(i>=keys.length)return gameEnd(sc,keys.length);first=true;
+  panel(`<div class="card">${bar(i,keys.length)}<p class="lead">🗺️ Activity 8.11: Label the water cycle. What is at marker <b class="badge">${i+1}</b> in the 3D view?</p><div class="ans chips">${words.map(w=>`<button ${arr.includes(w)?'disabled':''}>${w}</button>`).join('')}</div><div class="out" id="go">Look for the ❓ with number ${i+1}.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(b.textContent==keys[i]){good();if(first)sc++;arr[i]=keys[i];document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);b.classList.add('ok');i++;setTimeout(step,450)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML=`🤔 Not that one. Look again at marker ${i+1}.`}})};step()}
+
+function runQuiz(qs,hearts,done){let i=0,sc=0,hp=hearts;
+ const step=()=>{if(i>=qs.length||(hearts&&hp<=0))return done(sc,qs.length,hp);const q=qs[i],ops=shuffle(q[1].map((o,j)=>[o,j==0]));
+  panel(`<div class="card">${bar(i,qs.length)}<div class="nav top"><span class="tag">${q[3]}</span><span>${hearts?'❤️'.repeat(hp)+'🖤'.repeat(hearts-hp)+' · ':''}Q ${i+1}/${qs.length} · ⭐ ${sc}</span></div><p class="q">${q[0]}</p><div class="opts">${ops.map((o,j)=>`<button data-j="${j}">${'ABCD'[j]}. ${o[0]}</button>`).join('')}</div><div class="out" id="ex" hidden></div><div class="nav"><span></span><button id="nx" class="pri" hidden>Next ▶</button></div></div>`);
+  const B=[...document.querySelectorAll('.opts button')];
+  B.forEach((b,j)=>b.onclick=()=>{B.forEach((x,k)=>{x.disabled=true;if(ops[k][1])x.classList.add('ok')});if(ops[j][1]){sc++;good()}else{b.classList.add('no');hp--;bad()}
+   const e=$('#ex');e.hidden=false;e.innerHTML=(ops[j][1]?'🎉 <b>Correct!</b> ':'💡 <b>Not quite.</b> ')+q[2];const n=$('#nx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+function finish(id,sc,n,msg){const r=sc/n,st=r>=.9?3:r>=.7?2:r>=.5?1:0;if(st>starsFor(id)){save.stars[id]=st;persist()}
+ panel(`<div class="card center"><div class="big">${st==3?'🏆':st?'🌟':'🌱'}</div><h3>${msg}</h3><p class="mid">You scored <b>${sc} / ${n}</b></p><p class="stars">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</p><p class="mid">${st==3?'Brilliant! You are a water expert! 💧':st?'Good work! Read the Learn cards again to get 3 stars.':'Try the Learn cards and the 3D Lab, then play again.'}</p><div class="ctl mid"><button id="ag">🔁 Try again</button><button id="hm" class="pri">🗺️ Levels</button></div></div>`);
+ if(st>=2){win();confetti()}$('#ag').onclick=()=>cur.id=='boss'?bossIntro():cur.id=='ex'?runEx():quiz();$('#hm').onclick=()=>$('#back').click()}
+function quiz(){go('cycle',{hub:1},cur.t+' · ❓ Quiz');runQuiz(shuffle(cur.quiz),0,(sc,n)=>finish(cur.id,sc,n,cur.t+': quiz complete!'))}
+function runEx(){let i=0,sc=0;
+ const step=()=>{if(i>=EX.length)return finish('ex',sc,EX.length,'All exercise questions done!');const E=EX[i],ops=shuffle(E.o.map((o,j)=>[o,j==0||(E.ok||[]).includes(j)]));go(E.sc[0],E.sc[1],'📝 Exercise Q'+E.n);
+  panel(`<div class="card">${bar(i,EX.length)}<div class="nav top"><span class="tag">Exercise Q${E.n}</span><span>${i+1}/${EX.length} · ⭐ ${sc}</span></div><p class="q">${E.q}</p><div class="opts">${ops.map((o,j)=>`<button data-j="${j}">${'ABCD'[j]}. ${o[0]}</button>`).join('')}</div><div class="out model" id="ex" hidden></div><div class="nav"><span></span><button id="nx" class="pri" hidden>Next ▶</button></div></div>`);
+  const B=[...document.querySelectorAll('.opts button')];
+  B.forEach((b,j)=>b.onclick=()=>{B.forEach((x,k)=>{x.disabled=true;if(ops[k][1])x.classList.add('ok')});if(ops[j][1]){sc++;good()}else{b.classList.add('no');bad()}
+   const e=$('#ex');e.hidden=false;e.innerHTML=(ops[j][1]?'🎉 <b>Correct!</b><br>':'💡 <b>Not quite.</b><br>')+'📘 <b>Model answer:</b> '+E.a;const n=$('#nx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+function further(){go('race',{m:'wind'},'🚀 Learning further');panel(`<div class="card"><h3>🚀 Learning further</h3>${FURTHER.map(f=>`<p class="ln now">${f}</p>`).join('')}<div class="nav"><span>You are playing the game from point 2 right now! 🎲</span><button id="nx" class="pri">📝 Exercises</button></div></div>`);$('#nx').onclick=()=>setTab('ex')}
+function bossIntro(){panel(`<div class="card center"><div class="big">🏆</div><h3>Water Champion boss round</h3><p class="mid">15 questions from the whole chapter, including exercise questions. You have ❤️❤️❤️. A wrong answer costs one heart.</p><div class="ctl mid"><button id="go" class="pri">Start ▶</button></div></div>`);
+ $('#go').onclick=()=>{const pool=[...LV.flatMap(z=>z.quiz),...EX.filter(e=>!e.ok).map(e=>[e.q,e.o,e.a.replace(/<[^>]+>/g,''),'Exercise Q'+e.n])];runQuiz(shuffle(pool).slice(0,15),3,(sc,n,hp)=>finish('boss',sc,n,hp>0?'🏆 You are the Water Champion!':'💔 Out of hearts. Try again!'))}}
+go('cycle',{hub:1},'💧 The water world · drag to look around');drawHome();
+
+</script>
+
+</body></html>

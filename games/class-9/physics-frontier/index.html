@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no">
+<title>Physics Frontier – The Open World of Science</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;height:100%;overflow:hidden;background:#0a1320;color:#e8f1fa;font-family:system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;user-select:none;-webkit-user-select:none}
+#c{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+.hide{display:none!important}
+button{font:inherit;color:inherit;touch-action:manipulation;cursor:pointer}
+/* HUD */
+#hud{position:fixed;inset:0;pointer-events:none}
+#hud>*{position:absolute}
+#mm{left:10px;top:10px;width:104px;height:104px;border-radius:50%;border:2px solid #37e0c8;background:#0c1b2a}
+#top{right:10px;top:10px;display:flex;align-items:center;gap:8px}
+#lv{font-weight:700;font-size:13px;background:#0c1b2acc;padding:6px 9px;border-radius:8px}
+#xpb{width:90px;height:8px;background:#0c1b2acc;border-radius:4px;overflow:hidden}
+#xpb i{display:block;height:100%;width:0;background:#ffb62e}
+#bMenu{pointer-events:auto;width:40px;height:40px;border-radius:10px;border:1px solid #37e0c866;background:#0c1b2acc;font-size:18px}
+#mi{left:124px;right:10px;top:58px;background:#0c1b2acc;border-left:3px solid #ffb62e;border-radius:8px;padding:7px 10px;font-size:12.5px;line-height:1.45}
+#mi b{color:#ffb62e}
+#spd{left:50%;bottom:150px;transform:translateX(-50%);text-align:center;background:#0c1b2acc;border-radius:12px;padding:5px 14px;min-width:96px}
+#spd b{font-size:26px;font-variant-numeric:tabular-nums}
+#spd span{font-size:11px;opacity:.75;margin-left:4px}
+#spd small{display:block;font-size:10.5px;opacity:.8;font-variant-numeric:tabular-nums}
+#stam{left:124px;top:22px;width:80px;height:6px;background:#0c1b2acc;border-radius:3px;overflow:hidden}
+#stam i{display:block;height:100%;background:#37e0c8}
+#prompt{left:50%;bottom:215px;transform:translateX(-50%);background:#ffb62e;color:#1a1300;font-weight:700;font-size:13px;padding:7px 14px;border-radius:20px;white-space:nowrap;max-width:92vw;overflow:hidden;text-overflow:ellipsis}
+#joy{left:22px;bottom:26px;width:112px;height:112px;border-radius:50%;border:2px solid #ffffff44;background:#ffffff14}
+#joy i{position:absolute;left:50%;top:50%;width:46px;height:46px;margin:-23px;border-radius:50%;background:#37e0c8cc}
+#btns{right:14px;bottom:22px;display:grid;grid-template-columns:auto auto;gap:10px;justify-items:end;align-items:end}
+#btns button{pointer-events:auto;width:66px;height:66px;border-radius:50%;border:2px solid #ffffff55;background:#0c1b2acc;font-weight:700;font-size:13px}
+#btns button:active,#btns button.dn{background:#37e0c8;color:#06221e}
+#bGas{background:#1d6b3acc!important}#bBrake{background:#8a2a2acc!important}
+#bQuit{left:10px;top:122px;pointer-events:auto;font-size:11.5px;padding:6px 10px;border-radius:8px;border:1px solid #ff7a7a88;background:#3a1010cc}
+.notouch #joy,.notouch #btns{display:none}
+#keys{left:10px;bottom:10px;font-size:11.5px;opacity:.8;background:#0c1b2acc;padding:6px 9px;border-radius:8px;line-height:1.5}
+.touch #keys{display:none}
+/* sheet */
+#sheet{position:fixed;left:0;right:0;bottom:0;max-height:50%;overflow:auto;background:#0d1a2bf2;border-top:2px solid #37e0c8;border-radius:14px 14px 0 0;padding:10px 14px 14px;font-size:13px}
+@media (min-aspect-ratio:1/1){#sheet{left:auto;top:0;width:370px;max-height:none;border-top:0;border-left:2px solid #37e0c8;border-radius:0}}
+#sheet h3{margin:2px 0 4px;font-size:15px;color:#37e0c8}
+#sheet p{margin:4px 0;line-height:1.4}
+#sheet label{display:block;margin:8px 0 2px}
+#sheet label b{float:right;color:#ffb62e;font-variant-numeric:tabular-nums}
+input[type=range]{width:100%;height:30px;accent-color:#37e0c8;margin:0}
+.seg{display:flex;gap:6px;margin:8px 0}
+.seg button{flex:1;padding:8px 4px;border-radius:8px;border:1px solid #ffffff33;background:#16263a;font-size:12px}
+.seg button.on{background:#37e0c8;color:#06221e;font-weight:700;border-color:#37e0c8}
+.row{display:flex;gap:8px;margin-top:10px}
+.row button,.btn{flex:1;padding:11px 8px;border-radius:10px;border:1px solid #ffffff33;background:#16263a;font-weight:600;font-size:13.5px}
+button.pri{background:#ffb62e;color:#1a1300;border-color:#ffb62e}
+.out{background:#08111d;border-radius:8px;padding:7px 9px;margin-top:8px;font-variant-numeric:tabular-nums;line-height:1.5;font-size:12.5px}
+.out b{color:#ffb62e}
+#plot{width:100%;height:auto;background:#08111d;border-radius:8px;margin-top:8px;display:block}
+/* menu */
+#menu{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:20px;background:linear-gradient(#0a132099,#0a132000 40%,#0a1320dd)}
+#menu h1{text-shadow:0 4px 30px #000a}
+#load{color:#37e0c8;font-weight:600;opacity:1!important}
+#menu h1{margin:0;font-size:clamp(30px,9vw,60px);letter-spacing:.04em;text-align:center;line-height:1;font-weight:900}
+#menu h1 span{color:#37e0c8}
+#menu .tag{margin:8px 0 22px;font-size:12px;letter-spacing:.22em;color:#ffb62e;text-align:center}
+#menu .list{display:grid;grid-template-columns:1fr 1fr;gap:9px;width:min(430px,100%)}
+#menu .list button{padding:14px 8px;border-radius:12px;border:1px solid #37e0c855;background:#0c1b2add;font-weight:700;font-size:14px}
+#menu .list button.pri{grid-column:1/3;font-size:17px;padding:16px;background:#ffb62e;color:#1a1300;border-color:#ffb62e}
+#menu .ver{margin-top:16px;font-size:11px;opacity:.6;text-align:center}
+/* overlay */
+#ov{position:fixed;inset:0;background:#0a1320f5;display:flex;flex-direction:column}
+#ov header{display:flex;align-items:center;gap:10px;padding:12px 14px;border-bottom:1px solid #ffffff1c}
+#ov h2{margin:0;font-size:17px}
+#ovBack{padding:7px 12px;border-radius:8px;border:1px solid #ffffff33;background:#16263a}
+#ovBody{flex:1;overflow:auto;padding:12px 14px 30px;-webkit-overflow-scrolling:touch}
+#ovBody>*{max-width:720px;margin-left:auto;margin-right:auto}
+.card{background:#101f33;border:1px solid #ffffff14;border-radius:12px;padding:11px 13px;margin-bottom:10px;line-height:1.5;font-size:13.5px}
+.card small{color:#37e0c8;letter-spacing:.14em;font-size:10.5px;font-weight:700}
+.card h3{margin:2px 0 4px;font-size:15.5px}
+.card p{margin:4px 0}
+.card .sub{opacity:.72;font-size:12.5px}
+.card table{width:100%;border-collapse:collapse;font-size:13px;font-variant-numeric:tabular-nums}
+.card td{padding:4px 0;border-bottom:1px solid #ffffff12}
+.card td:last-child{text-align:right;color:#ffb62e;font-weight:600}
+.card canvas{width:100%;height:auto;background:#08111d;border-radius:8px;margin-top:8px;display:block}
+.eq{font-family:ui-monospace,Menlo,Consolas,monospace;background:#08111d;border-radius:8px;padding:8px 10px;margin:6px 0;color:#ffd98a;font-size:13px;white-space:pre-wrap}
+.note{font-size:12px;opacity:.72}
+.wcard{display:flex;gap:11px;align-items:flex-start}
+.wnum{flex:none;width:36px;height:36px;border-radius:9px;background:#16263a;display:flex;align-items:center;justify-content:center;font-weight:800;color:#37e0c8}
+.wcard.play .wnum{background:#37e0c8;color:#06221e}
+.wcard .grow{flex:1;min-width:0}
+.tagp{display:inline-block;font-size:10.5px;font-weight:700;padding:2px 7px;border-radius:10px;background:#16263a;margin-top:4px}
+.tagp.ok{background:#1d6b3a}.tagp.lock{background:#5a3d10}
+.wcard button{margin-top:7px;padding:8px 14px;border-radius:8px;border:0;background:#ffb62e;color:#1a1300;font-weight:700}
+.q{margin:8px 0 4px;font-weight:600}
+.opt{display:block;width:100%;text-align:left;margin:5px 0;padding:9px 11px;border-radius:8px;border:1px solid #ffffff2a;background:#16263a;font-size:13.5px}
+.opt.on{border-color:#ffb62e;background:#3a2c0c}
+.opt.good{border-color:#3ddc84;background:#113a22}.opt.bad{border-color:#ff7a7a;background:#3a1414}
+.medal{text-align:center;font-size:19px;font-weight:800;padding:14px}
+.m1{color:#d08a4e}.m2{color:#cfd8e3}.m3{color:#ffcf40}
+.chars{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.chars button{padding:12px 6px;border-radius:12px;border:2px solid #ffffff22;background:#101f33}
+.chars button.on{border-color:#37e0c8}
+.chars i{display:block;width:34px;height:34px;border-radius:50%;margin:0 auto 6px}
+#err{position:fixed;inset:0;display:none;align-items:center;justify-content:center;padding:30px;text-align:center;background:#0a1320}
+</style>
+</head>
+<body class="notouch">
+<canvas id="c"></canvas>
+
+<div id="hud" class="hide">
+  <canvas id="mm" width="208" height="208"></canvas>
+  <div id="stam"><i></i></div>
+  <div id="top"><div id="lv">LV 1</div><div id="xpb"><i></i></div><button id="bMenu" aria-label="Menu">☰</button></div>
+  <div id="mi"></div>
+  <button id="bQuit" class="hide">✕ Quit mission</button>
+  <div id="spd" class="hide"><b>0</b><span>km/h</span><small></small></div>
+  <div id="prompt" class="hide"></div>
+  <div id="joy"><i></i></div>
+  <div id="btns">
+    <button id="bAct">USE</button><button id="bJump">JUMP</button>
+    <button id="bBrake" class="hide">BRAKE</button><button id="bGas" class="hide">GAS</button>
+  </div>
+  <div id="keys">WASD / arrows move · Shift run · Space jump or handbrake · E use · drag mouse to look · Esc menu</div>
+</div>
+
+<div id="sheet" class="hide"><div id="sheetBody"></div></div>
+
+<div id="menu">
+  <h1>PHYSICS <span>FRONTIER</span></h1>
+  <div class="tag">THE OPEN WORLD OF SCIENCE</div>
+  <div class="list">
+    <button class="pri" id="mPlay">▶ PLAY</button>
+    <button id="mMap">World Map</button>
+    <button id="mChar">Character</button>
+    <button id="mGar">Vehicle Garage</button>
+    <button id="mAca">Physics Academy</button>
+    <button id="mAch">Achievements</button>
+    <button id="mSet">Settings</button>
+  </div>
+  <div class="ver" id="load">Loading 3D characters… 0%</div><div class="ver">Stage 2 · Physics Lab Yard · 5 lab experiments · 5 missions · 16 worlds planned</div>
+</div>
+
+<div id="ov" class="hide">
+  <header><button id="ovBack">‹ Back</button><h2 id="ovTitle"></h2></header>
+  <div id="ovBody"></div>
+</div>
+
+<div id="err"><div><h2>3D engine could not start</h2><p>This game needs WebGL 2 and the Three.js library. Please reload, or open it in a current Chrome, Edge, Safari or Firefox.</p></div></div>
+
+<script src="three.min.js"></script>
+<script src="vendor.js"></script>
+<script src="game.js"></script>
+</body>
+</html>

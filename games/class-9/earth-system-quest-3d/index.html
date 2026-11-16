@@ -1,0 +1,558 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Earth System Quest 3D</title>
+<style>
+[hidden]{display:none!important}
+/* Layout: one dark "mission control" column; a live 3D planet is the hero and every zone's lab. */
+:root{color-scheme:dark;--bg:#050b1c;--panel:#0e1a36;--panel2:#16264d;--line:#2b3f73;--fg:#eaf2ff;--mut:#9fb3d9;--sun:#ffc23d;--sea:#35c8ff;--leaf:#4fe08a;--bad:#ff6b7a;
+--f:"Trebuchet MS","Segoe UI",system-ui,sans-serif}
+*{box-sizing:border-box}
+html,body{min-height:100%}
+body{background:radial-gradient(ellipse at 50% -10%,#16306a 0,#050b1c 60%) fixed,var(--bg);color:var(--fg);font:16px/1.5 var(--f);padding-inline:16px;padding-block:0 40px}
+
+.wrap{position:relative;z-index:1;max-width:900px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:13px;color:var(--sun)}
+.sp{flex:1}
+.pill{background:var(--panel);border:1px solid var(--line);border-radius:999px;padding:5px 12px;font-size:14px;font-variant-numeric:tabular-nums}
+button{font:inherit;color:var(--fg);cursor:pointer;border:1px solid var(--line);background:var(--panel2);border-radius:12px;padding:10px 14px;transition:transform .12s,background .15s,border-color .15s}
+button:hover{border-color:var(--sea);transform:translateY(-1px)}
+button:active{transform:scale(.97)}
+button:focus-visible{outline:3px solid var(--sun);outline-offset:2px}
+.hero{display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px 28px;text-align:left}
+.hero canvas{width:min(300px,80vw);height:auto;animation:float 6s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px)}}
+.hero div{flex:1 1 280px;min-width:0}
+h1{font-size:clamp(30px,6vw,48px);line-height:1.05;margin:0 0 8px;text-wrap:balance;background:linear-gradient(90deg,var(--sea),var(--leaf),var(--sun));-webkit-background-clip:text;background-clip:text;color:transparent}
+.sub{color:var(--mut);margin:0 0 6px}
+.mascot{background:var(--panel);border:1px solid var(--line);border-radius:14px 14px 14px 2px;padding:10px 12px;font-size:15px;margin-top:10px}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px;margin-top:22px}
+.zone{text-align:left;padding:16px;border-radius:18px;background:linear-gradient(160deg,var(--panel2),var(--panel));display:flex;gap:12px;align-items:center;perspective:600px}
+.zone:hover{transform:translateY(-3px) rotateX(4deg)}
+.zone .ic{font-size:38px;filter:drop-shadow(0 4px 8px #0008)}
+.zone b{display:block;font-size:17px}
+.zone small{color:var(--mut);display:block}
+.zone .st{color:var(--sun);letter-spacing:2px}
+.zone.boss{border-color:var(--sun);background:linear-gradient(160deg,#4a2a10,#1b1230)}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 12px}
+.top h2{margin:0;font-size:22px;flex:1;min-width:0}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tabs button.on{background:var(--sea);color:#04203a;border-color:var(--sea);font-weight:700}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;animation:pop .35s ease}
+@keyframes pop{from{opacity:.3;transform:translateY(10px) scale(.98)}}
+.card h3{margin:0 0 8px;color:var(--sun);font-size:19px}
+.card p{margin:0 0 8px;max-width:65ch}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;color:var(--mut)}
+#lab{width:100%;height:auto;border-radius:16px;border:1px solid var(--line);display:block;background:#020612}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:12px}
+.ctl input[type=range]{flex:1;min-width:160px;accent-color:var(--sun)}
+.out{margin-top:10px;background:var(--panel2);border-radius:12px;padding:10px 12px;min-height:48px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:1px solid var(--line);color:var(--sea);border-radius:999px;padding:2px 8px;margin-bottom:8px}
+.q{font-size:19px;font-weight:700;margin:0 0 12px}
+.opts{display:grid;gap:10px}
+.opts button{text-align:left}
+.opts button.ok{background:#12603a;border-color:var(--leaf)}
+.opts button.no{background:#6a1f2b;border-color:var(--bad);animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bar{height:8px;background:var(--panel2);border-radius:9px;overflow:hidden;margin-bottom:12px}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sea),var(--leaf));transition:width .3s}
+.item{font-size:22px;font-weight:800;text-align:center;padding:22px 10px;background:var(--panel2);border-radius:14px;margin-bottom:12px}
+.cats{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.big{font-size:52px;text-align:center}
+.center{text-align:center}
+.conf{position:fixed;top:-30px;z-index:5;font-size:22px;animation:fall 2.4s linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (prefers-reduced-motion:reduce){.hero canvas,.conf{animation:none}.conf{display:none}}
+
+#view{position:relative;aspect-ratio:16/9;max-height:62vh;width:100%;border-radius:18px;overflow:hidden;border:1px solid var(--line);background:#02040c;touch-action:pan-y;cursor:grab;box-shadow:0 18px 60px #000a}
+body.inzone #view{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;max-height:48vh}
+#gl{width:100%;height:100%;display:block}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:700;background:rgba(5,11,28,.72);border:1px solid var(--line);border-radius:8px;padding:2px 8px;white-space:nowrap;color:var(--fg)}
+.lb.sm{font-size:11px;font-weight:600;color:var(--mut)}
+#hud{position:absolute;left:10px;top:10px;font-size:12px;letter-spacing:.06em;text-transform:uppercase;color:var(--sun);background:rgba(5,11,28,.6);border-radius:8px;padding:3px 9px;pointer-events:none;max-width:calc(100% - 20px)}
+#nogl{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;color:var(--mut)}
+#home h1{margin-top:18px}
+.ln{color:var(--mut)}.ln.now{color:var(--fg);border-left:3px solid var(--sun);padding-left:10px;animation:pop .3s ease}
+@media (max-width:560px){#view{aspect-ratio:4/3}.lb{font-size:10px;padding:1px 5px;white-space:normal;max-width:42%;text-align:center}.lb.sm{font-size:9px}}
+</style>
+<div class="wrap">
+<header><span class="brand">Saurabh's Eduverse · Class 9 Science · Ch 13</span><span class="sp"></span><span class="pill" id="tot">⭐ 0</span><button id="snd" aria-label="Toggle sound">🔊</button></header>
+<div id="view"><canvas id="gl"></canvas><div id="labels"></div><div id="hud"></div><div id="nogl" hidden>This device cannot show the 3D view (WebGL is off). The lessons, games and quizzes still work.</div></div>
+<section id="home">
+  <h1>Earth System Quest 3D</h1>
+  <p class="sub">Earth as a System: Energy, Matter, and Life</p>
+  <p class="sub">Fly your ship through six missions and a boss round. Each mission plays the chapter line by line in live 3D, then a lab, a game and a quiz. Every mission is open.</p>
+  <div class="mascot">🛰️ <b>Bhoomi-Bot:</b> That is our ship in orbit. Pick a mission and I will show you how the five spheres talk to each other!</div>
+  <div class="grid" id="grid"></div>
+</section>
+<section id="zone" hidden>
+  <div class="top"><button id="back">← Missions</button><h2 id="zt"></h2></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panel"></div>
+</section>
+</div>
+<script>
+const $=s=>document.querySelector(s),KEY='eduverse_c9_ch13_earth';
+let save={stars:{}};try{Object.assign(save,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+/* ---------- sound ---------- */
+let AC=null,mute=false;
+function beep(f,d=.12,type='sine',v=.08){if(mute)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const good=()=>{boost=performance.now();beep(660);setTimeout(()=>beep(990,.16),90)},bad=()=>beep(170,.25,'sawtooth',.06),win=()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*120));
+$('#snd').onclick=e=>{mute=!mute;e.currentTarget.textContent=mute?'🔇':'🔊'};
+function confetti(){const E=['⭐','🌍','☀️','💧','🍃','❄️'];for(let i=0;i<28;i++){const s=document.createElement('span');s.className='conf';s.textContent=E[i%E.length];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3200)}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+
+/* ---------- content (from the NCERT chapter) ---------- */
+const Z=[
+{id:'spheres',ic:'🌍',t:'Five Spheres',s:'Chapter opening · Activity 13.1',
+ learn:[
+ ['One Earth, one system','Life on Earth runs on a constant flow of <b>energy and matter</b>. The <b>Sun</b> is the main source of energy. The Earth\'s hot interior and chemical reactions in air, water and rocks also drive this flow.'],
+ ['Geosphere and Hydrosphere','<b>Geosphere:</b> solid rocks, soil, landforms (like the Deccan plateau and the Thar desert) and the Earth\'s interior.<br><b>Hydrosphere:</b> liquid water, such as oceans, rivers (like the Ganga–Brahmaputra system), lakes and groundwater.'],
+ ['Cryosphere, Atmosphere, Biosphere','<b>Cryosphere:</b> solid water, ice and snow (Himalayan glaciers, snow in Ladakh, polar ice caps).<br><b>Atmosphere:</b> the air around the Earth that we breathe.<br><b>Biosphere:</b> all living organisms and their habitats (mangroves, forests, farms, ocean plankton, coral reefs).'],
+ ['Activity 13.1: the sheep and the lake','Snow (cryosphere) melts and flows into the lake (hydrosphere). Less snowfall in winter means less water in the lake in summer, and less water for grass to grow for the sheep (biosphere).'],
+ ['A disturbance travels','Warmer Arabian Sea water → more evaporation → the southwest monsoon fluctuates → floods in some regions, drought in others. Warmer air also melts glaciers and polar ice, which can raise sea levels, threaten coastal cities and cause habitat loss.']],
+ game:{cats:['Geosphere','Hydrosphere','Cryosphere','Atmosphere','Biosphere'],items:[['Thar desert',0],['Deccan plateau',0],['Ganga–Brahmaputra rivers',1],['Groundwater',1],['Himalayan glaciers',2],['Snow in Ladakh',2],['The air we breathe',3],['Mangroves',4],['Coral reefs',4],['Ocean plankton',4]]},
+ quiz:[
+ ['Which sphere includes Himalayan glaciers and polar ice caps?',['Cryosphere','Hydrosphere','Geosphere','Atmosphere'],'Cryosphere is water in its solid form: ice and snow.','Text'],
+ ['The Thar desert and the Deccan plateau belong to the',['Geosphere','Biosphere','Hydrosphere','Cryosphere'],'Rocks, soil and landforms make up the geosphere.','Text'],
+ ['Groundwater, lakes and the Ganga–Brahmaputra river system are part of the',['Hydrosphere','Cryosphere','Geosphere','Biosphere'],'Hydrosphere is liquid water on and below the surface.','Text'],
+ ['Mangroves, coral reefs and ocean plankton are part of the',['Biosphere','Hydrosphere','Geosphere','Atmosphere'],'Biosphere means all living organisms and their habitats.','Text'],
+ ['What is the main source of energy for life on Earth?',['The Sun','The Earth\'s hot interior','Lightning','The Moon'],'The Sun is the main source. The Earth\'s interior and chemical reactions add to the flow.','Text'],
+ ['How does snow eventually become part of the lake?',['It melts and flows in as liquid water','It turns into rock','The sheep carry it','It stays frozen forever'],'Melting moves water from the cryosphere to the hydrosphere.','Activity 13.1'],
+ ['Less snowfall for a few winters would most likely cause',['A lower lake level and less grass for the sheep','A higher lake level','More grass for the sheep','No change at all'],'Less snow → less meltwater → less water for the grass to grow.','Activity 13.1'],
+ ['Warmer Arabian Sea water leads first to',['More evaporation from the sea','Less evaporation from the sea','More snow in Ladakh','A thicker ozone layer'],'More evaporation makes the southwest monsoon fluctuate.','Think It Over'],
+ ['In the long run, faster melting of glaciers and polar ice can',['Raise sea levels and threaten coastal cities','Lower sea levels','Cool the atmosphere','Make deserts disappear'],'Rising seas can flood low-lying regions and destroy habitats.','Think It Over'],
+ ['Which statement best describes the Earth\'s spheres?',['A change in one sphere can cause changes in the others','Each sphere works completely alone','Only the biosphere ever changes','The spheres never exchange matter'],'The spheres are interconnected in a delicate balance.','Exercise 15']]},
+{id:'sun',ic:'☀️',t:'Sunlight and Albedo',s:'13.1 Uneven Heating of the Earth',
+ learn:[
+ ['Energy arrives as EM waves','Solar radiation reaches us as <b>electromagnetic waves</b>. They cross a vacuum at the speed of light, <b>3 × 10⁸ m/s</b>. Sound waves are mechanical and need a medium. Gamma rays and X-rays have high frequency (short wavelength); infrared and radio waves have low frequency (long wavelength).'],
+ ['The three bands that matter','About <b>99%</b> of the Sun\'s energy is in <b>UV, visible and infrared</b>. Ozone absorbs most short-wavelength UV. Visible light powers photosynthesis. Infrared warms the surface. Gamma and X-rays are mostly filtered by the upper atmosphere. UV lies between 100 nm and 400 nm.'],
+ ['Insolation and the solar constant','<b>Insolation</b> is the amount of the Sun\'s radiation that reaches the Earth\'s surface. The <b>solar constant</b> is about <b>1.4 kW/m²</b> (1400 J s⁻¹ m⁻²) at the top of the atmosphere. At the surface under a clear sky it is about 1 kW/m².<br><b>Example 13.1:</b> E = 1000 × 1 × 3600 = 3.6 × 10⁶ J, which is one unit of electricity.'],
+ ['Albedo','<b>Albedo</b> is the fraction of solar radiation a surface reflects (Latin for whiteness). Snow 0.80–0.90, ice 0.50–0.70, crushed rock 0.25–0.30. High albedo surfaces stay cool. Dark surfaces like black soil and ocean water absorb more and are warmer.'],
+ ['Urban heat island','Concrete, brick, steel and asphalt absorb solar radiation and re-radiate heat, so cities are warmer than villages, especially at night. Thick mud and wooden walls re-radiate less. Trees cool the land by shade and transpiration.'],
+ ['Latitude and the Earth\'s shape','Because the Earth is spherical, sunlight is <b>concentrated on a smaller area at the equator</b> and spread over a larger area near the poles. Tilt of the axis gives seasons.<br><b>Anna Mani</b> mapped India\'s insolation in the 1950s and, with S. Rangarajan, published <i>Solar Radiation Over India</i> (1982).']],
+ game:{cats:['Reflects more (high albedo)','Absorbs more (low albedo)'],items:[['Fresh snow',0],['Black soil',1],['Ice',0],['Ocean water',1],['Dark coloured road',1],['Light coloured surface',0],['Dark clothes in summer',1],['White clothes in summer',0]]},
+ quiz:[
+ ['The speed of light in vacuum is',['3 × 10⁸ m/s','3 × 10⁶ m/s','340 m/s','1.4 × 10³ m/s'],'EM waves travel through a vacuum at 3 × 10⁸ m/s.','Text'],
+ ['Which of these has the highest frequency?',['Gamma rays','Radio waves','Infrared','Microwaves'],'Gamma rays and X-rays are high frequency, short wavelength.','Fig. 13.2'],
+ ['About 99% of the Sun\'s energy falls in which range?',['Ultraviolet, visible and infrared','Gamma rays and X-rays','Microwaves and radio waves','Visible light only'],'These three regions shape climate and support life.','Text'],
+ ['The value of the solar constant is about',['1.4 kW/m²','1 kW/m²','14 kW/m²','0.14 kW/m²'],'It is measured at the top of the atmosphere, before any absorption.','Text'],
+ ['Energy received by 1 m² in one hour at 1 kW/m² is',['3.6 × 10⁶ J','3600 J','1000 J','3.6 × 10³ J'],'E = intensity × area × time = 1000 × 1 × 3600 J.','Example 13.1'],
+ ['Albedo of a surface is',['The fraction of solar radiation it reflects','The fraction of solar radiation it absorbs','Its temperature at noon','The radiation it emits at night'],'High albedo means more reflection and a cooler surface.','Exercise 4'],
+ ['Which material has the highest albedo?',['Snow','Ice','Crushed rock','Black soil'],'Snow: 0.80–0.90, the highest in Table 13.1.','Activity 13.2'],
+ ['Insolation means',['The amount of the Sun\'s radiation that reaches the Earth\'s surface','Heat trapped by greenhouse gases','Radiation reflected by clouds','Heat coming from the Earth\'s interior'],'Insolation warms the surface and the atmosphere.','Text'],
+ ['Cities are warmer than nearby rural areas mainly because',['Concrete and asphalt absorb heat and re-radiate it','Cities have more trees','Cities are closer to the Sun','City roads have a higher albedo than snow'],'This is the urban heat island effect.','Threads of Curiosity'],
+ ['Equatorial regions are warmer than polar regions because',['Sunlight is concentrated over a smaller area at the equator','The equator is much closer to the Sun','There is no air at the poles','The poles get no sunlight at all'],'On a sphere, the same sunlight spreads over a larger area near the poles.','Exercise 12'],
+ ['Who created India\'s first insolation atlas?',['Anna Mani, with S. Rangarajan','K.R. Ramanathan','Scientists at IITM, Pune','The Montreal team'],'Solar Radiation Over India was published in 1982.','Science and Society']]},
+{id:'air',ic:'🎈',t:'Atmosphere Layers',s:'13.1.3 Role of the atmosphere',
+ learn:[
+ ['A blanket held by gravity','The atmosphere is held in place by the Earth\'s gravity. It is mainly <b>nitrogen (78%)</b> and <b>oxygen (21%)</b>, with small amounts of argon, carbon dioxide, water vapour and other gases.'],
+ ['Troposphere: 0 to 12 km','Nearly all weather happens here. It is heated from the Earth\'s surface, so temperature <b>falls with height (about 6.5 °C per km)</b>. Warm rising air drives winds and storms. It is tallest above the equator and lowest above the poles.'],
+ ['Stratosphere: 12 to 50 km','The <b>ozone layer</b> is here. Ozone absorbs UV rays and heats the air, so temperature <b>rises with height</b>. That keeps the layer calm, with little vertical mixing. Above it are the mesosphere, thermosphere and exosphere. Outer space starts at about 100 km.'],
+ ['Two protective jobs','1. It <b>absorbs part of the incoming radiation</b>. The ozone layer blocks harmful UV.<br>2. It <b>traps outgoing heat</b>. The surface re-radiates infrared, and greenhouse gases (CO₂, CH₄, water vapour) absorb it. Without this the Earth would be too cold for life. Venus is hotter than Mercury because of an uncontrolled greenhouse effect.'],
+ ['Ozone hole and two scientists','CFCs from refrigerators and aerosols caused severe ozone loss over Antarctica. The <b>Montreal Protocol</b> cut CFC use and the layer is slowly recovering.<br><b>K.R. Ramanathan</b> climbed to 18,000 feet in the Himalayas in 1934 to measure ozone, and later led early monsoon forecasting.']],
+ game:{cats:['Troposphere','Stratosphere'],items:[['Weather forms here',0],['Ozone layer is here',1],['Temperature falls with height',0],['Temperature rises with height',1],['0 to 12 km',0],['12 to 50 km',1],['Clouds and storms',0],['Calm, little vertical mixing',1]]},
+ quiz:[
+ ['The two most abundant gases in the atmosphere are',['Nitrogen (78%) and oxygen (21%)','Oxygen (78%) and nitrogen (21%)','Carbon dioxide and argon','Water vapour and methane'],'Argon, CO₂ and water vapour are present in small amounts.','Text'],
+ ['Winds, storms and rainfall mainly occur in the',['Troposphere','Stratosphere','Mesosphere','Exosphere'],'It is heated from below, so warm air rises and drives weather.','Exercise 6'],
+ ['In the troposphere, temperature',['Decreases by about 6.5 °C per km','Increases by about 6.5 °C per km','Stays the same','Decreases by about 65 °C per km'],'The layer is heated from the Earth\'s surface.','Text'],
+ ['The ozone layer is located in the',['Stratosphere','Troposphere','Thermosphere','Exosphere'],'The stratosphere lies between 12 km and 50 km.','Table 13.2'],
+ ['Why does temperature rise with height in the stratosphere?',['Ozone absorbs UV rays and heats the air','It is much closer to the Sun','Clouds trap the heat there','Aircraft warm the air'],'UV absorption by ozone heats this layer.','Text'],
+ ['The troposphere is tallest above the',['Equator','Poles','30° latitude','60° latitude'],'It is maximum above the equator and lowest above the poles.','Text'],
+ ['What is primarily responsible for warming of the Earth?',['The surface absorbs solar radiation, which is re-radiated and trapped by greenhouse gases','CO₂ immediately absorbs solar radiation and releases heat','Tiny particles in the air absorb sunlight and heat the Earth directly','Only the radiation reflected by clouds heats the Earth'],'Answer key: option (iii).','Exercise 2'],
+ ['Which set lists greenhouse gases named in the chapter?',['CO₂, CH₄ and water vapour','Nitrogen and oxygen','Argon and helium','Only CFCs'],'They absorb the heat re-radiated by the surface.','Text'],
+ ['Venus is hotter than Mercury because',['Its atmosphere causes an uncontrolled greenhouse effect','It is closer to the Sun','It is bigger','It spins faster'],'Mercury is closer to the Sun but Venus has a thick atmosphere.','Text'],
+ ['Which chemicals caused the ozone hole over Antarctica?',['Chlorofluorocarbons (CFCs)','Carbon dioxide','Nitrates','Water vapour'],'CFCs were used in refrigerators and aerosols.','Threads of Curiosity'],
+ ['In 1934, K.R. Ramanathan',['Climbed to 18,000 feet in the Himalayas to measure ozone','Published India\'s insolation atlas','Signed the Montreal Protocol','Discovered the Gulf Stream'],'He found ozone levels lower than expected.','Meet a Scientist'],
+ ['Outer space is said to begin at about',['100 km','12 km','50 km','10,000 km'],'At about 100 km above the Earth.','Text']]},
+{id:'wind',ic:'🌬️',t:'Winds and Currents',s:'13.2 Wind and Ocean Currents',
+ learn:[
+ ['Why air moves','Wind is air moving from <b>high pressure to low pressure</b>. The pressure differences come mainly from uneven heating of the Earth\'s surface by the Sun.'],
+ ['Valley breeze and mountain breeze','<b>Day:</b> slopes facing the Sun heat faster than the valley floor. Warm air rises, pressure drops, and cooler valley air moves up the slopes: a <b>valley breeze</b>.<br><b>Night:</b> slopes lose heat faster. Cool, dense air flows down into the valley: a <b>mountain breeze</b>. Common in Shimla, Dehradun and other Himalayan valleys.'],
+ ['Planetary winds and pressure belts','Equator: warm air rises → <b>equatorial low</b>.<br>About 30° N and S: air sinks → <b>sub-tropical high</b>.<br>About 60° N and S: air rises → <b>sub-polar low</b>.<br>90°: cold dense air sinks → <b>polar high</b>.<br>The Earth\'s rotation deflects winds to the <b>right in the Northern Hemisphere</b> and to the <b>left in the Southern</b>.'],
+ ['Ocean currents','Planetary winds drag surface water by friction. Temperature, salinity, the Earth\'s rotation and land masses also steer the water. Warm equatorial water travels over the surface toward the poles. Colder, saltier, denser water sinks and returns at depth. The big circular patterns are <b>gyres</b>: clockwise in the north, counter-clockwise in the south.'],
+ ['Currents shape climate','The warm <b>North Atlantic Drift</b>, an extension of the Gulf Stream, keeps many ports of north-western Europe ice-free in winter. Currents also carry nutrients for marine life.<br><b>IITM, Pune</b> runs computer models that link atmosphere, ocean, land and ice to simulate the Indian monsoon.']],
+ game:{cats:['Valley breeze (day)','Mountain breeze (night)'],items:[['Slopes heat faster than the valley floor',0],['Happens after sunset',1],['Air moves up the slopes',0],['Cool, dense air flows down',1],['Warm air rises over the slopes',0],['Slopes lose heat faster',1]]},
+ quiz:[
+ ['Wind is the movement of air from',['High pressure to low pressure','Low pressure to high pressure','Hot regions to hotter regions','The poles to space'],'Pressure differences come from uneven heating.','Text'],
+ ['A valley breeze blows',['During the day, up the slopes','At night, down the slopes','Only in winter','From the sea to the land'],'Sunlit slopes heat faster than the valley floor.','Fig. 13.8a'],
+ ['A mountain breeze forms because, after sunset,',['Slopes cool faster and dense air flows down into the valley','Slopes heat up quickly','The valley floor cools faster than the slopes','The Sun heats the valley'],'Cool air is denser, so it sinks.','Exercise 5'],
+ ['Intense heating near the equator forms',['An equatorial low pressure belt','An equatorial high pressure belt','A polar high pressure belt','No pressure belt'],'Warm air rises, leaving low pressure at the surface.','Text'],
+ ['Air that rises at the equator sinks at about',['30° North and South','60° North and South','90° North and South','0°'],'This forms the sub-tropical high pressure belts.','Fig. 13.9a'],
+ ['The sub-polar low pressure belts lie at about',['60° latitude','30° latitude','0° latitude','90° latitude'],'Air rises there where it meets cold polar air.','Fig. 13.9b'],
+ ['Because the Earth rotates, planetary winds are deflected',['Right in the Northern Hemisphere, left in the Southern','Left in the Northern Hemisphere, right in the Southern','Right in both hemispheres','Not at all'],'So winds follow curved paths.','Text'],
+ ['Ocean gyres rotate',['Clockwise in the north, counter-clockwise in the south','Counter-clockwise in the north, clockwise in the south','Clockwise in both','Not at all'],'The Earth\'s rotation deflects moving water.','Fig. 13.10a'],
+ ['Ocean water with higher salinity',['Is denser, sinks and moves at deeper levels','Is less dense and floats','Evaporates faster','Always freezes'],'Less salty water is less dense and stays near the surface.','Text'],
+ ['The North Atlantic Drift',['Keeps many ports of north-western Europe ice-free in winter','Makes Europe colder','Causes the Indian monsoon','Stops all gyres'],'It carries warm water from the equator.','Fig. 13.10b'],
+ ['Surface ocean currents are set in motion mainly by',['Planetary winds dragging the water by friction','Earthquakes','Fish migration','Rainfall'],'Winds drag the surface water of the oceans.','Text'],
+ ['What happens to warm equatorial surface water as it travels toward the poles?',['It carries heat poleward and reduces temperature differences','It heats up further','It stops at 30° latitude','It turns into fresh water'],'Colder, denser water returns toward the equator at depth.','Pause and Ponder 3']]},
+{id:'cycles',ic:'♻️',t:'Nature\'s Cycles',s:'13.3 Biogeochemical Cycles',
+ learn:[
+ ['Biogeochemical cycles','The cyclic movement of matter and energy between the <b>biotic</b> (living) and <b>abiotic</b> (non-living) components. It keeps nutrients like carbon, nitrogen and oxygen recycled and available for life.'],
+ ['Water cycle','Evaporation and transpiration → condensation into clouds → precipitation (rain, hail, snow) → run-off and infiltration to groundwater → back to the ocean. A warmer atmosphere holds more moisture: heavier rain in some areas, drought in others. Melting glaciers raise sea level and threaten cities like Mumbai and Chennai.'],
+ ['Carbon cycle','<b>Fast cycle</b> (days to years): photosynthesis, respiration, feeding and decomposition. <b>Slow cycle</b> (millions of years): buried plants and animals become coal, oil and gas. Oceans absorb CO₂ as carbonate and bicarbonate ions; some marine organisms build shells from them.<br>Carbon is about 49% of the dry weight of living organisms. 71% of global carbon is in oceans, about 1% in the atmosphere. CO₂ rose from 315 ppm (1960) to 420 ppm, about 35%.'],
+ ['Nitrogen cycle','N₂ gas cannot be used directly. <b>Fixation:</b> <i>Rhizobium</i> (legume root nodules) and <i>Azotobacter</i> (soil) make ammonia. <b>Nitrification:</b> <i>Nitrosomonas</i> turns ammonia into nitrite, <i>Nitrobacter</i> turns nitrite into nitrate. Plants <b>assimilate</b> these. Decomposers return ammonia: <b>ammonification</b>. <i>Pseudomonas</i> converts nitrate back to N₂: <b>denitrification</b>. Lightning also fixes a little.'],
+ ['Bread from Air','The <b>Haber-Bosch process</b> makes ammonia from atmospheric nitrogen and gives us most fertilisers. It enabled India\'s Green Revolution. It uses about 1–2% of global energy, and overuse of fertilisers has degraded soil and water.'],
+ ['Oxygen cycle','About 21% of the atmosphere is O₂. <b>Respiration</b> and <b>combustion</b> use oxygen and release CO₂. <b>Photosynthesis</b> restores oxygen using sunlight, water and CO₂.']],
+ game:{cats:['Nitrogen fixation','Nitrification','Ammonification','Denitrification'],items:[['Rhizobium',0],['Nitrosomonas',1],['Pseudomonas',3],['Decomposers break down dead matter',2],['Azotobacter',0],['Nitrobacter',1],['Lightning strike',0],['Haber-Bosch process',0]]},
+ quiz:[
+ ['What is the role of biogeochemical cycles in an ecosystem?',['To recycle essential nutrients between biotic and abiotic components','To provide food directly to all organisms','To create new elements for living things','To remove pollutants and toxins from the organism'],'Answer key: option (ii).','Exercise 1'],
+ ['Which bacteria in legume root nodules fix nitrogen?',['Rhizobium','Nitrobacter','Pseudomonas','Nitrosomonas'],'Azotobacter does the same job in the soil.','Text'],
+ ['Nitrosomonas convert',['Ammonia into nitrite','Nitrite into nitrate','Nitrate into nitrogen gas','Nitrogen gas into ammonia'],'Nitrobacter then converts nitrite into nitrate.','Exercise 7'],
+ ['Conversion of nitrates back into nitrogen gas is called',['Denitrification','Nitrification','Ammonification','Assimilation'],'Denitrifying bacteria such as Pseudomonas do this.','Fig. 13.15'],
+ ['Decomposers returning ammonia to the soil is called',['Ammonification','Nitrogen fixation','Denitrification','Assimilation'],'Bacteria and fungi break down dead matter and waste.','Text'],
+ ['In the fast carbon cycle, plants take CO₂ from the air by',['Photosynthesis','Respiration','Combustion','Decomposition'],'Respiration and decomposition return CO₂ to the air.','Exercise 9'],
+ ['The slow carbon cycle that forms fossil fuels takes',['Millions of years','A few days','A few years','One season'],'Burning them releases that carbon on a very short time scale.','Text'],
+ ['Since 1960, atmospheric CO₂ has risen from about 315 ppm to about',['420 ppm','350 ppm','500 ppm','320 ppm'],'The Keeling curve shows a rise of about 35%.','Fig. 13.14'],
+ ['Where is most of the global carbon (71%) found?',['Oceans','Atmosphere','Forests','Coal mines'],'The atmosphere holds only about 1%.','Threads of Curiosity'],
+ ['Atmospheric oxygen is restored mainly through',['Photosynthesis','Respiration','Combustion','Oxide formation'],'The other three processes use up oxygen.','At a Glance'],
+ ['The Haber-Bosch process makes',['Ammonia from atmospheric nitrogen','Nitrate from nitrite','Oxygen from water','Glucose from CO₂'],'It is nicknamed Bread from Air.','Ready to Go Beyond'],
+ ['A warmer atmosphere holds more moisture. This causes',['Heavier rains in some areas and droughts elsewhere','The same rain everywhere','No rain anywhere','Only more snowfall'],'Sudden intense rain also means more run-off and less groundwater recharge.','Exercise 3']]},
+{id:'human',ic:'🏭',t:'Human Impact',s:'13.4 Human Impact on Earth\'s Processes',
+ learn:[
+ ['Carbon overload','Excess CO₂ increases ocean absorption and makes sea water <b>more acidic</b>, which threatens plankton and coral reefs. Warmer ocean water <b>absorbs less CO₂</b>. Burning fossil fuels and deforestation saturate natural carbon sinks like forests and oceans.'],
+ ['Eutrophication','Overuse of fertilisers adds nitrates to rivers and lakes. Algae grow wildly (<b>algal blooms</b>), deplete oxygen and kill fish. This threatens water bodies and coastal fisheries.'],
+ ['Deforestation','Fewer trees means less photosynthesis and less transpiration, so local rainfall can decline. Surface albedo changes. Without roots to hold soil, erosion increases. Habitats are destroyed and biodiversity falls.'],
+ ['Smog and ground-level ozone','Vehicular emissions react with sunlight to form smog and <b>ground-level ozone, which is harmful</b> for health. Ozone high in the stratosphere is protective.'],
+ ['Restoring the balance','The <b>Montreal Protocol</b> has started ozone recovery. The Kyoto Protocol and the Paris Agreement on CO₂ have been less successful. Renewable energy, planting trees, saving water and sustainable farming help. <b>Mission LiFE</b> (Lifestyle for Environment), an India-led initiative introduced in 2021, encourages eco-friendly habits: reduce, reuse, recycle.']],
+ game:{cats:['Disturbs the balance','Helps restore it'],items:[['Burning fossil fuels',0],['Planting trees',1],['Overuse of fertilisers',0],['Solar and wind energy',1],['Clearing forests',0],['Sustainable farming',1],['Vehicular emissions',0],['Reduce, reuse, recycle',1],['CFCs in refrigerators',0],['Saving water',1]]},
+ quiz:[
+ ['Excess CO₂ absorbed by the ocean makes sea water',['More acidic','More salty','Much colder','Fresh'],'This threatens tiny plankton and coral reefs.','Text'],
+ ['Eutrophication is caused by',['Overuse of fertilisers adding nitrates to water bodies','CFCs from refrigerators','Melting glaciers','Solar panels'],'Extra nitrogen feeds widespread growth of algae.','Fig. 13.17'],
+ ['Algal blooms kill fish because they',['Deplete oxygen in the water','Raise the albedo of the lake','Make the water salty','Block ocean gyres'],'Fish cannot survive without dissolved oxygen.','Text'],
+ ['Clearing forests results in',['Less photosynthesis and transpiration, and possibly less local rainfall','More rainfall','More oxygen in the air','Less CO₂ in the air'],'It also alters albedo and destroys habitats.','Exercise 8'],
+ ['Without tree roots to hold the soil,',['Soil erosion increases','Soil gets richer','Groundwater rises','Nothing changes'],'Roots bind the soil together.','Text'],
+ ['Ground-level ozone formed from vehicular emissions is',['Harmful for health','Protective of life','The same as the ozone layer','Needed for photosynthesis'],'Only stratospheric ozone protects us by blocking UV.','Text'],
+ ['Which global agreement has started the recovery of the ozone layer?',['Montreal Protocol','Kyoto Protocol','Paris Agreement','Mission LiFE'],'It reduced the use of CFCs.','Text'],
+ ['Mission LiFE stands for',['Lifestyle for Environment','Life in Forest Ecosystems','Low Fuel Energy','Living in Free Earth'],'An India-led global initiative for eco-friendly lifestyles.','Threads of Curiosity'],
+ ['Why is excess CO₂ undesirable even though plants need it?',['It intensifies the greenhouse effect and causes global warming','Plants cannot use CO₂','It destroys the ozone layer','It stops evaporation'],'Some CO₂ keeps the Earth warm enough for life. The balance is critical.','Exercise 10'],
+ ['Warmer ocean water',['Reduces the ocean\'s capacity to absorb CO₂','Increases its capacity to absorb CO₂','Has no effect on CO₂','Stops ocean currents'],'So the ocean becomes a less effective carbon sink.','Pause and Ponder 4'],
+ ['Which pair are renewable energy resources?',['Solar and wind','Coal and oil','Natural gas and coal','Crude oil and gas'],'Switching to these reduces the carbon released.','Pause and Ponder 6'],
+ ['If photosynthesis stopped, the atmosphere would',['Lose its main way of restoring oxygen','Gain more oxygen','Lose all its nitrogen','Stay exactly the same'],'Respiration and combustion would keep using oxygen.','What if…']]}
+];
+const BOSS={id:'boss',ic:'👑',t:'Planet Guardian Boss',s:'15 mixed questions · 3 hearts'};
+
+/* ---------- UI ---------- */
+let cur=null,tab='learn';
+function starsFor(id){return save.stars[id]||0}
+function drawHome(){let tot=0;const g=$('#grid');g.innerHTML='';
+ [...Z,BOSS].forEach((z,i)=>{const s=starsFor(z.id);tot+=s;const b=document.createElement('button');b.className='zone'+(z.id=='boss'?' boss':'');
+  b.innerHTML=`<span class="ic">${z.ic}</span><span><small>${z.id=='boss'?'Final round':'Mission '+(i+1)}</small><b>${z.t}</b><small>${z.s}</small><span class="st">${'★'.repeat(s)}${'☆'.repeat(3-s)}</span></span>`;
+  b.onclick=()=>openZone(z);g.appendChild(b)});
+ $('#tot').textContent=`⭐ ${tot} / 21`}
+function show(home){$('#home').hidden=!home;$('#zone').hidden=home;scrollTo(0,0)}
+$('#back').onclick=()=>{labFn=null;drawHome();show(true)};
+function openZone(z){cur=z;beep(520,.08);$('#zt').textContent=z.ic+' '+z.t;show(false);
+ const T=$('#tabs');T.innerHTML='';
+ if(z.id=='boss'){T.hidden=true;bossIntro();return}
+ T.hidden=false;[['learn','📖 Learn'],['lab','🔬 3D Lab'],['game','🎮 Sort It'],['quiz','❓ Quiz']].forEach(([k,l])=>{const b=document.createElement('button');b.textContent=l;b.dataset.k=k;b.onclick=()=>setTab(k);T.appendChild(b)});
+ setTab('learn')}
+function setTab(k){tab=k;labFn=null;[...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k==k));({learn,lab,game,quiz})[k]()}
+function learn(i=0){const c=cur.learn[i],P=$('#panel');
+ P.innerHTML=`<div class="card"><span class="tag">${cur.s}</span><h3>${c[0]}</h3><p>${c[1]}</p><div class="nav"><button id="pv" ${i?'':'disabled'}>← Back</button><span>${i+1} / ${cur.learn.length}</span><button id="nx">${i<cur.learn.length-1?'Next →':'Open the 3D Lab 🔬'}</button></div></div>`;
+ $('#pv').onclick=()=>learn(i-1);$('#nx').onclick=()=>{beep(600,.06);i<cur.learn.length-1?learn(i+1):setTab('lab')}}
+function lab(){const S=LABS[cur.id];L={};
+ $('#panel').innerHTML=`<canvas id="lab" width="${W}" height="${H}"></canvas><div class="ctl">${S.ctl}</div><div class="out" id="labout"></div><div class="nav"><span>🛰️ Bhoomi-Bot: change the controls and watch what happens.</span><button id="nx">Play the game 🎮</button></div>`;
+ S.init();
+ document.querySelectorAll('.ctl button').forEach(b=>b.onclick=()=>{beep(700,.06);S.act(b.dataset.k)});
+ const r=$('.ctl input');if(r)r.oninput=()=>S.act(r.value);
+ $('#nx').onclick=()=>setTab('game');
+ const c=$('#lab').getContext('2d');labFn=t=>{c.clearRect(0,0,W,H);S.draw(c,t)}}
+function game(){const G=cur.game,items=shuffle(G.items);let i=0,sc=0,first=true;const P=$('#panel');
+ function step(){if(i>=items.length){P.innerHTML=`<div class="card center"><div class="big">🎯</div><h3>Sorted!</h3><p style="margin:auto">${sc} of ${items.length} right on the first try.</p><div class="ctl" style="justify-content:center"><button id="ag">Play again</button><button id="nx">Take the quiz ❓</button></div></div>`;win();$('#ag').onclick=game;$('#nx').onclick=()=>setTab('quiz');return}
+  first=true;P.innerHTML=`<div class="card"><div class="bar"><i style="width:${i/items.length*100}%"></i></div><p>Where does this belong?</p><div class="item">${items[i][0]}</div><div class="cats">${G.cats.map((c,j)=>`<button data-j="${j}">${c}</button>`).join('')}</div><div class="out" id="go">Tap the right group.</div></div>`;
+  P.querySelectorAll('.cats button').forEach(b=>b.onclick=()=>{if(+b.dataset.j==items[i][1]){good();if(first)sc++;b.classList.add('ok');P.querySelectorAll('.cats button').forEach(x=>x.disabled=true);setTimeout(()=>{i++;step()},550)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').textContent='Not this one. Think again and try another group.'}})}
+ P.classList.add('opts-reset');step()}
+function runQuiz(qs,hearts,done){let i=0,sc=0,hp=hearts;const P=$('#panel');
+ function step(){if(i>=qs.length||(hearts&&hp<=0))return done(sc,qs.length,hp);
+  const q=qs[i],ops=shuffle(q[1].map((o,j)=>[o,j==0]));
+  P.innerHTML=`<div class="card"><div class="bar"><i style="width:${i/qs.length*100}%"></i></div><div class="nav" style="margin:0 0 8px"><span class="tag">${q[3]}</span><span>${hearts?'❤️'.repeat(hp)+'🖤'.repeat(hearts-hp)+' · ':''}Q ${i+1} / ${qs.length} · Score ${sc}</span></div><p class="q">${q[0]}</p><div class="opts">${ops.map((o,j)=>`<button data-j="${j}">${o[0]}</button>`).join('')}</div><div class="out" id="ex" hidden></div><div class="nav"><span></span><button id="nx" hidden>Next →</button></div></div>`;
+  const B=[...P.querySelectorAll('.opts button')];
+  B.forEach((b,j)=>b.onclick=()=>{B.forEach((x,k)=>{x.disabled=true;if(ops[k][1])x.classList.add('ok')});
+   if(ops[j][1]){sc++;good()}else{b.classList.add('no');hp--;bad()}
+   const ex=$('#ex');ex.hidden=false;ex.innerHTML=(ops[j][1]?'✅ <b>Correct!</b> ':'💡 <b>Not quite.</b> ')+q[2];
+   const n=$('#nx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})}
+ step()}
+function finish(id,sc,n,msg){const r=sc/n,st=r>=.9?3:r>=.7?2:r>=.5?1:0;if(st>starsFor(id)){save.stars[id]=st;persist()}
+ $('#panel').innerHTML=`<div class="card center"><div class="big">${st==3?'🏆':st?'🌟':'🌱'}</div><h3>${msg}</h3><p style="margin:auto">You scored <b>${sc} / ${n}</b>.</p><p class="big" style="color:var(--sun)">${'★'.repeat(st)}${'☆'.repeat(3-st)}</p><p style="margin:auto">${st==3?'Outstanding work, Guardian!':st?'Good work. Read the cards once more to reach 3 stars.':'Visit Learn and the 3D Lab, then try again.'}</p><div class="ctl" style="justify-content:center"><button id="ag">Try again</button><button id="hm">Missions</button></div></div>`;
+ if(st>=2){win();confetti()}$('#ag').onclick=()=>cur.id=='boss'?bossIntro():quiz();$('#hm').onclick=()=>$('#back').click()}
+function quiz(){runQuiz(shuffle(cur.quiz),0,(sc,n)=>finish(cur.id,sc,n,cur.t+' quiz complete'))}
+function bossIntro(){$('#panel').innerHTML=`<div class="card center"><div class="big">👑</div><h3>Planet Guardian Boss Round</h3><p style="margin:auto">15 questions from the whole chapter. You have 3 hearts. A wrong answer costs one heart.</p><div class="ctl" style="justify-content:center"><button id="go">Start ▶</button></div></div>`;
+ $('#go').onclick=()=>runQuiz(shuffle(Z.flatMap(z=>z.quiz)).slice(0,15),3,(sc,n,hp)=>finish('boss',sc,n,hp>0?'Earth is safe with you!':'Out of hearts'))}
+
+/* ================= WebGL 3D engine (no libraries) ================= */
+let SC=['orbit',{hub:1}],boost=0,yaw=0,labFn=null;
+const cv=$('#gl'),gl=cv.getContext('webgl',{antialias:true,alpha:false})||cv.getContext('experimental-webgl');
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mulS=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]};
+const M4={
+ mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o},
+ persp(f,as,n,fa){const t=1/Math.tan(f/2),o=new Float32Array(16);o[0]=t/as;o[5]=t;o[10]=(fa+n)/(n-fa);o[11]=-1;o[14]=2*fa*n/(n-fa);return o},
+ look(e,c,u){const z=norm(sub(e,c)),x=norm(cross(u,z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,e),-dot(y,e),-dot(z,e),1])},
+ trs(p,s,ry=0){const c=Math.cos(ry),n=Math.sin(ry),[sx,sy,sz]=typeof s=='number'?[s,s,s]:s;return new Float32Array([c*sx,0,-n*sx,0,0,sy,0,0,n*sz,0,c*sz,0,p[0],p[1],p[2],1])},
+ basis(p,x,y,z,s){return new Float32Array([x[0]*s[0],x[1]*s[0],x[2]*s[0],0,y[0]*s[1],y[1]*s[1],y[2]*s[1],0,z[0]*s[2],z[1]*s[2],z[2]*s[2],0,p[0],p[1],p[2],1])}};
+const hsh=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5453;return s-Math.floor(s)};
+function vn(x,y){const i=Math.floor(x),j=Math.floor(y),f=x-i,g=y-j,u=f*f*(3-2*f),v=g*g*(3-2*g);return(hsh(i,j)*(1-u)+hsh(i+1,j)*u)*(1-v)+(hsh(i,j+1)*(1-u)+hsh(i+1,j+1)*u)*v}
+function TH(x,z){const r=Math.abs(x)-2.4;return 1.6*Math.exp(-r*r/1.1)*(.7+.3*Math.sin(z*1.1+x*.5))+.14*vn(x*2+9,z*2+5)+.25*vn(x*.7,z*.7)-.3*Math.exp(-(x*x+z*z)/1.6)}
+
+const NOISE=`
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+float h(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float n3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),
+  mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}
+float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*n3(p);p=p*2.03+vec3(1.7);a*=.5;}return s;}
+`;
+const VS_OBJ=`attribute vec3 aP,aN;attribute vec4 aC;uniform mat4 uVP,uM;varying vec3 vO,vW,vN;varying vec4 vC;
+void main(){vec4 w=uM*vec4(aP,1.);vO=aP;vW=w.xyz;vN=(uM*vec4(aN,0.)).xyz;vC=aC;gl_Position=uVP*w;}`;
+const FS_PLANET=NOISE+`uniform vec3 uSun,uCam,uSurf;uniform float uIce,uWarm,uT,uMix,uBelt,uNight;varying vec3 vO,vW,vN;
+void main(){vec3 N=normalize(vN),V=normalize(uCam-vW),o=normalize(vO);float al=abs(asin(clamp(o.y,-1.,1.)));
+ float e=fbm(o*2.2+vec3(3.1,0.,1.3))+.35*fbm(o*6.);float land=smoothstep(.69,.72,e);
+ vec3 sea=mix(vec3(.01,.06,.2),vec3(.02,.27,.45),smoothstep(.5,.7,e));
+ float dry=smoothstep(.15,.3,al)*(1.-smoothstep(.4,.6,al))*n3(o*5.+2.);
+ vec3 g=mix(mix(vec3(.05,.28,.08),vec3(.2,.38,.12),n3(o*9.)),vec3(.62,.5,.3),clamp(dry*1.7,0.,1.));
+ g=mix(g,vec3(.42,.38,.34),smoothstep(.84,.96,e));vec3 col=mix(sea,g,land);
+ float il=uIce+(n3(o*8.)-.5)*.14-land*.06;float ice=smoothstep(il,il+.04,al);col=mix(col,vec3(.93,.96,1.),ice);
+ col=mix(col,uSurf,uMix);col+=vec3(.22,.03,-.05)*uWarm*(1.-ice)*(1.-uMix);
+ if(uBelt>0.){float d=degrees(al);float lo=exp(-pow(d/7.,2.))+exp(-pow((d-60.)/6.,2.));float hi=exp(-pow((d-30.)/6.,2.))+exp(-pow((d-88.)/8.,2.));
+  col=mix(col,vec3(1.,.3,.2),lo*.55);col=mix(col,vec3(.25,.55,1.),hi*.55);}
+ float cl=smoothstep(.55,.75,fbm(o*3.+vec3(uT*.02,0.,uT*.013)))*(1.-uMix)*(1.-uBelt*.7);
+ float d=dot(N,uSun),day=smoothstep(-.15,.25,d);vec3 H=normalize(uSun+V);
+ float sp=pow(max(dot(N,H),0.),60.)*(1.-land)*(1.-ice)*(1.-cl)*(1.-uMix);
+ vec3 lit=col*(max(d,0.)*1.15+.045)+sp*vec3(1.,.9,.7);lit=mix(lit,vec3(max(d,0.)+.05),cl*.85);
+ lit+=vec3(1.,.75,.35)*land*(1.-ice)*step(.7,n3(o*40.))*n3(o*14.)*(1.-day)*uNight*1.6*(1.-uMix);
+ float rim=pow(1.-max(dot(N,V),0.),3.);lit+=mix(vec3(.3,.6,1.),vec3(1.,.5,.3),uWarm)*rim*(.2+.8*day);
+ lit+=vec3(1.,.4,.15)*smoothstep(0.,.2,d)*(1.-smoothstep(.2,.45,d))*.12;gl_FragColor=vec4(lit,1.);}`;
+const FS_ATMO=`precision mediump float;uniform vec3 uSun,uCam,uCol;uniform float uPow,uA,uInv,uLit;varying vec3 vW,vN;
+void main(){vec3 N=normalize(vN),V=normalize(uCam-vW);float nv=dot(N,V);if(nv<0.)discard;
+ float a=uInv>.5?pow(nv,uPow):pow(1.-nv,uPow);a*=uA*mix(1.,.25+.75*smoothstep(-.4,.4,dot(N,uSun)),uLit);gl_FragColor=vec4(uCol*a,a);}`;
+const FS_OBJ=NOISE+`uniform vec3 uSun,uCam,uDim,uFog;uniform vec4 uTint;uniform float uAmb,uMode,uSnow,uDry,uNightF,uHeat,uFogD;varying vec3 vW,vN;varying vec4 vC;
+void main(){vec3 N=normalize(vN);vec3 c=vC.rgb*uTint.rgb;float em=vC.a+uTint.a;vec3 ad=vec3(0.);
+ if(uMode==1.){float n=n3(vW*3.);vec3 gr=mix(vec3(.14,.42,.1),vec3(.55,.45,.2),uDry)*(.75+.5*n);
+  c=mix(gr,vec3(.38,.34,.3)*(.8+.4*n),smoothstep(.45,.85,vW.y+n*.2));c=mix(c,vec3(.95,.97,1.),smoothstep(uSnow,uSnow+.12,vW.y+n*.2));
+  c=mix(c,vec3(.62,.56,.4),smoothstep(.06,-.03,vW.y)*.6);c=mix(c,vec3(.36,.25,.16)*(.8+.4*n),smoothstep(-.08,-.3,vW.y));em=0.;}
+ else if(uMode==2.&&em>.5){if(abs(N.y)<.5){vec2 g=vec2((vW.x+vW.z)*8.,vW.y*9.),f=fract(g);float w=step(.25,f.x)*step(.25,f.y)*step(f.x,.8)*step(f.y,.8);
+   float on=step(.4,h(vec3(floor(g),floor(em*37.))));c=mix(c,vec3(.2,.32,.45),w);ad=vec3(1.,.8,.45)*w*on*uNightF*1.4;}
+  ad+=vec3(.9,.15,.02)*uHeat;em=0.;}
+ float df=max(dot(N,uSun),0.);vec3 col=c*(uAmb+df*(1.-uAmb))*uDim+c*em+ad;
+ col=mix(col,uFog,1.-exp(-length(uCam-vW)*uFogD));gl_FragColor=vec4(col,1.);}`;
+const VS_PT=`attribute vec3 aP;attribute vec4 aC;uniform mat4 uVP;uniform float uScale;varying vec3 vC;
+void main(){gl_Position=uVP*vec4(aP,1.);vC=aC.rgb;gl_PointSize=aC.a<0.?-aC.a:max(1.5,aC.a*uScale/gl_Position.w);}`;
+const FS_PT=`precision mediump float;varying vec3 vC;uniform float uFade;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),1.4)*uFade;gl_FragColor=vec4(vC*a,a);}`;
+const VS_BG=`attribute vec3 aP;varying vec2 vP;void main(){vP=aP.xy;gl_Position=vec4(aP.xy,0.,1.);}`;
+const FS_BG=NOISE+`varying vec2 vP;uniform vec3 uF,uR,uU,uSun;uniform float uAs,uSky,uTan;
+void main(){vec3 d=normalize(uF+vP.x*uAs*uTan*uR+vP.y*uTan*uU);float n=fbm(d*2.5+3.),m=fbm(d*5.+vec3(7.));
+ vec3 sp=vec3(.008,.012,.03)+vec3(.4,.1,.55)*pow(n,3.)*1.3+vec3(.05,.28,.55)*pow(m,3.);
+ sp+=vec3(.5,.45,.6)*exp(-pow(dot(d,normalize(vec3(.3,.8,-.5)))*3.,2.))*m*m*.7;
+ float s=max(dot(d,uSun),0.);vec3 sky=mix(vec3(.78,.9,1.),vec3(.14,.42,.86),clamp(d.y*1.6+.1,0.,1.))+vec3(1.,.9,.6)*pow(s,300.)*2.+vec3(1.,.8,.5)*pow(s,8.)*.25;
+ if(d.y<0.)sky=mix(sky,vec3(.55,.66,.7),.6);gl_FragColor=vec4(mix(sp,sky,uSky),1.);}`;
+
+function prog(vs,fs){const p=gl.createProgram();[[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]].forEach(([t,s])=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);
+  if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))console.error('shader',gl.getShaderInfoLog(sh));gl.attachShader(p,sh)});
+ gl.bindAttribLocation(p,0,'aP');gl.bindAttribLocation(p,1,'aN');gl.bindAttribLocation(p,2,'aC');gl.linkProgram(p);
+ if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error('link',gl.getProgramInfoLog(p));
+ p.u={};const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const nm=gl.getActiveUniform(p,i).name;p.u[nm]=gl.getUniformLocation(p,nm)}
+ p.n=gl.getAttribLocation(p,'aN')>=0;p.c=gl.getAttribLocation(p,'aC')>=0;return p}
+function set(p,o){for(const k in o){const l=p.u[k],v=o[k];if(l==null)continue;if(typeof v=='number')gl.uniform1f(l,v);else if(v.length==3)gl.uniform3fv(l,v);else if(v.length==4)gl.uniform4fv(l,v);else gl.uniformMatrix4fv(l,false,v)}}
+function MB(){const a=[],o={a,
+ v(p,n,c){a.push(p[0],p[1],p[2],n[0],n[1],n[2],c[0],c[1],c[2],c[3])},
+ tri(p,q,r,c){const n=norm(cross(sub(q,p),sub(r,p)));o.v(p,n,c);o.v(q,n,c);o.v(r,n,c)},
+ quad(p,q,r,s,c){o.tri(p,q,r,c);o.tri(p,r,s,c)},
+ box(c,s,col){const w=s[0]/2,h=s[1]/2,d=s[2]/2,P=(i,j,k)=>[c[0]+i*w,c[1]+j*h,c[2]+k*d];
+  o.quad(P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1),col);o.quad(P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1),col);
+  o.quad(P(1,-1,1),P(1,-1,-1),P(1,1,-1),P(1,1,1),col);o.quad(P(-1,-1,-1),P(-1,-1,1),P(-1,1,1),P(-1,1,-1),col);
+  o.quad(P(-1,1,1),P(1,1,1),P(1,1,-1),P(-1,1,-1),col);o.quad(P(-1,-1,-1),P(1,-1,-1),P(1,-1,1),P(-1,-1,1),col)},
+ cone(c,r,h,col,n=8){for(let i=0;i<n;i++){const a0=i/n*6.2832,a1=(i+1)/n*6.2832;o.tri([c[0]+Math.cos(a1)*r,c[1],c[2]+Math.sin(a1)*r],[c[0]+Math.cos(a0)*r,c[1],c[2]+Math.sin(a0)*r],[c[0],c[1]+h,c[2]],col)}},
+ done(){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);return{b,n:a.length/10}}};return o}
+
+let PP,PA,PO,PT,PB,SPH,BOX,CITY,TERR,TREES,STARS,QUAD,ptBuf,VP,camE,env,cF,cR,cU,cAs,cTan,T=0;
+const SHEEP=[],PD=new Float32Array(7*5000);let pn=0;const LBS=[];
+function initGL(){
+ PP=prog(VS_OBJ,FS_PLANET);PA=prog(VS_OBJ,FS_ATMO);PO=prog(VS_OBJ,FS_OBJ);PT=prog(VS_PT,FS_PT);PB=prog(VS_BG,FS_BG);
+ let m=MB();const W=[1,1,1,0],N=40,K=28,sp=(i,j)=>{const th=i/K*Math.PI,ph=j/N*6.2832;return[Math.sin(th)*Math.sin(ph),Math.cos(th),Math.sin(th)*Math.cos(ph)]};
+ for(let i=0;i<K;i++)for(let j=0;j<N;j++){const a=sp(i,j),b=sp(i+1,j),c=sp(i+1,j+1),d=sp(i,j+1);[a,b,c,a,c,d].forEach(p=>m.v(p,p,W))}SPH=m.done();
+ m=MB();m.box([0,0,0],[1,1,1],W);BOX=m.done();
+ /* city + village */
+ m=MB();let sd=7;const R=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ m.box([3,-.05,0],[4.9,.1,4.9],[.17,.17,.19,0]);m.box([-3,-.05,0],[4.9,.1,4.9],[.2,.45,.15,0]);m.box([0,-.06,0],[1.2,.08,.5],[.25,.25,.27,0]);
+ for(let i=0;i<8;i++)for(let j=0;j<8;j++){if(i%3==2||j%3==2)continue;const x=.95+i*.58,z=-2.03+j*.58,hg=.35+R()*1.1+(Math.abs(i-3.5)+Math.abs(j-3.5)<3?R()*1.3:0),g=.34+R()*.25;m.box([x,hg/2,z],[.44,hg,.44],[g,g,g+.06,.55+R()*.4])}
+ for(let i=0;i<8;i++){const x=-4.8+R()*3.6,z=-2+R()*4;m.box([x,.15,z],[.42,.3,.42],[.66,.48,.32,0]);m.cone([x,.3,z],.36,.26,[.55,.22,.12,0],4)}
+ for(let i=0;i<46;i++){const x=-5.2+R()*4.3,z=-2.3+R()*4.6;m.box([x,.1,z],[.05,.2,.05],[.35,.22,.1,0]);m.cone([x,.18,z],.14,.36,[.07,.3+R()*.15,.1,0],6)}
+ CITY=m.done();
+ /* mountain valley terrain */
+ m=MB();const GX=70,GZ=56,TP=(i,j)=>{const x=-5+i/GX*10,z=-4+j/GZ*8;return[x,TH(x,z),z]};
+ for(let i=0;i<GX;i++)for(let j=0;j<GZ;j++)m.quad(TP(i,j),TP(i,j+1),TP(i+1,j+1),TP(i+1,j),W);
+ const dn=p=>[p[0],-1.5,p[2]];for(let i=0;i<GX;i++){let a=TP(i,GZ),b=TP(i+1,GZ);m.quad(a,dn(a),dn(b),b,W);a=TP(i+1,0);b=TP(i,0);m.quad(a,dn(a),dn(b),b,W)}
+ for(let j=0;j<GZ;j++){let a=TP(0,j),b=TP(0,j+1);m.quad(a,dn(a),dn(b),b,W);a=TP(GX,j+1);b=TP(GX,j);m.quad(a,dn(a),dn(b),b,W)}TERR=m.done();
+ m=MB();for(let i=0;i<400&&m.a.length<130*10*36;i++){const x=-4.6+R()*9.2,z=-3.7+R()*7.4,y=TH(x,z);if(y<.12||y>.6)continue;m.box([x,y+.07,z],[.04,.16,.04],[.35,.22,.1,0]);m.cone([x,y+.12,z],.1,.3,[.06,.28+R()*.15,.09,0],6)}TREES=m.done();
+ for(let i=0;i<300&&SHEEP.length<9;i++){const x=-1.6+R()*3.2,z=-3.2+R()*6.4,y=TH(x,z);if(y>.02&&y<.22)SHEEP.push([x,y+.05,z])}
+ /* stars */
+ const s=new Float32Array(1500*7);for(let i=0;i<1500;i++){const p=norm([R()-.5,R()-.5,R()-.5]),b=.4+R()*.6,k=R();s.set([p[0]*150,p[1]*150,p[2]*150,b*(k>.8?1:.85),b*.9,b*(k<.2?1:.8),-(1+R()*R()*2.6)],i*7)}
+ STARS=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,STARS);gl.bufferData(gl.ARRAY_BUFFER,s,gl.STATIC_DRAW);
+ QUAD=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,0,3,-1,0,-1,3,0]),gl.STATIC_DRAW);
+ ptBuf=gl.createBuffer();gl.enableVertexAttribArray(0)}
+function bindMesh(p,m){gl.bindBuffer(gl.ARRAY_BUFFER,m.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,40,0);
+ if(p.n){gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,40,12)}else gl.disableVertexAttribArray(1);
+ if(p.c){gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,40,24)}else gl.disableVertexAttribArray(2)}
+function drawPts(buf,data,n,fade){gl.useProgram(PT);gl.bindBuffer(gl.ARRAY_BUFFER,buf);if(data)gl.bufferData(gl.ARRAY_BUFFER,data,gl.DYNAMIC_DRAW);
+ gl.disableVertexAttribArray(1);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,28,0);gl.vertexAttribPointer(2,4,gl.FLOAT,false,28,12);
+ set(PT,{uVP:VP,uScale:cv.height*1.07,uFade:fade});gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,n);gl.depthMask(true);gl.disable(gl.BLEND)}
+const SUN=norm([1,.35,.6]);
+function begin(eye,tgt,e){env=Object.assign({sky:0,sun:SUN,amb:.25,dim:[1,1,1],fogD:0,fog:[.7,.8,.9]},e||{});
+ cAs=cv.width/cv.height;const k=Math.max(1,1.62/cAs),c=Math.cos(yaw),s=Math.sin(yaw),d=mulS(sub(eye,tgt),k);
+ camE=[tgt[0]+d[0]*c+d[2]*s,tgt[1]+d[1],tgt[2]-d[0]*s+d[2]*c];const fov=.87;cTan=Math.tan(fov/2);
+ VP=M4.mul(M4.persp(fov,cAs,.05,500),M4.look(camE,tgt,[0,1,0]));cF=norm(sub(tgt,camE));cR=norm(cross(cF,[0,1,0]));cU=cross(cR,cF);
+ gl.viewport(0,0,cv.width,cv.height);gl.clear(gl.DEPTH_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);
+ gl.useProgram(PB);gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.disableVertexAttribArray(1);gl.disableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+ set(PB,{uF:cF,uR:cR,uU:cU,uSun:env.sun,uAs:cAs,uSky:env.sky,uTan:cTan});gl.drawArrays(gl.TRIANGLES,0,3);
+ if(env.sky<.9)drawPts(STARS,null,1500,1-env.sky);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
+function draw(mesh,M,tint,mode,o){gl.useProgram(PO);bindMesh(PO,mesh);set(PO,Object.assign({uVP:VP,uM:M,uSun:env.sun,uCam:camE,uDim:env.dim,uFog:env.fog,uFogD:env.fogD,uAmb:env.amb,uTint:tint||[1,1,1,0],uMode:mode||0,uSnow:1,uDry:0,uNightF:0,uHeat:0},o||{}));gl.drawArrays(gl.TRIANGLES,0,mesh.n)}
+function atmo(M,col,pw,a,inv,lit){gl.useProgram(PA);bindMesh(PA,SPH);set(PA,{uVP:VP,uM:M,uSun:env.sun,uCam:camE,uCol:col,uPow:pw,uA:a,uInv:inv||0,uLit:lit||0});
+ gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE);gl.depthMask(false);gl.drawArrays(gl.TRIANGLES,0,SPH.n);gl.depthMask(true);gl.disable(gl.BLEND)}
+function earth(o){o=o||{};const s=o.s||1,M=M4.trs([0,0,0],s,o.rot||0);gl.useProgram(PP);bindMesh(PP,SPH);
+ set(PP,{uVP:VP,uM:M,uSun:env.sun,uCam:camE,uSurf:o.surf||[0,0,0],uIce:1.08+.42*(o.warm||0),uWarm:o.warm||0,uT:T,uMix:o.mix||0,uBelt:o.belt||0,uNight:1});gl.drawArrays(gl.TRIANGLES,0,SPH.n);
+ atmo(M4.trs([0,0,0],s*1.06),o.warm>.5?[1,.55,.3]:[.3,.6,1],3,.9,0,1)}
+function sun(pos,r){draw(SPH,M4.trs(pos,r),[1,.82,.4,3]);atmo(M4.trs(pos,r*2.4),[1,.6,.2],2.2,.9,1)}
+function P(x,y,z,r,g,b,s){if(pn>=5000)return;PD.set([x,y,z,r,g,b,s],pn*7);pn++}
+function LB(t,p,c){LBS.push([t,p,c||''])}
+function ship(pos,fw,up,s){const x=norm(cross(up,fw)),y=cross(fw,x),bf=Math.max(0,1-(performance.now()-boost)/900),
+ part=(o,sc,mesh,tint)=>draw(mesh,M4.basis(add(pos,add(add(mulS(x,o[0]*s),mulS(y,o[1]*s)),mulS(fw,o[2]*s))),x,y,fw,mulS(sc,s)),tint);
+ part([0,0,0],[.16,.14,.55],SPH,[.86,.89,.96,0]);part([0,.08,.18],[.09,.07,.16],SPH,[.15,.6,1,.7]);part([0,0,-.1],[.95,.03,.28],BOX,[.62,.68,.8,0]);
+ part([0,.15,-.4],[.03,.26,.2],BOX,[.9,.3,.2,0]);part([.2,0,-.48],[.07,.07,.1],SPH,[1,.5,.1,2]);part([-.2,0,-.48],[.07,.07,.1],SPH,[1,.5,.1,2]);
+ for(let i=0;i<16;i++){const u=(T*2+i/16)%1,e=add(pos,add(mulS(fw,-s*(.58+u*(.9+bf*1.6))),mulS(x,(i%2?.2:-.2)*s)));P(e[0],e[1],e[2],1,.55-.3*u,.1,s*(.16+bf*.2)*(1-u))}}
+const ALB=[['Snow',.85,[.96,.98,1],'0.80–0.90 (Table 13.1)'],['Ice',.6,[.72,.88,.95],'0.50–0.70 (Table 13.1)'],['Crushed rock',.28,[.5,.48,.46],'0.25–0.30 (Table 13.1)'],['Light coloured soil',.35,[.8,.68,.48],'typical value, find yours in Activity 13.2'],['Black soil',.1,[.13,.11,.1],'typical value, find yours in Activity 13.2'],['Ocean water',.06,[.03,.22,.42],'typical value, find yours in Activity 13.2']];
+const CYC=[
+ {n:['CO₂ in air','Plants','Animals','Dead matter','Fossil fuels'],e:['Photosynthesis','Feeding','Death','Millions of years','Combustion'],col:[1,.76,.24],m:'<b>Carbon cycle.</b> Respiration and decomposition also return CO₂ to the air (fast cycle). Oceans absorb CO₂ too, and marine organisms use it for shells.'},
+ {n:['N₂ in air','Ammonia','Nitrite','Nitrate'],e:['Fixation: Rhizobium, Azotobacter','Nitrosomonas','Nitrobacter','Denitrification: Pseudomonas'],col:[.72,.6,1],m:'<b>Nitrogen cycle.</b> Plants assimilate nitrogen compounds from the soil. When organisms die, decomposers return ammonia (ammonification).'},
+ {n:['O₂ in air','Plants and animals','CO₂','Green plants'],e:['Respiration','Releases CO₂','Taken in','Photosynthesis'],col:[.31,.88,.54],m:'<b>Oxygen cycle.</b> Combustion of fuels also uses O₂ and releases CO₂. Photosynthesis restores the oxygen.'}];
+function rays(sn,N,fn){const e1=norm(cross(sn,[0,1,0])),e2=cross(sn,e1);for(let i=0;i<N;i++){const a=i*2.399,r=Math.sqrt((i+.5)/N)*.85;fn(i,norm(add(mulS(sn,Math.sqrt(1-r*r)),add(mulS(e1,r*Math.cos(a)),mulS(e2,r*Math.sin(a))))))}}
+const SCN={
+orbit(p,t){const d=p.hub?4.3:3.5,a=p.lab||p.w?0:t*.05,sn=norm([Math.sin(a+.85),.4,Math.cos(a+.85)]);begin([Math.sin(a)*d,.9,Math.cos(a)*d],[0,0,0],{sun:sn});sun(mulS(sn,70),5);earth({rot:t*.04,warm:p.w||0});
+ const b=t*.35,sp=[Math.cos(b)*1.9,.35*Math.sin(b*.7),Math.sin(b)*1.9];ship(sp,norm([-Math.sin(b),.2*Math.cos(b*.7),Math.cos(b)]),norm(sp),.45);
+ if(p.lab){LB('Atmosphere: the air',[0,1.32,0]);LB('Cryosphere: ice and snow',[0,.96,.4]);LB('Hydrosphere: liquid water',[.85,-.05,.75]);LB('Geosphere: rocks and soil',[-.9,.3,.6]);LB('Biosphere: living things',[-.15,-.75,.8])}
+ if(p.w)for(let i=0;i<Math.round(60*p.w);i++){const q=t*.2+i*2.4,r=1.25+.25*hsh(i,3);P(Math.cos(q)*r*Math.cos(i),Math.sin(i*1.7)*r*.8,Math.sin(q)*r*Math.cos(i),1,.6,.3,.05)}},
+sunearth(p,t){begin([.6,1.3,5.4],[-2.6,0,0],{sun:[-1,0,0]});sun([-6.2,0,0],1.1);earth({rot:t*.03});
+ [['Gamma rays',[.75,.4,1],.1,-1.32],['X-rays',[.5,.55,1],.14,-1.32],['Ultraviolet',[.65,.3,1],.2,-1.13],['Visible light',[1,1,.7],.3,0],['Infrared',[1,.35,.2],.48,0],['Microwaves',[.6,.6,.6],.8,0],['Radio waves',[.45,.45,.5],1.3,0]].forEach((b,k)=>{
+  const y0=(3-k)*.25,stop=p.f&&b[3]?b[3]:-Math.sqrt(1-y0*y0)-.02,sz=k>4?.035:.06;
+  for(let i=0;i<50;i++){const x=-4.9+((t*.9+i*.084)%4.2);if(x>stop)continue;P(x,y0+.08*Math.sin(x*6.283/b[2]),0,b[1][0],b[1][1],b[1][2],sz)}LB(b[0],[-4.3+(k%2)*1.5,y0+.02,.3],'sm')});
+ if(p.f){LB('Upper atmosphere filters gamma and X-rays',[-1.5,1.3,0]);LB('Ozone absorbs most UV',[-.2,.3,1.1])}
+ if(p.sc){LB('Solar constant: 1.4 kW/m² at the top of the atmosphere',[-1.3,-1.35,0]);LB('About 1 kW/m² reaches the surface',[-.2,-.5,1.1])}},
+albedo(p,t){const S=ALB[p.k],sn=norm([.6,.35,.72]);begin([0,.5,3.4],[0,0,0],{sun:sn});earth({rot:t*.03,mix:1,surf:S[2]});
+ rays(sn,48,(i,h)=>{const u=(t*.35+i*.37)%1,rf=((i*7)%48)/48<S[1];if(u<.5){const q=add(h,mulS(sn,(1-u*2)*1.6));P(q[0],q[1],q[2],1,.85,.3,.06)}
+  else{const v=(u-.5)*2;if(rf){const q=mulS(h,1+v*1.3);P(q[0],q[1],q[2],1,1,1,.06)}else P(h[0]*1.01,h[1]*1.01,h[2]*1.01,1,.25,.1,.14*(1-v))}});
+ LB(S[0]+' · albedo about '+S[1],[0,1.3,0])},
+city(p,t){const n=p.night?1:0;begin([0,3.4,8],[0,.6,0],{sky:n?0:1,sun:n?norm([-.4,.4,.5]):norm([.4,.8,.45]),amb:n?.3:.4,dim:n?[.3,.36,.6]:[1,1,1]});
+ draw(CITY,M4.trs([0,0,0],1),null,2,{uNightF:n,uHeat:n?.3:.1});
+ for(let i=0;i<(n?70:28);i++){const u=(t*.25+hsh(i,3))%1;P(.9+hsh(i,1)*4.2+Math.sin(u*9+i)*.08,.3+u*2.6,-2.1+hsh(i,2)*4.2,1,.3,.1,.1*(1-u)+.03)}
+ if(!n)for(let i=0;i<16;i++){const u=(t*.15+hsh(i,7))%1;P(-5+hsh(i,8)*4,.4+u*1.2,-2+hsh(i,9)*4,.5,.85,1,.05)}
+ if(p.smog){for(let i=0;i<70;i++)P(.8+hsh(i,11)*4.4+Math.sin(t*.2+i)*.3,1.9+hsh(i,12)*.7,-2.2+hsh(i,13)*4.4,.42,.36,.28,.45);LB('Smog and ground-level ozone: harmful',[3,3.1,0])}
+ LB(n?'City at night: concrete re-radiates heat':'City: concrete, asphalt and steel absorb heat',[3,-.1,2.6]);LB('Village: shade and transpiration keep it cool',[-3,-.1,2.6])},
+latitude(p,t){begin([0,.5,4.4],[-.6,.3,0],{sun:[-1,0,0]});earth({rot:t*.02});
+ [[-.13,.13],[.72,.98]].forEach(b=>{for(let r=0;r<5;r++){const y=b[0]+(b[1]-b[0])*r/4,xs=-Math.sqrt(1-y*y);for(let i=0;i<12;i++){const x=-3.8+((t*.8+i*.26)%3.12);if(x<xs)P(x,y,r%2?.05:-.05,1,.85,.3,.06)}}
+  for(let j=0;j<16;j++){const y=b[0]+(b[1]-b[0])*j/15;P(-Math.sqrt(1-y*y)*1.02,y*1.02,0,1,.25,.15,.09)}});
+ LB('Equator: sunlight concentrated on a small area',[-2.2,-.45,0]);LB('Near the pole: same sunlight spread over a larger area',[-1.9,1.3,0])},
+layers(p,t){const Rr=h=>1+.42*Math.sqrt(h/100),D=[0,.83,-.56],side=(x,r)=>mulS(norm(add(D,[x,0,0])),r);begin([0,1.3,1.9],mulS(D,1.2),{sun:norm([.5,.6,.6])});earth({rot:t*.02});
+ atmo(M4.trs([0,0,0],Rr(12)),[.4,.7,1],2,.5);atmo(M4.trs([0,0,0],Rr(50)),[.25,1,.65],2.5,.45);atmo(M4.trs([0,0,0],Rr(100)),[.6,.4,1],3,.35);
+ ship(mulS(D,Rr(p.h)+.01),[1,0,0],D,.2);
+ for(let i=0;i<12;i++){const u=(t*.5+i/12)%1,r=Rr(100)+.5-(Rr(100)+.5-Rr(28))*u,q=side(.2+(i%3)*.06,r);P(q[0],q[1],q[2],.7,.3,1,.035)}
+ LB('Troposphere 0–12 km: weather',side(-.42,Rr(5)),'sm');LB('Stratosphere 12–50 km: ozone layer',side(.5,Rr(30)),'sm');LB('Mesosphere, thermosphere, exosphere',side(-.5,Rr(75)),'sm');LB('100 km: outer space begins',side(.45,Rr(100)+.04),'sm');LB('UV',side(.26,Rr(100)+.3),'sm')},
+green(p,t){const g=p.g,sn=norm([.65,.3,.7]);begin([0,.4,3.7],[0,0,0],{sun:sn});earth({rot:t*.03,warm:Math.max(0,g-.5)*1.4});atmo(M4.trs([0,0,0],1.27),[1,.5,.2],2.5,.2+.6*g);
+ rays(sn,40,(i,h)=>{const u=(t*.22+i*.37)%1;let q,c=[1,.3,.15];if(u<.3){q=add(h,mulS(sn,(1-u/.3)*1.5));c=[1,.9,.35]}else if(u<.55)q=mulS(h,1+.26*(u-.3)/.25);
+  else{const v=(u-.55)/.45;q=hsh(i,5)<g?mulS(h,1.26-.26*Math.min(1,v*2)):mulS(h,1.26+v*.9)}P(q[0],q[1],q[2],c[0],c[1],c[2],.06)});
+ LB('Greenhouse gases: CO₂, CH₄, water vapour',[0,1.5,0]);LB('Sunlight in (yellow)',mulS(sn,2.1),'sm');LB('Infrared heat out (red)',[-1.5,-.9,.6],'sm')},
+belts(p,t){begin([0,.2,3.8],[0,0,0],{sun:norm([.3,.3,.9])});earth({belt:1});
+ for(const hm of[1,-1])[[30,0],[30,60],[90,60]].forEach(([A,B],ci)=>{const sg=B<A?-1:1;for(let l=0;l<7;l++)for(let i=0;i<6;i++){const u=(t*.12+i/6+l*.13+ci*.2)%1;let la,r,dl,c;
+  if(u<.4){const f=u/.4;la=A+(B-A)*f;r=1.03;dl=sg*.3*f;c=[1,1,1]}else if(u<.5){la=B;r=1.03+1.3*(u-.4);dl=sg*.3;c=[1,.4,.3]}
+  else if(u<.9){const f=(u-.5)/.4;la=B+(A-B)*f;r=1.16;dl=sg*.3*(1-f);c=[.8,.8,.9]}else{la=A;r=1.16-1.3*(u-.9);dl=0;c=[.4,.65,1]}
+  la*=hm*Math.PI/180;const lo=l*.9+dl;P(r*Math.cos(la)*Math.sin(lo),r*Math.sin(la),r*Math.cos(la)*Math.cos(lo),c[0],c[1],c[2],.05)}});
+ const at=(d,x)=>{const la=d*Math.PI/180;return[1.12*Math.cos(la)*Math.sin(x),1.12*Math.sin(la),1.12*Math.cos(la)*Math.cos(x)]};
+ LB('Equatorial low 0°',at(0,-1.2),'sm');LB('Sub-tropical high 30°N',at(30,-1.25),'sm');LB('Sub-polar low 60°N',at(60,-1.3),'sm');LB('Polar high 90°',at(88,0),'sm');LB('Sub-tropical high 30°S',at(-30,-1.25),'sm');LB('Sub-polar low 60°S',at(-60,-1.3),'sm')},
+gyres(p,t){begin([0,.2,3.8],[0,0,0],{sun:norm([.3,.3,.9])});earth({});
+ [[.52,-.85],[.52,.85],[-.52,-.9],[-.52,0],[-.52,.9]].forEach(([la,lo])=>{const c=[Math.cos(la)*Math.sin(lo),Math.sin(la),Math.cos(la)*Math.cos(lo)],e1=norm(cross([0,1,0],c)),e2=cross(c,e1),dr=la>0?-1:1;
+  for(let i=0;i<28;i++){const a=dr*t*.5+i/28*6.283,q=mulS(norm(add(c,mulS(add(mulS(e1,Math.cos(a)),mulS(e2,Math.sin(a))),.36))),1.02),w=1-Math.min(1,Math.max(0,(Math.abs(q[1])-.3)/.4));P(q[0],q[1],q[2],.3+.7*w,.4,1-.7*w,.06)}});
+ for(let i=0;i<70;i++){const a=i/70*6.283;P(1.01*Math.sin(a),0,1.01*Math.cos(a),.9,.9,.9,.02)}
+ LB('Clockwise in the Northern Hemisphere',[0,1.2,.4]);LB('Counter-clockwise in the Southern Hemisphere',[0,-1.2,.4]);LB('Equator',[-1.15,0,.55],'sm')},
+cycle(p,t){const C=CYC[p.k],n=C.n.length,A=i=>-i/n*6.283+1.57,at=(a,r,y)=>[r*Math.cos(a),y,r*Math.sin(a)];begin([0,2.1,5],[0,-.1,0]);earth({rot:t*.05,s:.75});
+ for(let i=0;i<n;i++){const a=A(i),b=A(i+1);draw(SPH,M4.trs(at(a,2.2,0),.15),[C.col[0],C.col[1],C.col[2],.45]);LB(C.n[i],at(a,2.2,.34));LB(C.e[i],at((a+b)/2,2.25,-.3),'sm');
+  for(let j=0;j<9;j++){const u=(t*.25+j/9)%1,q=at(a+(b-a)*u,2.2,.14*Math.sin(u*3.1416));P(q[0],q[1],q[2],C.col[0],C.col[1],C.col[2],.08)}}},
+valley(p,t){const n=p.night?1:0,lake=p.lake!=null?p.lake:-.02;begin([0,3,6.8],[0,.5,0],{sky:n?0:1,sun:n?norm([-.3,.5,.4]):norm([.5,.8,.3]),amb:n?.3:.35,dim:n?[.32,.4,.7]:[1,1,1]});
+ const I=M4.trs([0,0,0],1);draw(TERR,I,null,1,{uSnow:p.snow||1,uDry:p.dry||0});if(p.trees!==0)draw(TREES,I);
+ draw(BOX,M4.trs([0,-.85,0],[10,1.3,8]),[.36,.25,.17,0]);draw(BOX,M4.trs([0,lake-.5,0],[9.9,1,7.9]),p.algae?[.3,.6,.1,.15]:[.05,.32,.58,.1]);
+ if(p.mode=='breeze'){for(const s of[1,-1])for(let i=0;i<40;i++){let u=(t*.15+i/8)%1;if(n)u=1-u;const x=s*(.35+u*1.95),z=((i%5)-2)*1.2;P(x,TH(x,z)+.15,z,n?.4:1,n?.7:.55,n?1:.2,.11)}
+  LB(n?'Mountain breeze: cool, dense air flows down':'Valley breeze: warm air rises up the slopes',[0,2.5,0]);LB(n?'Slopes lose heat faster':'Sunlit slopes heat faster',[2.5,2,0],'sm');LB('Valley floor',[0,.2,2.6],'sm')}
+ else if(p.mode=='water'){for(let i=0;i<26;i++){const u=(t*.2+hsh(i,1))%1;P(-.6+hsh(i,2)*1.2,lake+u*2.1,-.6+hsh(i,3)*1.2,.4,.75,1,.06)}
+  for(let i=0;i<50;i++)P(1.4+hsh(i,4)*1.7+Math.sin(t*.3+i)*.1,2.5+hsh(i,5)*.35,-1+hsh(i,6)*2,1,1,1,.4);
+  for(let i=0;i<40;i++){const u=(t*.9+hsh(i,7))%1,x=1.5+hsh(i,8)*1.5,z=-.9+hsh(i,9)*1.8;P(x,2.4-u*(2.4-TH(x,z)),z,.5,.7,1,.04)}
+  for(let i=0;i<20;i++){const u=(t*.25+i/20)%1,x=2.2-u*1.9,z=((i%4)-1.5)*.6;P(x,TH(x,z)+.05,z,.2,.6,1,.07)}
+  for(let i=0;i<14;i++){const u=(t*.15+hsh(i,10))%1;P(-2.2+hsh(i,11)*1,.6+u*1.3,-2+hsh(i,12)*4,.6,1,.7,.05)}
+  LB('Evaporation',[-.2,1.2,0]);LB('Condensation: clouds',[2.2,3.1,0]);LB('Precipitation',[2.3,1.9,1.1]);LB('Run-off',[1.1,.45,1.2]);LB('Transpiration',[-2.3,1.9,0]);LB('Groundwater (infiltration)',[0,-.05,2.8],'sm')}
+ else{SHEEP.slice(0,p.dry?3:9).forEach(s=>draw(SPH,M4.trs(s,[.07,.055,.09]),[.95,.95,.9,0]));
+  LB('Cryosphere: snow',[2.4,2.1,0]);LB(p.algae?'Algal bloom: oxygen runs out, fish die':'Hydrosphere: lake',[0,.25,.2]);LB(p.trees===0?'No roots: soil erodes, less rain':'Biosphere: grass and sheep',[-.2,.55,2.7]);LB('Geosphere: rocks',[-2.6,1.5,1.6],'sm');LB('Atmosphere: air',[0,2.9,0],'sm')}},
+human(p,t){SCN.orbit({w:p.w},t)}
+};
+/* ---------- frame + overlay ---------- */
+const lbBox=$('#labels'),lbEl=[];
+function frame(ms){requestAnimationFrame(frame);const w=cv.clientWidth,hh=cv.clientHeight;if(!w||document.hidden)return;const dpr=Math.min(devicePixelRatio||1,1.5),W=Math.round(w*dpr),H=Math.round(hh*dpr);
+ if(cv.width!=W||cv.height!=H){cv.width=W;cv.height=H}
+ T=ms/1000;pn=0;LBS.length=0;(SCN[SC[0]]||SCN.orbit)(SC[1]||{},T);if(pn)drawPts(ptBuf,PD.subarray(0,pn*7),pn,1);
+ let k=0;for(const[tx,p,c]of LBS){const x=VP[0]*p[0]+VP[4]*p[1]+VP[8]*p[2]+VP[12],y=VP[1]*p[0]+VP[5]*p[1]+VP[9]*p[2]+VP[13],q=VP[3]*p[0]+VP[7]*p[1]+VP[11]*p[2]+VP[15];if(q<=0)continue;
+  let e=lbEl[k];if(!e){e=lbEl[k]=document.createElement('div');lbBox.appendChild(e)}k++;if(e._t!==tx){e.textContent=tx;e._t=tx}e.className='lb '+c;e.hidden=false;
+  e.style.left=Math.max(4,Math.min(96,(x/q*.5+.5)*100))+'%';e.style.top=Math.max(5,Math.min(95,(1-(y/q*.5+.5))*100))+'%'}
+ for(;k<lbEl.length;k++)lbEl[k].hidden=true}
+if(gl){initGL();let px=null;const v=$('#view');v.addEventListener('pointerdown',e=>{px=e.clientX});addEventListener('pointerup',()=>px=null);
+ v.addEventListener('pointermove',e=>{if(px!=null){yaw+=(e.clientX-px)*.008;px=e.clientX}});requestAnimationFrame(frame)}
+else{$('#nogl').hidden=false}
+function hud(s){$('#hud').textContent=s}
+function out(h){const o=$('#labout');if(o)o.innerHTML=h}
+function go(k,p,title){SC=[k,p||{}];yaw=0;if(title)hud(title)}
+
+/* which 3D scene plays for each Learn segment */
+const SCENES={
+ spheres:[['orbit',{}],['orbit',{lab:1}],['orbit',{lab:1}],['valley',{mode:'act'}],['human',{w:.9}]],
+ sun:[['sunearth',{}],['sunearth',{f:1}],['sunearth',{sc:1}],['albedo',{k:0}],['city',{night:1}],['latitude',{}]],
+ air:[['layers',{h:0}],['layers',{h:6}],['layers',{h:30}],['green',{g:.5}],['layers',{h:25}]],
+ wind:[['belts',{}],['valley',{mode:'breeze'}],['belts',{}],['gyres',{}],['gyres',{}]],
+ cycles:[['cycle',{k:0}],['valley',{mode:'water'}],['cycle',{k:0}],['cycle',{k:1}],['cycle',{k:1}],['cycle',{k:2}]],
+ human:[['human',{w:1}],['valley',{mode:'act',algae:1}],['valley',{mode:'act',trees:0,dry:.9}],['city',{smog:1}],['orbit',{}]]};
+const LABS={
+spheres:{ctl:`<button data-k="0">🏔️ Normal year</button><button data-k="1">❄️ Less winter snow</button><button data-k="2">🌡️ Warmer air</button>`,init(){this.act(0)},
+ act(k){k=+k;if(k==0){go('valley',{mode:'act'});out('<b>Activity 13.1.</b> Snow (cryosphere) melts into the lake (hydrosphere). The lake waters the grass that feeds the sheep (biosphere).')}
+  if(k==1){go('valley',{mode:'act',snow:1.5,lake:-.15,dry:.9});out('<b>Cryosphere → Hydrosphere → Biosphere:</b> less snow → less meltwater, the lake shrinks → the grass dries and fewer sheep can graze.')}
+  if(k==2){go('human',{w:1});out('<b>Atmosphere → Cryosphere → Hydrosphere → Biosphere:</b> glaciers and polar ice melt → sea level rises → coastal cities and habitats are threatened.')}}},
+sun:{ctl:ALB.map((s,i)=>`<button data-k="${i}">${s[0]}</button>`).join(''),init(){this.act(0)},
+ act(k){const s=ALB[k],p=Math.round(s[1]*100);go('albedo',{k:+k});out(`<b>${s[0]}</b>: albedo about ${s[1]} · ${s[3]}.<br>White rays are reflected (about ${p}%). Red glows are absorbed as heat (about ${100-p}%). ${p>45?'This surface stays cool.':'This surface heats up quickly.'}`)}},
+air:{ctl:`<label for="alt">Altitude</label><input id="alt" type="range" min="0" max="100" step="1" value="5"><button data-k="g">🔥 Greenhouse view</button>`,init(){this.act(5)},
+ act(h){if(h=='g'){go('green',{g:.75});out('<b>Greenhouse effect.</b> The surface absorbs sunlight and re-radiates infrared. CO₂, CH₄ and water vapour send part of that heat back, which keeps the Earth warm enough for life. Excess CO₂ traps too much.');return}
+  h=+h;go('layers',{h});let m;if(h<=12)m=`<b>${h} km · Troposphere.</b> Weather forms here. Temperature falls about 6.5 °C per km: roughly ${Math.round(6.5*h)} °C colder than the ground.`;else if(h<=50)m=`<b>${h} km · Stratosphere.</b> The ozone layer absorbs UV and heats the air, so temperature rises with height. Calm, almost no weather.`;else if(h<100)m=`<b>${h} km · Above the stratosphere.</b> Mesosphere, thermosphere and exosphere lie here. They play only a minor role in surface climate.`;else m='<b>100 km.</b> This is where the region we call outer space begins.';out(m)}},
+wind:{ctl:`<button data-k="0">☀️ Day breeze</button><button data-k="1">🌙 Night breeze</button><button data-k="2">🌐 Pressure belts</button><button data-k="3">🌊 Ocean gyres</button>`,init(){this.act(0)},
+ act(k){k=+k;if(k<2){go('valley',{mode:'breeze',night:k});out(k?'<b>Mountain breeze (night).</b> Slopes lose heat faster. The air over them becomes cool and dense and flows down into the valley.':'<b>Valley breeze (day).</b> Sunlit slopes heat faster than the valley floor. Warm air rises, pressure drops, and cooler valley air moves up the slopes.')}
+  if(k==2){go('belts',{});out('<b>Planetary winds.</b> Red belts are low pressure (air rises at 0° and 60°). Blue belts are high pressure (air sinks at 30° and 90°). Surface winds bend right in the north and left in the south because the Earth rotates.')}
+  if(k==3){go('gyres',{});out('<b>Gyres.</b> Red is warm water moving away from the equator, blue is colder water returning. The model Earth here has made-up continents, so the gyre positions are only illustrative.')}}},
+cycles:{ctl:`<button data-k="w">💧 Water</button><button data-k="0">⚫ Carbon</button><button data-k="1">🧪 Nitrogen</button><button data-k="2">🫁 Oxygen</button>`,init(){this.act('w')},
+ act(k){if(k=='w'){go('valley',{mode:'water'});out('<b>Water cycle.</b> Evaporation and transpiration → condensation → precipitation → run-off and infiltration → back to the lake and ocean.')}else{go('cycle',{k:+k});out(CYC[k].m)}}},
+human:{ctl:`<label for="yr">Year</label><input id="yr" type="range" min="1960" max="2025" step="1" value="1960"><button data-k="a">🟢 Algal bloom</button><button data-k="d">🪓 Deforestation</button><button data-k="s">🚗 City smog</button>`,init(){this.act(1960)},
+ act(y){if(y=='a'){go('valley',{mode:'act',algae:1});out('<b>Eutrophication.</b> Fertiliser nitrates wash into the lake. Algae bloom, use up the oxygen and fish die.');return}
+  if(y=='d'){go('valley',{mode:'act',trees:0,dry:.9});out('<b>Deforestation.</b> Less photosynthesis and transpiration, less local rainfall, a changed albedo, more soil erosion and lost habitats.');return}
+  if(y=='s'){go('city',{smog:1});out('<b>Smog.</b> Vehicular emissions react with sunlight to form smog and ground-level ozone, which is harmful for health.');return}
+  y=+y;const w=(y-1960)/65;go('human',{w});out(`<b>${y}: about ${Math.round(315+105*w)} ppm CO₂</b> (Keeling curve: 315 ppm in 1960, 420 ppm in 2025; values in between are approximate).<br>More CO₂ → stronger greenhouse effect → global warming → the ice caps shrink and sea level rises.`)}}};
+/* line-by-line Learn, replacing the earlier card version */
+function learn(i=0,ln=0){const c=cur.learn[i],s=(SCENES[cur.id]||[])[i]||['orbit',{}];if(ln==0)go(s[0],s[1],cur.t+' · '+c[0]);
+ const L=c[1].replace(/([a-z)²₂>%]\.)\s+(?=[A-Z<])/g,'$1\u0001').split(/\u0001|<br>/).filter(x=>x.trim()),last=ln>=L.length-1,end=i>=cur.learn.length-1;
+ $('#panel').innerHTML=`<div class="card"><span class="tag">${cur.s} · segment ${i+1} of ${cur.learn.length}</span><h3>${c[0]}</h3>${L.slice(0,ln+1).map((x,j)=>`<p class="ln${j==ln?' now':''}">${x}</p>`).join('')}<div class="nav"><button id="pv" ${i||ln?'':'disabled'}>← Back</button><span>Line ${ln+1} of ${L.length}</span><button id="nx">${!last?'Next line ▶':end?'Open the 3D Lab 🔬':'Next segment →'}</button></div></div>`;
+ $('#pv').onclick=()=>ln?learn(i,ln-1):learn(i-1,0);$('#nx').onclick=()=>{beep(600,.06);!last?learn(i,ln+1):end?setTab('lab'):learn(i+1,0)}}
+function lab(){const S=LABS[cur.id];hud(cur.t+' · 3D Lab');
+ $('#panel').innerHTML=`<div class="ctl">${S.ctl}</div><div class="out" id="labout"></div><div class="nav"><span>🛰️ Bhoomi-Bot: change the controls and watch the 3D view. Drag it to look around.</span><button id="nx">Play the game 🎮</button></div>`;
+ S.init();document.querySelectorAll('.ctl button').forEach(b=>b.onclick=()=>{beep(700,.06);S.act(b.dataset.k)});
+ document.querySelectorAll('.ctl input').forEach(r=>r.oninput=()=>S.act(r.value));$('#nx').onclick=()=>setTab('game')}
+{const sh=show;show=function(h){sh(h);document.body.classList.toggle('inzone',!h)};const st=setTab;setTab=function(k){st(k);if(k=='game'||k=='quiz')go('orbit',{},cur.t+' · answer to fire the engines')}
+ const oz=openZone;openZone=function(z){oz(z);if(z.id=='boss')go('orbit',{},'Boss round')}
+ $('#back').onclick=()=>{go('orbit',{hub:1},'Earth orbit · drag to look around');drawHome();show(true)}}
+hud('Earth orbit · drag to look around');drawHome();
+</script>
+
+</body></html>

@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Birbal's Crow Count – House of Hundreds II</title>
+<link href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700&display=swap" rel="stylesheet">
+<style>
+:root{--bg1:#fff1b8;--bg2:#c9ecff;--ink:#2b2250;--card:#ffffff;--pri:#ff7a2f;--ok:#2fbf71;--bad:#ef476f;--blu:#3a86ff;--soft:#f1ecff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme="light"]){--bg1:#2a2350;--bg2:#12304d;--ink:#fff7e0;--card:#2e2a5a;--soft:#3b3570}}
+*{box-sizing:border-box}html,body{margin:0;min-height:100%}
+body{font-family:"Baloo 2","Comic Sans MS","Trebuchet MS",system-ui,sans-serif;color:var(--ink);background:linear-gradient(160deg,var(--bg1),var(--bg2)) fixed;overflow-x:hidden}
+.wrap{max-width:560px;margin:0 auto;padding:14px}
+.sky{position:fixed;inset:0;pointer-events:none;overflow:hidden;z-index:0}
+.sky span{position:absolute;font-size:28px;animation:fly linear infinite}
+@keyframes fly{from{transform:translateX(-60px)}to{transform:translateX(115vw)}}
+.wrap,.scr{position:relative;z-index:1}
+h1{font-size:30px;line-height:1.1;margin:6px 0;text-align:center}
+.card{background:var(--card);border-radius:22px;padding:16px;box-shadow:0 6px 0 rgba(0,0,0,.1);margin:12px 0}
+.story{display:flex;gap:10px;align-items:center;font-size:17px}
+.story .big{font-size:44px;animation:bob 2s ease-in-out infinite}
+@keyframes bob{50%{transform:translateY(-8px) rotate(6deg)}}
+.map{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.lv{border:0;border-radius:20px;padding:12px 4px;background:var(--card);color:var(--ink);font:inherit;box-shadow:0 5px 0 rgba(0,0,0,.12);cursor:pointer;transition:transform .15s}
+.lv:active{transform:scale(.94)}.lv:hover:not(:disabled){transform:translateY(-3px)}
+.lv .e{font-size:34px;display:block}.lv small{display:block;font-size:12px;line-height:1.1;min-height:28px}
+.lv:disabled{opacity:.45;cursor:not-allowed}
+.btn{border:0;border-radius:999px;padding:12px 26px;font:700 20px inherit;font-family:inherit;color:#fff;background:var(--pri);box-shadow:0 5px 0 #c4561a;cursor:pointer}
+.btn:active{transform:translateY(3px);box-shadow:0 2px 0 #c4561a}.btn.g{background:var(--ok);box-shadow:0 5px 0 #1d8c50}.btn.s{background:var(--blu);box-shadow:0 5px 0 #2459b3}
+.top{display:flex;align-items:center;gap:10px}.top b{flex:1;font-size:18px}
+.pbar{height:14px;background:var(--soft);border-radius:9px;overflow:hidden;margin:8px 0}
+.pbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#ffd23f,#ff7a2f);transition:width .4s}
+.qt{font-size:21px;font-weight:700;margin:4px 0 10px}
+.opts{display:grid;gap:10px}
+.opt{border:3px solid var(--soft);background:var(--card);color:var(--ink);border-radius:16px;padding:12px;font:700 19px inherit;font-family:inherit;cursor:pointer;transition:transform .12s}
+.opt:hover{transform:scale(1.02)}.opt.ok{background:#c9f7dc;border-color:var(--ok);color:#10532f}.opt.no{background:#ffd6df;border-color:var(--bad);color:#7a1230}
+.tiles,.tray{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;background:var(--soft);border-radius:14px;padding:10px;min-height:56px;margin:8px 0}
+.H,.T,.O{border:2px solid rgba(0,0,0,.25);padding:0;display:inline-block;cursor:pointer;animation:pop .25s}
+.H{width:36px;height:36px;background:#ffd23f;border-radius:6px}.T{width:10px;height:36px;background:#4cc9f0;border-radius:4px}.O{width:10px;height:10px;background:#ff6b9d;border-radius:3px}
+@keyframes pop{from{transform:scale(0)}}
+.chip{border:3px solid #fff;border-radius:10px;padding:8px 10px;font:700 18px inherit;font-family:inherit;color:#fff;cursor:pointer;animation:pop .25s}
+.c100{background:#8d5cf6}.c10{background:#f77f00}.c1{background:#2fbf71}
+.adds{display:flex;gap:8px;justify-content:center;margin:8px 0;flex-wrap:wrap}
+.adds button{border:0;border-radius:14px;padding:10px 16px;font:700 18px inherit;font-family:inherit;background:var(--blu);color:#fff;cursor:pointer}
+.nl{display:flex;margin:22px 0 8px;position:relative}
+.nl:before{content:"";position:absolute;left:0;right:0;top:12px;height:6px;background:#8bd450;border-radius:4px}
+.tk{flex:1;border:0;background:none;color:var(--ink);font:700 12px inherit;font-family:inherit;cursor:pointer;padding:0;position:relative;height:60px}
+.tk i{display:block;width:4px;height:24px;margin:0 auto;background:#3c7a1a;border-radius:2px;position:relative}
+.tk:hover i,.tk.ok i{background:var(--pri);height:30px}.tk.ok i{background:var(--ok)}.tk.no i{background:var(--bad)}
+.grid{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:8px 0}
+.gc{border:3px solid transparent;border-radius:14px;padding:14px 0;font:700 22px inherit;font-family:inherit;color:#2b2250;cursor:pointer}
+.gc.on{text-decoration:line-through;text-decoration-thickness:4px;text-decoration-color:var(--bad);border-color:var(--bad);transform:rotate(-4deg)}
+.fillrow{display:flex;gap:8px;justify-content:center;align-items:center}
+.fillrow input{width:130px;font:700 26px inherit;font-family:inherit;text-align:center;border:3px solid var(--blu);border-radius:14px;padding:8px;background:var(--card);color:var(--ink)}
+.cards{display:flex;gap:10px;justify-content:center;margin:6px 0}
+.cards b{background:var(--soft);border:3px solid var(--blu);border-radius:14px;padding:8px 12px;font-size:34px;text-align:center}
+.cards small{display:block;font-size:13px}
+.seq{font-size:26px;font-weight:700;text-align:center;letter-spacing:1px}
+#fb{min-height:34px;font-size:18px;font-weight:700;text-align:center;margin:6px 0}
+.shake{animation:sh .35s}@keyframes sh{25%{transform:translateX(-8px)}75%{transform:translateX(8px)}}
+.stars{font-size:48px;text-align:center}.stars span{display:inline-block;animation:pop .5s backwards}
+.cf{position:fixed;top:-30px;font-size:26px;z-index:50;pointer-events:none;animation:fall 1.6s ease-in forwards}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+.ctr{text-align:center}.hide{display:none!important}
+.mini{background:none;border:0;color:var(--ink);opacity:.7;font:inherit;text-decoration:underline;cursor:pointer}
+body{background-size:220% 220%;animation:bg 14s ease infinite}@keyframes bg{50%{background-position:100% 100%}}
+#home h1{display:none}
+.scene{position:relative;height:215px;border-radius:26px;overflow:hidden;margin:6px 0;background:linear-gradient(#4db8ff,#bff0ff 68%,#ffe9a8);box-shadow:0 8px 0 rgba(0,0,0,.15),inset 0 -6px 0 rgba(255,255,255,.4)}
+.sun{position:absolute;right:18px;top:12px;width:56px;height:56px;border-radius:50%;background:radial-gradient(#fff6b0,#ffc300);box-shadow:0 0 0 8px rgba(255,220,80,.35),0 0 40px 14px rgba(255,210,60,.6);animation:pulse 3s infinite alternate}
+@keyframes pulse{to{transform:scale(1.12)}}
+.cl{position:absolute;font-size:44px;opacity:.9;animation:fly linear infinite}
+.pal{position:absolute;left:0;bottom:0;width:100%;height:80px}
+.hc{position:absolute;bottom:-6px;width:92px;animation:bob 2.4s ease-in-out infinite}.hc svg{width:100%;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+.ttl{position:absolute;top:30px;left:0;right:0;text-align:center;font-weight:700;font-size:33px;line-height:1;color:#fff;text-shadow:0 3px 0 #e85d04,0 6px 0 rgba(0,0,0,.25),-2px -2px 0 #e85d04,2px -2px 0 #e85d04;animation:pop .8s}
+.ttl small{display:block;font-size:15px;margin-top:8px;text-shadow:0 2px 0 #7b4bd8}
+.mas{display:flex;align-items:flex-end;gap:10px;margin:4px 0}.mas svg{width:86px;flex:none;animation:bob 2.4s ease-in-out infinite;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+.bub{position:relative;background:var(--card);border:3px solid #ff7a2f;border-radius:18px;padding:8px 12px;font-weight:700;font-size:17px;margin-bottom:14px;animation:pop .3s}
+.bub:before{content:"";position:absolute;left:-13px;bottom:14px;border:8px solid transparent;border-right:12px solid #ff7a2f;border-left:0}
+.bl{transform-box:fill-box;transform-origin:center;animation:blink 4s infinite}@keyframes blink{94%,100%{transform:scaleY(.1)}}
+.cr{position:absolute;animation:fly linear infinite}.wing{transform-origin:28px 18px;animation:flap .35s infinite alternate}@keyframes flap{to{transform:rotate(28deg) scaleY(.6)}}
+.lv{position:relative;background:linear-gradient(160deg,var(--c,#fff),#fff 170%);color:#2b2250;border:3px solid #fff}
+.nm{position:absolute;top:-8px;left:-6px;background:#2b2250;color:#fff;border-radius:50%;width:26px;height:26px;font-size:14px;line-height:26px}
+.opt{background:linear-gradient(var(--card),var(--soft));box-shadow:0 4px 0 rgba(0,0,0,.12)}
+.card{border:2px solid rgba(255,255,255,.7)}
+.H{background:linear-gradient(135deg,#fff3a0,#ffb703)}.T{background:linear-gradient(90deg,#9be7ff,#2a9df4)}.O{background:radial-gradient(#ffc2d9,#ff3d81)}
+#emas{display:flex;justify-content:center;gap:10px}#emas svg{width:100px;animation:bob 1.6s ease-in-out infinite;filter:drop-shadow(0 4px 3px rgba(0,0,0,.25))}
+</style></head>
+<body>
+<div class="sky" id="sky"></div>
+
+<div class="wrap scr" id="home"><div class="scene" id="hero"></div>
+ <h1>🐦‍⬛ Birbal's Crow Count 👑<br><small style="font-size:17px">House of Hundreds – II · Class 3 Maths</small></h1>
+ <div class="card story"><div class="big">🧔</div><div>Akbar asks: <b>“How many crows are in our city?”</b> Birbal says <b>963</b>! Help Birbal master numbers up to 1000 and win the royal reward!</div></div>
+ <div class="ctr"><b id="tot"></b></div>
+ <div class="map" id="map"></div>
+ <p class="ctr"><button class="mini" onclick="resetAll()">Start again</button></p>
+</div>
+
+<div class="wrap scr hide" id="play">
+ <div class="top"><button class="btn s" style="padding:6px 16px;font-size:16px" onclick="home()">⬅</button><b id="ttl"></b></div>
+ <div class="pbar"><i id="bar"></i></div>
+ <div class="mas" id="mas"></div><div class="card" id="stage"></div>
+ <div id="fb"></div>
+ <div class="ctr"><button class="btn g hide" id="nx" onclick="nx()">Next ➜</button></div>
+</div>
+
+<div class="wrap scr hide" id="end">
+ <div class="card ctr"><div id="emas"></div><h1 id="et"></h1><div class="stars" id="es"></div><p id="em" style="font-size:19px"></p>
+ <button class="btn g" id="enx" onclick="start(li+1)">Next Level ➜</button> <button class="btn s" onclick="home()">Level Map</button></div>
+</div>
+
+<script>
+const $=s=>document.querySelector(s),shuf=a=>[...a].sort(()=>Math.random()-.5);
+let P={u:1,s:{}};try{P=JSON.parse(localStorage.getItem('hh2'))||P}catch(e){}
+const save=()=>{try{localStorage.setItem('hh2',JSON.stringify(P))}catch(e){}};
+let li=0,qi=0,got=0,tries=0,done=false,B=[],SEL=new Set(),Q;
+
+const tiles=n=>'<div class="tiles">'+'<i class="H"></i>'.repeat(n/100|0)+'<i class="T"></i>'.repeat(n%100/10|0)+'<i class="O"></i>'.repeat(n%10)+'</div>';
+const cards=(a,b)=>`<div class="cards">${[a,b].map(c=>`<b>${c[0]}<small>${c[1]}</small></b>`).join('')}</div>`;
+const nq=(n,k,name)=>{const a=Math.floor(n/k)*k,w=`${a} and ${a+k}`;return{t:'mcq',q:`${n} lies between which neighbouring ${name}?`,o:[w,`${a+k} and ${a+2*k}`,`${a-k} and ${a}`],a:w,h:`Find the ${name} just below and just above ${n}.`}};
+const mq=(q,o,a,h)=>({t:'mcq',q,o,a,h});
+const fq=(q,a,h,vis)=>({t:'fill',q,a,h,vis});
+const sk=(seq,a,h)=>fq(`Fill the empty box: <div class=seq>${seq}</div>`,a,h);
+const G=[572,628,579,599,597,574,581,600,623,573,570,602,609,616,614,626];
+const tq=(q,f)=>({t:'tap',q:'🎯 Tambola clue: '+q+'<br><small>Tap every matching number, then press Check. If none match, just press Check!</small>',f,h:'Read the clue again and check each number slowly.'});
+
+const L=[
+{n:"Birbal's Crows",e:'🐦‍⬛',q:[
+ mq('Birbal said 963 crows. How many hundreds, tens and ones?',['9 hundreds 6 tens 3 ones','6 hundreds 9 tens 3 ones','3 hundreds 6 tens 9 ones'],'9 hundreds 6 tens 3 ones','Hundreds come first: 9 hundreds.'),
+ {...mq('How many rice sacks do these tiles show? 🟨=100 🟦=10 🟥=1',['726','762','627'],'726','Count big squares (hundreds), then bars (tens), then dots (ones).'),vis:tiles(726)},
+ {t:'build',n:832,q:'🚚 The driver carries 832 sacks. Build it with tiles!'},
+ {t:'build',n:947,q:'🚚 Build 947 sacks with tiles!'},
+ {t:'build',n:504,q:'🚚 Build 504. Careful: how many tens?'},
+ {t:'build',n:700,q:'🚚 Build 700 sacks!'}]},
+{n:'Crane Number Line',e:'🦢',q:[
+ {t:'line',n:530,a:500,q:'Tap where 530 sits on the number line 📍'},
+ {t:'line',n:590,a:500,q:'Tap where 590 sits!'},
+ {t:'line',n:628,a:600,q:'Tap the tick nearest to 628 (between 620 and 630)'},
+ {t:'line',n:696,a:600,q:'Tap the tick nearest to 696'},
+ fq('🦢 Crane is at 667. Worm is at 650. 667 − ___ = 650',17,'Count back from 667 to 650: 667 → 660 is 7, then 10 more.'),
+ fq('🦢 Crane at 667 wants the fish 🐟 at 700. 667 + ___ = 700',33,'From 667 to 670 is 3, then 30 more.'),
+ fq('🦢 Crane at 775 → fish 🐟 at 800. 775 + ___ = 800',25,'775 → 780 is 5, then 20 more.')]},
+{n:'Neighbours',e:'🏘️',q:[nq(183,100,'hundreds'),nq(345,50,'fifties'),nq(693,10,'tens'),nq(734,50,'fifties'),nq(899,10,'tens'),nq(468,100,'hundreds')]},
+{n:'Tambola',e:'🎲',q:[tq('A number with 4',n=>String(n).includes('4')),tq('Numbers between 595 and 605',n=>n>595&&n<605),tq('A number with 1 as the tens digit',n=>(n/10|0)%10==1),tq('Two more than 610',n=>n==612),tq('5 less than 625',n=>n==620),tq('The number 597',n=>n==597)]},
+{n:'Skip and Solve',e:'🦶',q:[sk('720 → 730 → ___ → 750 (+10)',740,'Add 10 each time.'),sk('450 → 550 → ___ → 750 (+100)',650,'Add 100 each time.'),sk('760 → 770 → ___ (+10)',780,'Add 10.'),sk('830 → 845 → 860 → ___ (+15)',875,'Add 15 each step.'),sk('880 → ___ → 930 (+25)',905,'880 + 25 = ?'),sk('905 → 930 → ___ (+25)',955,'Add 25 again.'),sk('830 → 860 → ___ (+30)',890,'Add 30.')]},
+{n:'Slip Shop',e:'🧾',q:[
+ {t:'build',slip:1,n:231,q:'📝 You have only 6 slips. Write 100, 10 or 1 on them to make 231!'},
+ {t:'build',slip:1,n:123,q:'📝 Make 123 with 6 slips!'},
+ {t:'build',slip:1,n:420,q:'📝 Make 420 with 6 slips!'},
+ mq('What is the LARGEST number with 6 slips?',['600','666','1000'],'600','Use all six slips as 100.'),
+ mq('Which number can NOT be made with 6 slips?',['330','411','999'],'999','999 needs 9 hundreds, 9 tens and 9 ones, that is 27 slips!')]},
+{n:'Number Detective',e:'🕵️',q:[
+ fq('Hundreds are 100, 200, 300 … How many hundreds are there up to 1000?',10,'Count: 100, 200, 300, … 1000.'),
+ mq('Which number looks the same from left to right and right to left?',['353','335','533'],'353','Read it backwards!'),
+ mq('Which one is a triplet-digit number (like 111, 222)?',['444','414','441'],'444','All 3 digits must be the same.'),
+ mq('789, 345, 123 are neat because the digits go 1 more each time. Which one follows that beat?',['567','576','765'],'567','Look for digits that go up by 1.'),
+ mq('Teji likes numbers with zeroes. Which one is hers?',['404','414','144'],'404','Look for a 0 digit.')]},
+{n:'Word Numerals',e:'🌙',q:[
+ {...mq('Teji shows Moon + Twins and says 12. Qutub Minar + Char Minar is 14. What is Teji doing?',['Using a word for each digit','Adding the words','Counting letters'],'Using a word for each digit','Moon = 1, Twins = 2 → 12. Qutub Minar = 1, Char Minar = 4 → 14.'),vis:cards(['🌙','Moon (1)'],['👶👶','Twins (2)'])},
+ {...fq('Bhutasankhya! Directions (N, S, E, W) and Eyes. Which number?',42,'Directions = 4, Eyes = 2.'),vis:cards(['🧭','Directions'],['👀','Eyes'])},
+ {...fq('Sense organs and Hexagon. Which number?',56,'Five sense organs, six sides on a hexagon.'),vis:cards(['👃','Sense organs'],['⬡','Hexagon'])},
+ {...fq('Palm and Tri kala (past, present, future). Which number?',53,'Palm has 5 fingers, tri kala = 3.'),vis:cards(['✋','Palm'],['⏳','Tri kala'])}]},
+{n:'Royal Boss Round',e:'🏆',q:[
+ mq('I have 2 zeroes as digits and am very close to 99. Who am I?',['100','150','400'],'100','Think of one more than 99.'),
+ mq('I am century + half century.',['150','425','100'],'150','100 + 50.'),
+ mq('I come between 400 and 450, and I have 5 as a digit.',['425','367','400'],'425','Which one has a 5?'),
+ mq('I have zero tens and zero ones.',['400','367','425'],'400','Only hundreds, nothing else.'),
+ mq('I have 3 hundreds, 6 tens and 7 ones.',['367','376','637'],'367','300 + 60 + 7'),
+ mq('Number of stars in the sky is …',['More than 1000','0–10','11–50'],'More than 1000','There are too many to count!'),
+ mq('Number of fingers on your two hands is …',['0–10','101–200','501–1000'],'0–10','Count them: 5 + 5.'),
+ mq('Birbal says 963 crows. Between which hundreds does 963 lie?',['900 and 1000','800 and 900','963 and 1000'],'900 and 1000','Neighbouring hundreds!')]}
+];
+
+function home(){show('home');const m=$('#map');m.innerHTML=L.map((l,i)=>{const s=P.s[i]||0;return `<button class="lv" style="--c:hsl(${i*40+10},90%,70%)" onclick="start(${i})"><b class="nm">${i+1}</b><span class="e">${l.e}</span><small>${l.n}</small>${'⭐'.repeat(s)||'&nbsp;'}</button>`}).join('');$('#tot').textContent='⭐ '+Object.values(P.s).reduce((a,b)=>a+b,0)+' / '+L.length*3+' stars'}
+function show(id){['home','play','end'].forEach(x=>$('#'+x).classList.toggle('hide',x!=id));scrollTo(0,0)}
+function start(i){li=i;qi=0;got=0;show('play');q()}
+function q(){Q=L[li].q[qi];tries=0;done=false;B=[];SEL=new Set();
+ $('#bar').style.width=(qi/L[li].q.length*100)+'%';$('#ttl').textContent=`${L[li].e} Level ${li+1}: ${L[li].n} (${qi+1}/${L[li].q.length})`;
+ $('#fb').textContent='';say('think');$('#nx').classList.add('hide');
+ let h=`<div class="qt">${Q.q}</div>${Q.vis||''}`;
+ if(Q.t=='mcq')h+='<div class="opts">'+shuf(Q.o).map(o=>`<button class="opt" onclick="pick(this)">${o}</button>`).join('')+'</div>';
+ if(Q.t=='fill')h+='<div class="fillrow"><input id="in" type="number" inputmode="numeric" onkeydown="if(event.key==\'Enter\')chk()"><button class="btn g" onclick="chk()">Check</button></div>';
+ if(Q.t=='line'){h+='<div class="nl">';for(let k=0;k<=10;k++){const n=Q.a+k*10;h+=`<button class="tk" onclick="tk(${n},this)"><i></i>${k%5==0?n:'·'}</button>`}h+='</div>'}
+ if(Q.t=='build'){h+=`<div class="tray" id="tray"></div>${Q.slip?'<div class="ctr" id="cnt"></div>':''}<div class="adds">${[100,10,1].map(v=>`<button onclick="add(${v})">+${v}</button>`).join('')}</div><div class="ctr"><button class="btn g" onclick="chk()">Check</button> <button class="mini" onclick="B=[];draw()">clear</button></div><div class="ctr"><small>Tap a tile to remove it.</small></div>`}
+ if(Q.t=='tap')h+='<div class="grid">'+G.map((n,i)=>`<button class="gc" style="background:${['#ffd9c2','#cfeeff','#f5f7b5','#ffe0ec'][(i+(i>>2))%4]}" onclick="tg(${n},this)">${n}</button>`).join('')+'</div><div class="ctr"><button class="btn g" onclick="chk()">Check</button></div>';
+ $('#stage').innerHTML=h;if(Q.t=='build')draw();const i=$('#in');if(i)i.focus()}
+function draw(){const s=Q.slip,t=$('#tray');t.innerHTML=[...B].sort((a,b)=>b-a).map(v=>`<button class="${s?'chip c'+v:{100:'H',10:'T',1:'O'}[v]}" onclick="rem(${v})">${s?v:''}</button>`).join('')||'<small>Your tray is empty</small>';if(s)$('#cnt').textContent=`Slips used: ${B.length} / 6`}
+function add(v){if(done)return;if(Q.slip&&B.length>=6){$('#fb').textContent='Only 6 slips! Remove one first.';return}if(B.length>40)return;B.push(v);draw();beep(500+v)}
+function rem(v){if(done)return;B.splice(B.indexOf(v),1);draw()}
+function pick(b){if(done)return;b.textContent==Q.a?(b.classList.add('ok'),win()):(b.classList.add('no'),lose(b))}
+function tk(n,b){if(done)return;n==Math.round(Q.n/10)*10?(b.classList.add('ok'),win()):(b.classList.add('no'),lose(b,Q.n<n?'Too far right! Go left a bit.':'Too far left! Go right a bit.'))}
+function tg(n,b){if(done)return;SEL.has(n)?SEL.delete(n):SEL.add(n);b.classList.toggle('on')}
+function chk(){if(done)return;let ok,m;
+ if(Q.t=='fill'){const v=$('#in').value;if(v==='')return;ok=+v==Q.a}
+ if(Q.t=='build')ok=B.reduce((a,b)=>a+b,0)==Q.n;
+ if(Q.t=='tap'){const w=G.filter(Q.f);ok=w.length==SEL.size&&w.every(n=>SEL.has(n));if(!ok&&!w.length)m='Hmm, no number in the grid matches this clue! 🤔'}
+ ok?win():lose($('#stage'),m)}
+function win(){done=true;say('happy');if(!tries)got++;$('#fb').innerHTML='<span style="color:var(--ok)">'+shuf(['🎉 Brilliant!','⭐ Superb!','👏 Well done!','🌟 You got it!'])[0]+'</span>';confetti(18);beep(880);$('#nx').classList.remove('hide');$('#nx').textContent=qi+1<L[li].q.length?'Next ➜':'Finish 🏁'}
+function lose(el,m){tries++;say('sad');beep(200);el.classList.remove('shake');void el.offsetWidth;el.classList.add('shake');$('#fb').innerHTML='<span style="color:var(--bad)">Oops! '+(m||Q.h||'Try again!')+' 💪 Try again!</span>'}
+function nx(){qi++;qi<L[li].q.length?q():fin()}
+function fin(){const r=got/L[li].q.length,s=r>=.9?3:r>=.6?2:1;P.s[li]=Math.max(P.s[li]||0,s);if(li+1<L.length)P.u=Math.max(P.u,li+2);save();
+ show('end');$('#emas').innerHTML=person('birbal','happy')+person('akbar','happy');$('#et').textContent=li==L.length-1?'🏆 Royal Champion!':'Level Complete!';
+ $('#es').innerHTML=[1,2,3].map(i=>`<span style="animation-delay:${i*.25}s;${i>s?'filter:grayscale(1);opacity:.4':''}">⭐</span>`).join('');
+ $('#em').textContent=li==L.length-1?'Akbar gives you the reward, just like Birbal! 👑':(s==3?'Perfect! Next level unlocked 🔓':'Next level unlocked 🔓 Replay for 3 stars!');
+ $('#enx').classList.toggle('hide',li+1>=L.length);confetti(40)}
+function resetAll(){if(confirm('Start again? Stars will be cleared.')){P={u:1,s:{}};save();home()}}
+function confetti(n){for(let i=0;i<n;i++){const s=document.createElement('span');s.className='cf';s.textContent=['🎉','⭐','✨','🪙','🐦‍⬛'][i%5];s.style.left=Math.random()*95+'vw';s.style.animationDelay=Math.random()*.5+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),2300)}}
+let AC;function beep(f){try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.frequency.value=f;g.gain.value=.05;o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+.12)}catch(e){}}
+$('#sky').innerHTML=Array.from({length:7},(_, i)=>`<span style="top:${6+i*11}%;animation-duration:${14+i*3}s;animation-delay:-${i*4}s">🐦‍⬛</span>`).join('');
+const crow=s=>`<svg class="cr" style="${s}" width="44" viewBox="0 0 60 40"><g class="wing"><path d="M28 18Q18 -2 4 6Q16 10 22 20Z" fill="#2b2a3a"/></g><path d="M18 24L2 31L18 29Z" fill="#2b2a3a"/><ellipse cx="32" cy="22" rx="14" ry="9" fill="#3d3a55"/><circle cx="46" cy="16" r="6.5" fill="#3d3a55"/><path d="M51 14L60 17L51 19Z" fill="#ffb703"/><circle cx="47.5" cy="14.5" r="1.8" fill="#fff"/><circle cx="48" cy="14.5" r=".8" fill="#000"/></svg>`;
+function person(w,m){const a=w=='akbar',t=a?'#7b4bd8':'#ff7a2f',k=a?'#ef476f':'#3a86ff';
+const mo=m=='sad'?'<path d="M43 70Q50 62 57 70" stroke="#7a2a1a" stroke-width="2.5" fill="none"/>':m=='think'?'<circle cx="50" cy="69" r="3" fill="#7a2a1a"/>':'<path d="M42 65Q50 78 58 65Z" fill="#7a2a1a"/><path d="M45 70Q50 74 55 70Z" fill="#ff8fa3"/>';
+return `<svg viewBox="0 0 100 124"><path d="M10 124Q14 80 50 76Q86 80 90 124Z" fill="${k}"/><path d="M40 78L50 96L60 78Z" fill="#fff" opacity=".8"/><rect x="24" y="104" width="52" height="9" fill="#ffd23f"/><circle cx="26" cy="50" r="5" fill="#f2b98a"/><circle cx="74" cy="50" r="5" fill="#f2b98a"/><circle cx="50" cy="48" r="25" fill="#f2b98a"/><path d="M23 44Q24 12 50 12Q76 12 77 44Q50 30 23 44Z" fill="${t}"/><path d="M28 34Q50 22 72 34" stroke="#ffd23f" stroke-width="5" fill="none"/><circle cx="50" cy="22" r="4.5" fill="#ffd23f" stroke="#fff" stroke-width="1.5"/>${a?'<path d="M54 17Q66 -4 76 3Q66 10 58 20Z" fill="#fff" stroke="#ddd"/>':''}<g class="bl"><circle cx="41" cy="47" r="4" fill="#fff"/><circle cx="59" cy="47" r="4" fill="#fff"/><circle cx="42" cy="48" r="2.4" fill="#222"/><circle cx="60" cy="48" r="2.4" fill="#222"/></g><circle cx="33" cy="58" r="4" fill="#ff8fa3" opacity=".5"/><circle cx="67" cy="58" r="4" fill="#ff8fa3" opacity=".5"/><path d="M34 62Q50 54 66 62Q50 68 34 62Z" fill="#2b1b12"/>${mo}</svg>`}
+const SAY={happy:['Wah! Shabash! 🎉','Excellent, my friend!','Akbar will be proud! 👑','Crow-tastic! 🐦‍⬛'],sad:['Hmm, think again!','Almost! Try once more 💪','Even Birbal needed a day!'],think:['Let us solve it!','Think like Birbal 🧠','You can do it! ⭐']};
+function say(m){const a=SAY[m];$('#mas').innerHTML=person('birbal',m)+`<div class="bub">${a[Math.random()*a.length|0]}</div>`}
+$('#sky').innerHTML=Array.from({length:6},(_,i)=>crow(`top:${5+i*14}%;animation-duration:${16+i*3}s;animation-delay:-${i*5}s`)).join('');
+$('#hero').innerHTML=`<div class="sun"></div><span class="cl" style="top:24px;animation-duration:45s">☁️</span><span class="cl" style="top:96px;animation-duration:60s;animation-delay:-25s">☁️</span>${crow('top:78px;animation-duration:9s')}${crow('top:110px;animation-duration:12s;animation-delay:-4s')}${crow('top:60px;animation-duration:15s;animation-delay:-8s')}<svg class="pal" viewBox="0 0 400 80" preserveAspectRatio="none"><g fill="#f4a261"><rect x="0" y="52" width="400" height="28"/><path d="M40 52Q60 12 80 52Z"/><path d="M150 52Q200 -8 250 52Z"/><path d="M320 52Q340 12 360 52Z"/></g><g fill="#e76f51"><rect x="20" y="58" width="10" height="16" rx="5"/><rect x="110" y="58" width="10" height="16" rx="5"/><rect x="195" y="58" width="10" height="16" rx="5"/><rect x="280" y="58" width="10" height="16" rx="5"/><rect x="370" y="58" width="10" height="16" rx="5"/></g></svg><div class="hc" style="left:8px">${person('akbar','happy')}</div><div class="hc" style="right:8px;animation-delay:-1s">${person('birbal','happy')}</div><div class="ttl">Birbal's Crow Count<small>House of Hundreds – II · Class 3 Maths</small></div>`;
+home();
+</script>
+</body></html>
