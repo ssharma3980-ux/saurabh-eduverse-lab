@@ -45,6 +45,6 @@ window.EDU_GAMES = [
 window.EDU_LABS = [
   { title: 'Saurabh Eduverse Laboratory', url: '../index.html',     emoji: '🔬' },
   { title: '3D Biology Discovery Lab',    url: '../bio/index.html#/',     emoji: '🫀' },
-  { title: 'Chemistry Lab — Titration',   url: '../chemlab/index.html', emoji: '⚗️' },
+  { title: 'Chemistry Lab — Test tubes, Salt analysis & Titration', url: '../chemlab/index.html', emoji: '⚗️' },
   { title: 'Periodic Table 3D',           url: '../ptable/index.html',  emoji: '🧪' }
 ];
