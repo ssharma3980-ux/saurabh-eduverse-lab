@@ -26,3 +26,7 @@ Notes
   - three.js is loaded from cdn.jsdelivr.net, so the site needs internet.
   - 3D anatomy data credits: BodyParts3D (DBCLS, CC BY 4.0) and
     HuBMAP Human Reference Atlas (CC BY 4.0). Keep these credits.
+
+Credits
+- People (students, teacher, classmates): Microsoft Rocketbox Avatar Library, Copyright (c) Microsoft Corporation, MIT License — https://github.com/microsoft/Microsoft-Rocketbox
+- 3D engine: three.js (MIT)
