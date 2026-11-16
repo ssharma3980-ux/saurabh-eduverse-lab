@@ -1,0 +1,197 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Magnet & Heredity MCQ Quiz</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@600;700&family=Hind:wght@400;500;600&display=swap">
+<style>
+/* Layout: one centred column; a start panel, then one question card at a time with a progress strip on top. */
+:root{
+  --bg:#F2F5FA; --surface:#FFFFFF; --ink:#14233B; --muted:#5B6B84; --line:#D5DDEA;
+  --accent:#1F5FBF; --accent-ink:#FFFFFF; --amber:#B45309; --amber-bg:#FDF0DC;
+  --good:#1B7A4B; --good-bg:#E2F4EA; --bad:#B3261E; --bad-bg:#FBE6E4;
+  --display:"Baloo 2","Trebuchet MS",sans-serif; --body:"Hind","Segoe UI",Arial,sans-serif;
+}
+@media (prefers-color-scheme: dark){ :root:not([data-theme="light"]){
+  --bg:#0F1726; --surface:#18233A; --ink:#E8EEF9; --muted:#9FB0CC; --line:#2C3B58;
+  --accent:#6FA4F5; --accent-ink:#0B1424; --amber:#F2B25C; --amber-bg:#3A2A12;
+  --good:#6FD39C; --good-bg:#143326; --bad:#FF9A92; --bad-bg:#3D1A18; color-scheme:dark } }
+:root[data-theme="dark"]{
+  --bg:#0F1726; --surface:#18233A; --ink:#E8EEF9; --muted:#9FB0CC; --line:#2C3B58;
+  --accent:#6FA4F5; --accent-ink:#0B1424; --amber:#F2B25C; --amber-bg:#3A2A12;
+  --good:#6FD39C; --good-bg:#143326; --bad:#FF9A92; --bad-bg:#3D1A18; color-scheme:dark }
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:17px;line-height:1.5;padding-inline:16px;padding-block:20px 40px}
+.wrap{max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+header{display:flex;flex-direction:column;gap:2px}
+.brand{font-size:13px;letter-spacing:.14em;text-transform:uppercase;color:var(--amber);font-weight:600}
+h1{font-family:var(--display);font-size:clamp(26px,6vw,36px);line-height:1.1;margin:0;text-wrap:balance}
+.sub{color:var(--muted);margin:0}
+.panel{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:20px;display:flex;flex-direction:column;gap:16px}
+h2{font-family:var(--display);font-size:22px;margin:0;line-height:1.2}
+.choices{display:grid;grid-template-columns:repeat(auto-fit,minmax(190px,1fr));gap:10px}
+button{font:inherit;color:inherit;cursor:pointer}
+.pick{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:14px;text-align:left;display:flex;flex-direction:column;gap:2px}
+.pick strong{font-family:var(--display);font-size:19px}
+.pick span{color:var(--muted);font-size:15px}
+.pick[aria-pressed="true"]{border-color:var(--accent)}
+.row{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+label.chk{display:flex;gap:8px;align-items:center;color:var(--muted)}
+.primary{background:var(--accent);color:var(--accent-ink);border:0;border-radius:10px;padding:12px 22px;font-weight:600;font-size:17px}
+.ghost{background:transparent;border:1px solid var(--line);border-radius:10px;padding:10px 16px;color:var(--muted)}
+button:focus-visible{outline:3px solid var(--amber);outline-offset:2px}
+.bar{height:8px;background:var(--line);border-radius:99px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--accent);width:0;transition:width .25s}
+@media (prefers-reduced-motion:reduce){.bar i{transition:none}}
+.meta{display:flex;flex-wrap:wrap;gap:8px;align-items:center;font-size:14px;color:var(--muted);font-variant-numeric:tabular-nums}
+.tag{background:var(--amber-bg);color:var(--amber);border-radius:6px;padding:1px 8px;font-weight:600;font-size:13px}
+.score{margin-left:auto;font-weight:600;color:var(--ink)}
+.q{font-size:19px;font-weight:500;margin:0}
+.opts{display:flex;flex-direction:column;gap:10px}
+.opt{background:var(--bg);border:2px solid var(--line);border-radius:12px;padding:12px 14px;text-align:left;display:flex;gap:12px;align-items:flex-start;min-width:0}
+.opt b{font-family:var(--display);color:var(--accent);flex:none;width:1.2em}
+.opt.right{border-color:var(--good);background:var(--good-bg)}
+.opt.wrong{border-color:var(--bad);background:var(--bad-bg)}
+.opt:disabled{cursor:default;color:inherit}
+.why{border-radius:12px;padding:12px 14px;background:var(--good-bg);color:var(--ink)}
+.why.no{background:var(--bad-bg)}
+.why strong{display:block;font-family:var(--display);font-size:18px}
+.big{font-family:var(--display);font-size:clamp(40px,12vw,64px);line-height:1;color:var(--accent);font-variant-numeric:tabular-nums}
+.review{display:flex;flex-direction:column;gap:12px}
+.rv{border-top:1px solid var(--line);padding-top:12px;display:flex;flex-direction:column;gap:4px}
+.rv p{margin:0}
+.rv .a{color:var(--good);font-weight:600}
+.rv .y{color:var(--bad)}
+.rv .e{color:var(--muted);font-size:15px}
+</style>
+
+<div class="wrap">
+  <header>
+    <div class="brand">Saurabh Eduverse · CBSE Class 10 Science</div>
+    <h1>Magnetic Effects &amp; Heredity — 60 MCQ Quiz</h1>
+    <p class="sub">NCERT questions and logical questions. Every answer comes with its solution.</p>
+  </header>
+
+  <section class="panel" id="start">
+    <h2>Choose your quiz</h2>
+    <div class="choices" id="choices">
+      <button class="pick" data-set="all" aria-pressed="true"><strong>Both chapters</strong><span>60 questions</span></button>
+      <button class="pick" data-set="M" aria-pressed="false"><strong>Magnetic Effects</strong><span>30 questions</span></button>
+      <button class="pick" data-set="H" aria-pressed="false"><strong>Heredity</strong><span>30 questions</span></button>
+    </div>
+    <div class="row">
+      <label class="chk" for="shuffle"><input type="checkbox" id="shuffle"> Mix the question order</label>
+      <button class="primary" id="go">Start quiz</button>
+    </div>
+  </section>
+
+  <section class="panel" id="quiz" hidden>
+    <div class="bar"><i id="prog"></i></div>
+    <div class="meta"><span id="count"></span><span class="tag" id="chap"></span><span class="tag" id="kind"></span><span class="score" id="score"></span></div>
+    <p class="q" id="qtext"></p>
+    <div class="opts" id="opts"></div>
+    <div class="why" id="why" hidden></div>
+    <div class="row"><button class="ghost" id="quit">End quiz</button><button class="primary" id="next" hidden>Next question</button></div>
+  </section>
+
+  <section class="panel" id="done" hidden>
+    <h2>Your result</h2>
+    <div class="big" id="final"></div>
+    <p class="sub" id="remark"></p>
+    <div class="row"><button class="primary" id="again">Try again</button></div>
+    <h2 id="rvhead">Questions to revise</h2>
+    <div class="review" id="review"></div>
+  </section>
+</div>
+
+<script>
+// [chapter, type, question, options, correct index, solution]
+const Q = [
+["M","NCERT","Which of the following correctly describes the magnetic field near a long straight wire?",["Straight lines perpendicular to the wire","Straight lines parallel to the wire","Radial lines starting from the wire","Concentric circles centred on the wire"],3,"Iron filings around a straight current-carrying wire arrange in concentric circles with the wire at the centre."],
+["M","NCERT","At the time of short circuit, the current in the circuit:",["reduces substantially","does not change","increases heavily","varies continuously"],2,"Live and neutral wires touch, resistance becomes almost zero, so the current rises very sharply."],
+["M","NCERT","A positively charged alpha particle projected towards west is deflected towards north by a magnetic field. The direction of the field is:",["towards south","towards east","downward","upward"],3,"Fleming's left-hand rule: middle finger (current) west, thumb (force) north, so the forefinger (field) points upward."],
+["M","NCERT","The magnetic field inside a long straight current-carrying solenoid:",["is zero","decreases towards its end","increases towards its end","is the same at all points"],3,"Field lines inside a solenoid are parallel straight lines, which means the field is uniform."],
+["M","NCERT","Which properties of a proton can change while it moves freely in a magnetic field?",["Mass","Speed","Velocity and momentum","Charge"],2,"The magnetic force changes the direction of motion, so velocity and momentum change. Mass, speed and charge stay the same."],
+["M","NCERT","Which statement is correct?",["An electric motor converts mechanical energy into electrical energy","The field at the centre of a long circular coil carrying current is parallel straight lines","A wire with green insulation is usually the live wire","Magnetic field lines cross each other near the poles"],1,"NCERT exercise: the field at the centre of a circular coil is nearly straight and parallel. A motor converts electrical to mechanical energy, green is the earth wire, and field lines never cross."],
+["M","NCERT","The force on a current-carrying conductor placed in a magnetic field is largest when the direction of current is:",["parallel to the field","opposite to the field","at right angles to the field","at 45° to the field"],2,"The force is maximum when the current is perpendicular to the magnetic field."],
+["M","NCERT","A compass needle gets deflected when brought near a bar magnet because:",["the needle is made of copper","the needle is a small magnet and feels the magnet's field","air pushes the needle","the needle gets charged"],1,"A compass needle is itself a tiny bar magnet, so the field of the bar magnet exerts a force on its poles."],
+["M","NCERT","Two magnetic field lines never intersect because at the point of intersection:",["the field would be zero","the field would have two directions","the field would be infinite","the lines would end"],1,"A compass needle cannot point in two directions at one point, so the field has only one direction at each point."],
+["M","NCERT","An electric oven of 2 kW power rating is operated in a 220 V domestic circuit that has a current rating of 5 A. What will happen?",["The oven works normally","The fuse blows because the oven draws about 9 A","The oven draws only 2 A","The voltage rises to 440 V"],1,"I = P/V = 2000/220 ≈ 9.1 A, which is more than 5 A. The circuit is overloaded and the fuse melts."],
+["M","Concept","Inside a bar magnet, the direction of magnetic field lines is:",["from north pole to south pole","from south pole to north pole","perpendicular to its length","there are no field lines inside"],1,"Field lines are closed curves: outside they run N to S, inside they run S to N."],
+["M","Concept","Where magnetic field lines are drawn closer together, the magnetic field is:",["weaker","zero","stronger","reversed"],2,"The degree of closeness of field lines shows the relative strength of the field."],
+["M","Logical","A straight vertical wire carries current upward. Looking at it from above, the magnetic field lines around it are:",["clockwise","anticlockwise","towards the wire","away from the wire"],1,"Right-hand thumb rule: thumb points up towards the viewer, so the fingers curl anticlockwise as seen from above."],
+["M","NCERT","A circular loop of wire lies in the plane of a table and carries current clockwise (seen from above). Inside the loop the magnetic field is:",["out of the table (upward)","into the table (downward)","along the table towards north","zero"],1,"Apply the right-hand thumb rule to any part of the loop: for a clockwise current the field inside points into the table and outside it points out."],
+["M","Concept","A circular coil has n turns. Compared with a single turn carrying the same current, the field at its centre is:",["the same","n times larger","n times smaller","n² times larger"],1,"The current in each turn flows in the same direction, so the fields of the turns add up."],
+["M","Logical","The current in a long straight wire is doubled. The magnetic field at a fixed point near it becomes:",["half","the same","double","four times"],2,"The field produced by a straight wire is directly proportional to the current."],
+["M","Logical","A point is moved from 2 cm to 4 cm away from a long straight current-carrying wire. The magnetic field at the point:",["doubles","becomes half","stays the same","becomes zero"],1,"The field decreases as distance increases (inversely), so doubling the distance halves the field."],
+["M","Concept","In Fleming's left-hand rule, the thumb shows the direction of:",["magnetic field","current","force (motion) on the conductor","induced current"],2,"Forefinger = field, middle finger = current, thumb = force or motion of the conductor."],
+["M","Logical","A wire carries current towards east in a magnetic field that points vertically downward. The force on the wire is towards:",["north","south","east","upward"],0,"Left hand: forefinger down (field), middle finger east (current); the thumb then points north."],
+["M","Logical","A current-carrying wire is placed parallel to a uniform magnetic field. The force on it is:",["maximum","half the maximum","zero","infinite"],2,"The force is zero when the current is along (parallel to) the field and maximum when perpendicular."],
+["M","Concept","The core of an electromagnet is made of soft iron because soft iron:",["is a permanent magnet","gets strongly magnetised and loses magnetism when the current stops","does not conduct electricity","is lighter than steel"],1,"Soft iron becomes a strong magnet only while current flows, so the electromagnet can be switched on and off."],
+["M","Logical","Looking at one end of a solenoid, the current appears to flow anticlockwise. That end behaves as a:",["north pole","south pole","neutral point","positive terminal"],0,"Anticlockwise current at an end gives a north pole; clockwise gives a south pole (right-hand rule)."],
+["M","Concept","An electric fuse works on the:",["magnetic effect of current","heating effect of current","chemical effect of current","force on a conductor"],1,"Excess current heats the fuse wire (Joule heating); it melts and breaks the circuit."],
+["M","Concept","In a domestic circuit the fuse is connected:",["in parallel with the appliance","in series with the live wire","in the neutral wire only","in the earth wire"],1,"The fuse must be in series in the live wire so that all the current passes through it."],
+["M","Concept","The wire with green insulation in house wiring is the:",["live wire","neutral wire","earth wire","fuse wire"],2,"Red = live, black = neutral, green = earth."],
+["M","Logical","Household appliances are connected in parallel so that:",["each gets the same voltage and can be switched on or off separately","the total resistance becomes very high","the same current flows through all","less wire is used"],0,"In parallel every appliance gets 220 V and has its own switch; one failing does not stop the others."],
+["M","Concept","The earth wire protects the user because it:",["increases the current in the appliance","gives leaked current a low-resistance path to the ground","stores extra charge","reduces the voltage to zero"],1,"If the metal body becomes live, the current flows to earth instead of through the person, and the fuse blows."],
+["M","Logical","The current in a wire placed over a compass is reversed. The compass needle:",["stays as it is","returns to north–south and stays","deflects in the opposite direction","spins continuously"],2,"Reversing the current reverses the direction of the magnetic field, so the deflection reverses (Oersted's experiment)."],
+["M","Concept","Which device does NOT work on the force acting on a current-carrying conductor in a magnetic field?",["Electric motor","Loudspeaker","Electric fuse","Moving-coil ammeter"],2,"A fuse uses the heating effect. Motors, loudspeakers and measuring instruments use the magnetic force."],
+["M","Logical","To make an electromagnet stronger using the same battery, you should:",["remove the iron core","use fewer turns","wind more turns of wire on the core","use a wooden core"],2,"More turns give a stronger field for the same current. A soft iron core also strengthens it."],
+
+["H","NCERT","Tall pea plants with violet flowers were crossed with short plants with white flowers. All progeny had violet flowers, but almost half were short. The genetic make-up of the tall parent was:",["TTWW","TTww","TtWW","TtWw"],2,"All violet means the tall parent was WW. Half short means it carried one t, so it was Tt. Hence TtWW."],
+["H","NCERT","A study found that children with light-coloured eyes are likely to have parents with light-coloured eyes. From this we can say the light eye colour trait is:",["dominant","recessive","cannot be said from this information","not inherited"],2,"This only shows the trait is inherited. To know dominant or recessive we need a cross between parents with different eye colours."],
+["H","NCERT","A man with blood group A marries a woman with blood group O and their daughter has blood group O. Which trait is dominant?",["A is dominant","O is dominant","The information is not enough to decide","Both are recessive"],2,"The daughter's group can be explained whether A or O is dominant, so one child is not enough data."],
+["H","NCERT","In human beings, the sex of the child is determined by:",["the egg of the mother","the sperm of the father (X or Y)","the age of the mother","the food eaten by the mother"],1,"All eggs carry X. A sperm carries X or Y: X gives a girl (XX), Y gives a boy (XY)."],
+["H","NCERT","In an asexually reproducing species, trait A is present in 10% of the population and trait B in 60%. Which trait is likely to have arisen earlier?",["Trait A","Trait B","Both at the same time","Cannot be inherited"],1,"A trait that arose earlier has had more generations to spread, so the more common trait B is older."],
+["H","NCERT","Variations in a species are useful because they:",["make all individuals identical","increase the chances of survival when the environment changes","stop reproduction","reduce the number of genes"],1,"Some variants may suit a changed environment and survive, so the species continues."],
+["H","NCERT","Mendel's experiments show that traits may be dominant or recessive because:",["F₁ plants showed both traits","F₁ showed only one trait but the other reappeared in F₂","F₂ plants were all tall","traits blended in F₁"],1,"The trait seen in F₁ is dominant. The hidden one, which returns in F₂, is recessive."],
+["H","NCERT","Mendel's dihybrid cross showed that traits are inherited independently because F₂ had:",["only parental types","new combinations such as round green and wrinkled yellow","only round yellow seeds","no wrinkled seeds"],1,"New combinations can appear only if seed shape and seed colour are inherited independently."],
+["H","NCERT","Each germ cell (gamete) has only one set of genes. This ensures that:",["the offspring has double the DNA of the parents","the chromosome number of the species stays constant","only the mother's traits appear","no variation occurs"],1,"Two gametes with one set each fuse to restore the normal two sets in the zygote."],
+["H","NCERT","In some reptiles, the sex of the young one is decided by:",["the X and Y chromosomes","the temperature at which the fertilised eggs are kept","the size of the egg","the father's age"],1,"NCERT: in a few reptiles the incubation temperature of the eggs decides whether the animal is male or female."],
+["H","Concept","The male gamete of an apple plant has 17 chromosomes. The female gamete and the adult plant cells have, respectively:",["17 and 17","17 and 34","34 and 34","34 and 51"],1,"Gametes have n = 17 each. Body cells have 2n = 34. (CBSE sample paper 2026-27)"],
+["H","Concept","In the F₂ generation of a cross between pure tall (TT) and pure dwarf (tt) pea plants, the tall : dwarf ratio is:",["1 : 1","1 : 3","3 : 1","9 : 3 : 3 : 1"],2,"Tt × Tt gives TT, Tt, Tt, tt: three tall and one dwarf."],
+["H","Concept","The genotypic ratio in the F₂ generation of a monohybrid cross is:",["3 : 1","1 : 1","1 : 2 : 1","9 : 3 : 3 : 1"],2,"1 TT : 2 Tt : 1 tt."],
+["H","Concept","The phenotypic ratio in the F₂ generation of a dihybrid cross is:",["3 : 1","1 : 2 : 1","9 : 3 : 3 : 1","1 : 1 : 1 : 1"],2,"9 round yellow : 3 round green : 3 wrinkled yellow : 1 wrinkled green."],
+["H","Logical","A heterozygous tall plant (Tt) is crossed with a dwarf plant (tt). What percentage of the offspring will be tall?",["25%","50%","75%","100%"],1,"Tt × tt gives Tt and tt in equal numbers, so half are tall."],
+["H","Logical","Two heterozygous tall plants (Tt × Tt) produce 400 offspring. About how many will be dwarf?",["50","100","200","300"],1,"One quarter are tt: 400 ÷ 4 = 100."],
+["H","Logical","Two tall pea plants are crossed and some of the offspring are dwarf. The genotypes of the parents must be:",["TT and TT","TT and Tt","Tt and Tt","TT and tt"],2,"A dwarf (tt) offspring needs one t from each parent, and both parents are tall, so both are Tt."],
+["H","Logical","A tall plant is crossed with a dwarf plant and all the offspring are tall. The tall parent is most likely:",["Tt","tt","TT","cannot be tall"],2,"If the tall parent were Tt, about half the offspring would be dwarf. All tall means TT."],
+["H","Concept","A plant with genotype Tt is described as:",["homozygous tall","heterozygous tall","homozygous dwarf","heterozygous dwarf"],1,"Two different alleles = heterozygous; T is dominant, so the plant is tall."],
+["H","Logical","How many different types of gametes can a plant with genotype RrYy form?",["1","2","4","8"],2,"RY, Ry, rY and ry."],
+["H","Logical","In a dihybrid cross, the F₂ generation has 1600 seeds. About how many are wrinkled and green?",["100","300","400","900"],0,"Wrinkled green are 1/16 of the total: 1600 ÷ 16 = 100."],
+["H","Logical","In a cross VVTT × vvtt, what fraction of F₂ plants are tall with white flowers?",["9/16","3/16","1/16","1/4"],1,"Tall (dominant) with white (recessive) is one of the 3/16 groups, 18.75%. (CBSE sample paper 2026-27)"],
+["H","Concept","Round yellow (RRYY) pea plants are crossed with wrinkled green (rryy) plants. The F₁ seeds are:",["all round yellow","all wrinkled green","half round, half wrinkled","round green"],0,"F₁ is RrYy; round and yellow are both dominant."],
+["H","Concept","A normal human body cell has:",["23 chromosomes","22 pairs of autosomes and 1 pair of sex chromosomes","46 pairs of chromosomes","23 pairs of sex chromosomes"],1,"46 chromosomes = 22 pairs of autosomes + 1 pair of sex chromosomes (XX or XY)."],
+["H","Logical","A couple already has three daughters. The chance that their fourth child is a boy is:",["0%","25%","50%","100%"],2,"Each time, half the sperms carry X and half carry Y, so the chance is 50% for every child."],
+["H","Concept","A gene is best described as:",["a whole chromosome","a section of DNA that carries information for one protein","a type of cell","a kind of hormone"],1,"A gene is the part of DNA that provides information for making one protein."],
+["H","Logical","A pea plant has a gene that makes an efficient enzyme for a growth hormone. The plant will most likely be:",["dwarf, because less hormone is made","tall, because more hormone is made","of medium height always","unable to grow"],1,"An efficient enzyme makes more hormone and the plant grows tall; a less efficient enzyme gives a short plant."],
+["H","Concept","For each trait, a child receives:",["two copies of the gene from the mother only","two copies from the father only","one copy from the mother and one from the father","no genes from the parents"],2,"Both parents contribute equal genetic material: one copy of each gene from each parent."],
+["H","Logical","Which of these cells of a man could carry a Y chromosome but no X chromosome?",["A skin cell","A muscle cell","A sperm","A nerve cell"],2,"Body cells have both X and Y. A sperm has only one sex chromosome, either X or Y."],
+["H","Concept","Compared with asexual reproduction, sexual reproduction produces:",["no variation","less variation","more variation","identical offspring"],2,"DNA from two parents is combined, so many new combinations of variations arise."]
+];
+const NAMES={M:"Magnetic Effects",H:"Heredity"};
+const $=id=>document.getElementById(id);
+let set="all",list=[],i=0,score=0,wrong=[];
+$("choices").addEventListener("click",e=>{const b=e.target.closest(".pick");if(!b)return;set=b.dataset.set;
+  document.querySelectorAll(".pick").forEach(p=>p.setAttribute("aria-pressed",p===b));});
+$("go").onclick=()=>{list=Q.filter(q=>set==="all"||q[0]===set);
+  if($("shuffle").checked){list=list.slice();for(let k=list.length-1;k>0;k--){const j=Math.floor(Math.random()*(k+1));[list[k],list[j]]=[list[j],list[k]];}}
+  i=0;score=0;wrong=[];$("start").hidden=true;$("done").hidden=true;$("quiz").hidden=false;show();};
+function show(){const q=list[i];$("prog").style.width=(i/list.length*100)+"%";
+  $("count").textContent="Question "+(i+1)+" of "+list.length;$("chap").textContent=NAMES[q[0]];$("kind").textContent=q[1];
+  $("score").textContent="Score "+score;$("qtext").textContent=q[2];$("why").hidden=true;$("next").hidden=true;
+  const box=$("opts");box.textContent="";
+  q[3].forEach((t,k)=>{const b=document.createElement("button");b.className="opt";const l=document.createElement("b");l.textContent="ABCD"[k];
+    const s=document.createElement("span");s.textContent=t;b.append(l,s);b.onclick=()=>pick(k);box.append(b);});}
+function pick(k){const q=list[i],btns=[...$("opts").children];btns.forEach(b=>b.disabled=true);
+  btns[q[4]].classList.add("right");const ok=k===q[4];if(ok)score++;else{btns[k].classList.add("wrong");wrong.push([q,k]);}
+  const w=$("why");w.className="why"+(ok?"":" no");w.textContent="";const s=document.createElement("strong");
+  s.textContent=ok?"Correct!":"Not quite. Correct answer: "+"ABCD"[q[4]];w.append(s,document.createTextNode(q[5]));w.hidden=false;
+  $("score").textContent="Score "+score;const n=$("next");n.textContent=i===list.length-1?"See result":"Next question";n.hidden=false;n.focus();}
+$("next").onclick=()=>{i++;i<list.length?show():finish(list.length);};
+$("quit").onclick=()=>finish(i);
+function finish(done){$("quiz").hidden=true;$("done").hidden=false;$("final").textContent=score+" / "+done;
+  const p=done?score/done:0;$("remark").textContent=!done?"You did not answer any question.":p>=.9?"Excellent! You are ready for the board exam.":p>=.7?"Good work. Revise the questions below once.":p>=.4?"Fair. Read the solutions below and try again.":"Needs practice. Read the chapter notes, then try again.";
+  const r=$("review");r.textContent="";$("rvhead").hidden=!wrong.length;
+  wrong.forEach(([q,k])=>{const d=document.createElement("div");d.className="rv";
+    [["",q[2]],["y","Your answer: "+q[3][k]],["a","Correct answer: "+q[3][q[4]]],["e",q[5]]].forEach(([c,t])=>{const e=document.createElement("p");if(c)e.className=c;e.textContent=t;d.append(e);});r.append(d);});}
+$("again").onclick=()=>{$("done").hidden=true;$("start").hidden=false;};
+</script>
+
+</body></html>

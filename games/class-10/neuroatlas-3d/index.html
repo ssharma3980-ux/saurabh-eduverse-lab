@@ -1,0 +1,689 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>NeuroAtlas 3D</title>
+<style>
+/* Layout: an anatomy-museum gallery. The lit 3D specimen fills the stage; a brass-edged plaque beside (desktop) or below (phone) carries all reading and play. */
+:root{
+  color-scheme:dark;
+  --ink:#0b0d12; --slate:#151922; --slate2:#1c212c; --line:#2c3340;
+  --bone:#ece4d6; --dim:#9da3ae; --brass:#d9a441; --nerve:#58d6e8; --ok:#6fd08c; --bad:#f0736a;
+  --display:"Iowan Old Style","Palatino Linotype",Palatino,"Book Antiqua",Georgia,serif;
+  --body:system-ui,-apple-system,"Segoe UI",Roboto,"Noto Sans",sans-serif;
+  --mono:ui-monospace,"SF Mono",Menlo,Consolas,monospace;
+}
+html,body{height:100%}
+body{background:var(--ink);color:var(--bone);font:15px/1.5 var(--body);overflow:hidden}
+*{box-sizing:border-box}
+button{font:inherit;color:inherit;cursor:pointer}
+button:focus-visible{outline:2px solid var(--nerve);outline-offset:2px}
+#app{height:100%;display:grid;grid-template-columns:minmax(0,1fr) 370px;grid-template-rows:auto minmax(0,1fr)}
+#top{grid-column:1/-1;display:flex;align-items:center;gap:12px;padding:8px 16px;background:var(--slate);border-bottom:1px solid var(--line)}
+#top .brand{font-family:var(--display);font-size:17px;letter-spacing:.02em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#top .brand small{color:var(--brass);font:600 10px var(--body);letter-spacing:.16em;text-transform:uppercase;display:block}
+#top .sp{flex:1}
+.pill{font:600 12px var(--mono);color:var(--brass);border:1px solid var(--line);border-radius:99px;padding:5px 10px;white-space:nowrap}
+.ib{background:var(--slate2);border:1px solid var(--line);border-radius:8px;padding:6px 10px;font-size:13px;white-space:nowrap}
+.ib:hover{border-color:var(--brass)}
+.ib.on{border-color:var(--brass);color:var(--brass)}
+#stage{position:relative;min-width:0;min-height:0;background:radial-gradient(ellipse at 50% 38%,#2b3140 0%,#141821 48%,#07080b 100%);overflow:hidden}
+#gl{position:absolute;inset:0;width:100%;height:100%;display:block;touch-action:none;cursor:grab}
+#tools{position:absolute;left:12px;bottom:12px;right:12px;display:flex;flex-wrap:wrap;gap:6px;pointer-events:none}
+#tools .ib{pointer-events:auto;background:rgba(21,25,34,.86)}
+#hint{position:absolute;top:10px;left:0;right:0;text-align:center;color:var(--dim);font-size:12px;letter-spacing:.06em;pointer-events:none}
+#tag{position:absolute;pointer-events:none;transform:translate(-50%,-140%);background:rgba(11,13,18,.9);border:1px solid var(--brass);color:var(--bone);font:600 12px var(--body);padding:3px 9px;border-radius:4px;white-space:nowrap}
+#panel{background:var(--slate);border-left:1px solid var(--line);overflow-y:auto;padding:18px 18px 28px;min-height:0}
+#panel h2{font:400 26px/1.15 var(--display);margin:2px 0 4px;text-wrap:balance}
+#panel h3{font:600 11px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--brass);margin:0}
+#panel p{margin:8px 0}
+.facts{margin:10px 0 0;padding:0;list-style:none;display:grid;gap:8px}
+.facts li{padding-left:14px;border-left:2px solid var(--line)}
+.src{font:11px var(--mono);color:var(--dim)}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:16px;padding-top:14px;border-top:1px solid var(--line)}
+.chip{background:transparent;border:1px solid var(--line);border-radius:4px;padding:5px 9px;font-size:13px}
+.chip:hover,.chip.on{border-color:var(--brass);color:var(--brass)}
+.chip:disabled{opacity:.35;cursor:default}
+.bar{height:4px;background:var(--line);border-radius:2px;margin:10px 0 14px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--brass);transition:width .3s}
+.q{white-space:pre-line;font:400 20px/1.3 var(--display);margin:6px 0 12px;text-wrap:balance}
+.opt{display:block;width:100%;text-align:left;background:var(--slate2);border:1px solid var(--line);border-radius:6px;padding:10px 12px;margin-top:8px}
+.opt:hover:not(:disabled){border-color:var(--brass)}
+.opt.r{border-color:var(--ok);color:var(--ok)}
+.opt.w{border-color:var(--bad);color:var(--bad)}
+.fb{margin-top:12px;padding:10px 12px;border-radius:6px;background:var(--slate2);border:1px solid var(--line)}
+.fb.ok{border-color:var(--ok)} .fb.no{border-color:var(--bad)}
+.go{background:var(--brass);color:#1a1405;border:0;border-radius:6px;padding:10px 16px;font-weight:700;margin-top:12px}
+.go:hover{filter:brightness(1.1)}
+.go.alt{background:transparent;color:var(--bone);border:1px solid var(--line)}
+.row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.stars{font-size:34px;letter-spacing:6px;color:var(--brass)}
+.stars b{color:var(--line);font-weight:400}
+.badge{font:600 10px var(--body);letter-spacing:.12em;text-transform:uppercase;border:1px solid var(--nerve);color:var(--nerve);border-radius:3px;padding:2px 6px}
+#home{position:absolute;inset:0;z-index:5;overflow-y:auto;background:linear-gradient(180deg,rgba(11,13,18,.72),rgba(11,13,18,.95) 60%);padding-block:28px 40px;padding-inline:16px}
+#home .in{max-width:900px;margin:0 auto}
+#home h1{font:400 clamp(34px,7vw,60px)/1 var(--display);margin:6px 0 10px;text-wrap:balance}
+#home h1 em{color:var(--brass);font-style:italic}
+#home .lead{color:var(--dim);max-width:60ch;margin:0 0 22px}
+.eyebrow{font:600 11px var(--body);letter-spacing:.2em;text-transform:uppercase;color:var(--brass)}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:10px}
+.card{text-align:left;background:rgba(21,25,34,.9);border:1px solid var(--line);border-radius:8px;padding:14px 16px;display:grid;gap:4px}
+.card:hover{border-color:var(--brass)}
+.card b{font:400 20px var(--display)}
+.card span{color:var(--dim);font-size:13px}
+.card .st{color:var(--brass);font-size:14px;letter-spacing:3px}
+.card .st i{color:var(--line);font-style:normal}
+.grp{margin:22px 0 8px;font:600 11px var(--body);letter-spacing:.16em;text-transform:uppercase;color:var(--dim)}
+@media (max-width:820px){
+  #app{grid-template-columns:minmax(0,1fr);grid-template-rows:auto minmax(0,1fr) minmax(0,46%)}
+  #app.menu{grid-template-rows:auto minmax(0,1fr)}
+  #app.menu #panel{display:none}
+  #app.big{grid-template-rows:auto minmax(0,26%) minmax(0,1fr)}
+  #panel{border-left:0;border-top:1px solid var(--line);padding:14px 16px 24px}
+  #panel h2{font-size:22px}
+  #top .brand small{display:none}
+}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+<div id="app">
+  <div id="top">
+    <div class="brand"><small>Saurabh's Eduverse · Class 10 Science · Chapter 6</small>NeuroAtlas 3D</div>
+    <span class="sp"></span>
+    <span class="pill" id="tot">★ 0</span>
+    <button class="ib" id="snd" aria-label="Sound on or off">Sound on</button>
+    <button class="ib" id="hm">Menu</button>
+  </div>
+  <div id="stage">
+    <canvas id="gl"></canvas>
+    <div id="hint">Drag to turn · pinch or scroll to zoom · tap a part</div>
+    <div id="tag" hidden></div>
+    <div id="tools"></div>
+    <div id="home"></div>
+  </div>
+  <div id="panel"></div>
+</div>
+<script>
+// ---------- Content: NCERT Class 10 Science, Chapter 6 "Control and Coordination" ----------
+const INFO = {
+  cerebrum:{n:'Cerebrum',r:'Fore-brain',f:['The fore-brain is the main thinking part of the brain.','It has regions that receive sensory impulses from various receptors. Separate areas are specialised for hearing, smell, sight and so on.','Association areas interpret this information together with information from other receptors and with what is already stored in the brain.','It decides how to respond and passes the decision to motor areas, which control voluntary muscles such as the leg muscles.','A separate centre in the fore-brain gives the feeling of being full after eating.']},
+  hypothalamus:{n:'Hypothalamus',r:'Fore-brain · endocrine',f:['It plays an important role in the release of many hormones.','When the level of growth hormone is low, it releases growth hormone releasing factor.','This releasing hormone stimulates the pituitary gland to release growth hormone.']},
+  pituitary:{n:'Pituitary gland',r:'Endocrine gland',f:['It secretes growth hormone, which regulates growth and development of the body.','Growth hormone stimulates growth in all organs.','If there is a deficiency of this hormone in childhood, it leads to dwarfism.','It releases its hormones when stimulated by releasing hormones from the hypothalamus.']},
+  midbrain:{n:'Mid-brain',r:'Mid-brain',f:['Many involuntary actions are controlled by the mid-brain and hind-brain.','These are muscle movements over which we have no thinking control, such as the change in the size of the pupil.']},
+  pons:{n:'Pons',r:'Hind-brain',f:['The pons is one of the three parts of the hind-brain, along with the medulla and the cerebellum.','The hind-brain, together with the mid-brain, controls many involuntary actions.']},
+  medulla:{n:'Medulla',r:'Hind-brain',f:['The medulla controls involuntary actions including blood pressure, salivation and vomiting.','It continues downward into the spinal cord.']},
+  cerebellum:{n:'Cerebellum',r:'Hind-brain',f:['It is responsible for the precision of voluntary actions.','It maintains the posture and balance of the body.','Walking in a straight line, riding a bicycle and picking up a pencil are possible because of the cerebellum.']},
+  cord:{n:'Spinal cord',r:'Central nervous system',f:['Nerves from all over the body meet in a bundle in the spinal cord on their way to the brain.','Reflex arcs are formed in the spinal cord itself, although the information also goes on to reach the brain.','The brain and spinal cord together make the central nervous system.','The vertebral column, or backbone, protects the spinal cord.']},
+  cranium:{n:'Cranium (skull)',r:'Protection',f:['The brain sits inside a bony box.','Inside the box, the brain is contained in a fluid-filled balloon which provides further shock absorption.']},
+  brain:{n:'Brain',r:'Central nervous system',f:['The brain is the main coordinating centre of the body.','It has three major regions: fore-brain, mid-brain and hind-brain.','It receives information from all parts of the body, integrates it and sends messages to muscles.','Thinking involves complicated interaction of many nerve impulses from many neurons.']},
+  nerves:{n:'Nerves',r:'Peripheral nervous system',f:['The peripheral nervous system has cranial nerves arising from the brain and spinal nerves arising from the spinal cord.','It lets the central nervous system communicate with all other parts of the body.','A neuron picks up information at its dendritic tip. The electrical impulse travels from the dendrite to the cell body, then along the axon to its end.','At the end of the axon the impulse releases chemicals. These cross the gap, called a synapse, and start a similar impulse in the next neuron.']},
+  receptor:{n:'Receptors in the skin',r:'Sense organ',f:['Receptors are specialised tips of some nerve cells that detect information from our environment.','Receptors in the skin of the hand detect heat or pain when we touch a hot object.','The signal sets off a chemical reaction that creates an electrical impulse.']},
+  nose:{n:'Nose',r:'Sense organ',f:['Olfactory receptors in the nose detect smell.','This is how we detect the smell of an agarbatti. The fore-brain then interprets the signal.','Activity 6.1: food tastes different when the nose is blocked, because smell is part of how we sense food.']},
+  tongue:{n:'Tongue',r:'Sense organ',f:['Gustatory receptors on the tongue detect taste.','Activity 6.1 compares the taste of sugar and of food with the nose open and with the nose blocked.']},
+  muscle:{n:'Arm muscle',r:'Effector',f:['Muscle is the tissue that does the final job of moving.','When a nerve impulse reaches the muscle, the muscle fibre must move.','Muscle cells have special proteins that change both their shape and their arrangement in the cell in response to nervous electrical impulses. The new arrangement makes the cell shorter.']},
+  pineal:{n:'Pineal gland',r:'Endocrine gland',f:['It is one of the endocrine glands labelled in Fig. 6.7.','The chapter does not describe its hormone. Activity 6.3 asks you to consult books and your teacher to find out about the other glands.']},
+  thyroid:{n:'Thyroid gland',r:'Endocrine gland',f:['It secretes thyroxin.','Thyroxin regulates carbohydrate, protein and fat metabolism so as to provide the best balance for growth.','Iodine is essential for making thyroxin. If iodine is deficient in the diet, we may suffer from goitre. A swollen neck is one symptom.','This is why iodised salt is advised.']},
+  parathyroid:{n:'Parathyroid glands',r:'Endocrine gland',f:['They are labelled in Fig. 6.7, lying on the thyroid gland.','The chapter does not describe their hormone. Activity 6.3 asks you to find out more.']},
+  thymus:{n:'Thymus',r:'Endocrine gland',f:['It is labelled in Fig. 6.7, in the chest.','The chapter does not describe its hormone. Activity 6.3 asks you to find out more.']},
+  pancreas:{n:'Pancreas',r:'Endocrine gland',f:['It produces insulin, which helps in regulating blood sugar levels.','If insulin is not secreted in proper amounts, the sugar level in the blood rises and causes many harmful effects. This is why some diabetes patients are given insulin injections.','Feedback: when blood sugar rises, cells of the pancreas detect it and produce more insulin. As the sugar level falls, insulin secretion is reduced.']},
+  adrenal:{n:'Adrenal glands',r:'Endocrine gland',f:['They secrete adrenaline directly into the blood.','The heart beats faster, so more oxygen reaches the muscles.','Blood to the digestive system and skin is reduced, because muscles around small arteries in these organs contract. This diverts blood to the skeletal muscles.','The breathing rate also increases. Together these responses prepare the body to deal with the situation.']},
+  ovary:{n:'Ovaries',r:'Endocrine gland · Fig. 6.7(b) female',f:['They secrete oestrogen.','Oestrogen brings about the changes associated with puberty in females: development of female sex organs and regulation of the menstrual cycle.']},
+  testis:{n:'Testes',r:'Endocrine gland · Fig. 6.7(a) male',f:['They secrete testosterone.','Testosterone brings about the changes associated with puberty in males.']}
+};
+const BRAIN_ORDER=['cerebrum','cerebellum','medulla','pons','midbrain','hypothalamus','pituitary','cord'];
+const BODY_ORDER=['brain','cord','nerves','receptor','nose','tongue','muscle','pineal','hypothalamus','pituitary','thyroid','parathyroid','thymus','pancreas','adrenal','ovary','testis'];
+const INSIDE=['midbrain','hypothalamus'];
+
+const BRAIN_TASKS=[
+ {q:'Tap the main thinking part of the brain.',a:['cerebrum'],w:'The fore-brain, mostly the cerebrum, is the main thinking part.'},
+ {q:'Which part maintains the posture and balance of the body?',a:['cerebellum'],w:'The cerebellum maintains posture and balance.'},
+ {q:'You ride a bicycle and pick up a pencil with precision. Which part makes this possible?',a:['cerebellum'],w:'The cerebellum gives precision to voluntary actions.'},
+ {q:'Which part controls blood pressure, salivation and vomiting?',a:['medulla'],w:'These involuntary actions are controlled by the medulla in the hind-brain.'},
+ {q:'Which gland here secretes growth hormone?',a:['pituitary'],w:'The pituitary gland secretes growth hormone.'},
+ {q:'Which part releases hormones that tell the pituitary to act?',a:['hypothalamus'],w:'The hypothalamus releases releasing hormones that stimulate the pituitary.'},
+ {q:'Which part has separate areas for hearing, smell and sight?',a:['cerebrum'],w:'The fore-brain has areas specialised for hearing, smell, sight and so on.'},
+ {q:'Tap the pons, the hind-brain part that sits above the medulla.',a:['pons'],w:'The hind-brain is made of the pons, medulla and cerebellum.'},
+ {q:'Find the mid-brain. It lies deep inside, so open the brain first.',a:['midbrain'],w:'The mid-brain and hind-brain control many involuntary actions.'},
+ {q:'Where are reflex arcs formed?',a:['cord'],w:'Reflex arcs are formed in the spinal cord, and the information also goes on to the brain.'}
+];
+const BODY_TASKS=[
+ {q:'Which gland secretes thyroxin?',a:['thyroid'],w:'The thyroid gland makes thyroxin, which regulates metabolism.'},
+ {q:'Which gland secretes insulin?',a:['pancreas'],w:'The pancreas produces insulin, which regulates blood sugar.'},
+ {q:'A squirrel faces danger. Which glands pour adrenaline into its blood?',a:['adrenal'],w:'Adrenal glands secrete adrenaline directly into the blood.'},
+ {q:'Which gland secretes growth hormone?',a:['pituitary'],w:'The pituitary gland secretes growth hormone.'},
+ {q:'Which part secretes releasing hormones?',a:['hypothalamus'],w:'The hypothalamus secretes releasing hormones that stimulate the pituitary.'},
+ {q:'Which glands secrete testosterone?',a:['testis'],w:'Testes secrete testosterone in males.'},
+ {q:'Which glands secrete oestrogen?',a:['ovary'],w:'Ovaries secrete oestrogen in females.'},
+ {q:'Which gland needs iodine from iodised salt?',a:['thyroid'],w:'Iodine is essential for the thyroid to make thyroxin. Its deficiency may cause goitre.'},
+ {q:'Where in the body are reflex arcs formed?',a:['cord'],w:'Reflex arcs are formed in the spinal cord.'},
+ {q:'Which tissue does the final job of pulling the hand away from a flame?',a:['muscle'],w:'Muscle is the effector. Its cells shorten when the impulse arrives.'},
+ {q:'Where are olfactory receptors that detect the smell of an agarbatti?',a:['nose'],w:'Olfactory receptors in the nose detect smell.'},
+ {q:'Which organ is the main coordinating centre of the body?',a:['brain'],w:'The brain is the main coordinating centre.'},
+ {q:'Where are gustatory receptors found?',a:['tongue'],w:'Gustatory receptors on the tongue detect taste.'}
+];
+const REFLEX_STEPS=['Receptor in the skin detects heat','Sensory neuron carries the impulse','Relay neuron in the spinal cord','Motor neuron carries the command','Effector muscle pulls the hand away'];
+
+// [tag, question, correct, wrong1, wrong2, wrong3, explanation]   tag: I in-text, E exercise, A activity, C concept
+const QB={
+N:[
+['I','What happens at the synapse between two neurons?','The impulse releases chemicals that cross the gap and start a similar impulse in the next neuron','The two neurons join and become one cell','The impulse stops and never reaches the next neuron','Blood carries the impulse across','At the end of the axon the electrical impulse sets off the release of chemicals, which cross the synapse.'],
+['I','Which part of the brain maintains posture and equilibrium of the body?','Cerebellum','Cerebrum','Medulla','Pons','The cerebellum maintains posture and balance.'],
+['I','How do we detect the smell of an agarbatti?','Olfactory receptors in the nose detect it and the fore-brain interprets it','Gustatory receptors on the tongue detect it','The spinal cord detects it directly','The cerebellum detects it','Olfactory receptors detect smell, and the fore-brain has an area specialised for smell.'],
+['I','What is the role of the brain in a reflex action?','The spinal cord completes the reflex, and the information also goes on to reach the brain','The brain thinks and then orders the reflex','The brain has no nerve connection with the reflex arc','The brain stops the reflex each time','Reflex arcs are formed in the spinal cord so the response is quick. The input also reaches the brain.'],
+['I','How is a reflex action different from walking?','A reflex is sudden and happens without thinking, while walking is a voluntary action','A reflex is slow, while walking is fast','A reflex uses hormones, while walking uses nerves','There is no difference','Walking is a voluntary action decided by the brain. A reflex is a quick response without conscious thought.'],
+['E','The gap between two neurons is called a','synapse','dendrite','axon','impulse','Exercise 2: the gap between two neurons is the synapse.'],
+['E','The brain is responsible for','all of these','thinking','regulating the heart beat','balancing the body','Exercise 3: the brain does all three.'],
+['E','What is the function of receptors in our body?','They detect information from the environment','They pump blood to the organs','They secrete digestive juices','They store memories','Receptors are specialised tips of nerve cells, usually in sense organs, that detect information.'],
+['E','Which signals will get disrupted in case of a spinal cord injury?','Both reflex actions and messages travelling to and from the brain','Only the sense of smell','Only hormone secretion','Only thinking','Reflex arcs are formed in the spinal cord, and nerves pass through it on the way to the brain.'],
+['E','Which of these is an involuntary action controlled by the medulla?','Salivation','Writing a letter','Clapping at the end of a programme','Moving a chair','Blood pressure, salivation and vomiting are controlled by the medulla.'],
+['A','In Activity 6.1, food tastes different when you hold your nose because','smell also helps us sense food, and the olfactory receptors are blocked','the tongue stops working without air','sugar changes when the nose is closed','the brain switches off taste','Smell and taste work together. This is also why food seems tasteless during a cold.'],
+['C','At which part of a neuron is information acquired?','Dendritic tip','End of the axon','Middle of the axon','Synapse','Information is acquired at the end of the dendritic tip of a nerve cell.'],
+['C','The correct path of an impulse through a neuron is','dendrite → cell body → axon → nerve ending','axon → cell body → dendrite → nerve ending','cell body → dendrite → axon → nerve ending','nerve ending → axon → cell body → dendrite','The impulse travels from the dendrite to the cell body and then along the axon to its end.'],
+['C','Which is the main thinking part of the brain?','Fore-brain','Mid-brain','Hind-brain','Spinal cord','The fore-brain is the main thinking part of the brain.'],
+['C','The brain is protected by','a bony box, with a fluid-filled balloon for shock absorption','the vertebral column','a layer of muscle only','the ribs','The brain sits inside a bony box, inside a fluid-filled balloon.'],
+['C','The spinal cord is protected by the','vertebral column','skull','ribs','hip bone','The hard bumpy structure down the middle of the back is the vertebral column, or backbone.'],
+['C','The central nervous system consists of the','brain and spinal cord','brain and cranial nerves','spinal cord and spinal nerves','nerves and muscles','The brain and spinal cord make up the central nervous system.'],
+['C','The peripheral nervous system consists of','cranial nerves from the brain and spinal nerves from the spinal cord','the brain and spinal cord','the fore-brain and hind-brain','endocrine glands','It helps the central nervous system communicate with other parts of the body.'],
+['C','How do muscle cells move when a nerve impulse arrives?','Special proteins change their shape and arrangement, making the cell shorter','The cells fill with air','The cells divide rapidly','Bones push the cells','Muscle cells have special proteins that change shape and arrangement in response to electrical impulses.'],
+['C','Where are the nerve connections of a reflex arc made?','In the spinal cord','In the fore-brain','In the muscle','In the skin','Input and output nerves meet in a bundle in the spinal cord, where reflex arcs are formed.']
+],
+P:[
+['I','What are plant hormones?','Chemical compounds that help coordinate growth, development and responses to the environment','Nerve cells found in leaves','Sugars made in photosynthesis','Minerals absorbed by roots','Plant hormones are made away from where they act and simply diffuse to the area of action.'],
+['I','How is the folding of touch-me-not leaves different from a shoot bending towards light?','Leaf folding is quick and not due to growth, while bending towards light is slow and due to growth','Both are caused by growth','Leaf folding is slow, bending is quick','Both use nerves and muscles','The sensitive plant moves by changing the water in its cells. Bending towards light is a directional growth movement.'],
+['I','Which of these plant hormones promotes growth?','Auxin','Abscisic acid','Insulin','Adrenaline','Auxins, gibberellins and cytokinins promote growth. Abscisic acid inhibits it.'],
+['I','How does a tendril coil around a support?','The side touching the support grows more slowly than the side away from it','The side touching the support grows faster','The tendril has muscles','The support pulls the tendril','Unequal growth on the two sides makes the tendril circle around the object.'],
+['I','Roots growing towards water show','hydrotropism','phototropism','geotropism','chemotropism','Hydro means water. Movement in response to water is hydrotropism.'],
+['E','Which of the following is a plant hormone?','Cytokinin','Insulin','Thyroxin','Oestrogen','Exercise 1: cytokinin is a plant hormone. The others are animal hormones.'],
+['E','How does phototropism occur in a shoot?','Auxin diffuses to the shady side, and cells there grow longer, so the shoot bends towards light','Auxin collects on the lit side and cells there shrink','Light pulls the shoot by heating it','Roots push the shoot towards light','When light comes from one side, auxin diffuses towards the shady side of the shoot.'],
+['A','In Activity 6.2, germinating seeds are kept in a box open on one side facing a window. What happens?','Shoots bend towards the light and roots bend away from it','Shoots and roots both bend away from light','Shoots and roots both bend towards light','Nothing changes','Shoots respond by bending towards light, while roots respond by bending away from it.'],
+['C','How do the leaves of the sensitive plant move?','Plant cells change shape by changing the amount of water in them','Special proteins shorten the cells as in muscle','Nerves pull the leaves','The leaves grow quickly','Plant cells swell or shrink by changing their water content, and so change shape.'],
+['C','How do plants carry information from cell to cell?','By electrical-chemical means, but without any specialised tissue','Through a nervous system','Through blood','They cannot carry information','Plants use electrical-chemical means, but unlike animals have no specialised tissue for conduction.'],
+['C','Roots grow downward and shoots grow upward. This is','geotropism','phototropism','hydrotropism','chemotropism','Fig. 6.6: roots show positive geotropism and shoots show negative geotropism.'],
+['C','The growth of a pollen tube towards the ovule is an example of','chemotropism','geotropism','phototropism','hydrotropism','Chemo refers to chemicals. Pollen tubes grow towards ovules.'],
+['C','Where is auxin synthesised?','At the shoot tip','In old leaves','In the root hair','In the flower petals','When growing plants detect light, auxin is synthesised at the shoot tip and helps cells grow longer.'],
+['C','Gibberellins help in the','growth of the stem','closing of stomata','wilting of leaves','folding of leaves','Like auxins, gibberellins help in the growth of the stem.'],
+['C','Cytokinins','promote cell division','inhibit growth','cause wilting of leaves','carry electrical impulses','Cytokinins promote cell division and are found in greater concentration in fruits and seeds.'],
+['C','Which hormone inhibits growth and causes wilting of leaves?','Abscisic acid','Auxin','Gibberellin','Cytokinin','Abscisic acid is a hormone which inhibits growth.'],
+['C','A shoot bends towards light. A root bends away from it. The shoot shows','positive phototropism','negative phototropism','positive geotropism','hydrotropism','Movement towards the stimulus is positive. Movement away is negative.'],
+['C','In the sensitive plant, the leaves fold at','a point different from the point of touch','exactly the point of touch only','the root tip','the flower','So information that a touch has occurred must be communicated within the plant.'],
+['C','Tropic movements are','directional growth movements towards or away from a stimulus','quick movements using muscles','random movements with no stimulus','movements of water in cells only','Environmental triggers such as light or gravity change the direction in which plant parts grow.'],
+['C','Compared with the folding of touch-me-not leaves, a pea tendril climbing a support moves','more slowly, because it depends on growth','faster, because it uses nerves','at the same speed','only at night','Growth-dependent movements are slow. The sensitive plant responds quickly.']
+],
+H:[
+['I','How does chemical coordination take place in animals?','Endocrine glands secrete hormones that travel in the blood to their target','Nerves secrete enzymes into food','Muscles send electrical impulses to glands','Bones store and release chemicals','Hormones are chemical signals. They can reach all cells of the body through the blood.'],
+['I','Why is the use of iodised salt advisable?','Iodine is needed by the thyroid gland to make thyroxin','Iodine makes salt taste better','Iodine helps make insulin','Iodine strengthens bones','If iodine is deficient we may suffer from goitre.'],
+['I','How does the body respond when adrenaline is secreted into the blood?','The heart beats faster, breathing rate rises and more blood goes to skeletal muscles','The heart slows and we feel sleepy','More blood goes to the digestive system','Blood sugar falls sharply','Adrenaline prepares the body to deal with the situation.'],
+['I','Why are some patients of diabetes treated with insulin injections?','Their pancreas does not secrete enough insulin, so blood sugar rises','Their thyroid makes too much thyroxin','Their adrenal glands are too active','They lack growth hormone','Insulin helps in regulating blood sugar levels.'],
+['A','Table 6.1: thyroxin is secreted by the','thyroid gland','pituitary gland','pancreas','adrenal gland','Thyroxin from the thyroid regulates metabolism for body growth.'],
+['A','Table 6.1: insulin is secreted by the','pancreas','thyroid gland','testes','hypothalamus','Insulin from the pancreas regulates blood sugar level.'],
+['A','Table 6.1: testosterone is secreted by the','testes','ovaries','adrenal gland','pituitary gland','Testosterone brings about changes associated with puberty in males.'],
+['A','Table 6.1: which hormone do the ovaries secrete?','Oestrogen','Testosterone','Adrenaline','Thyroxin','Oestrogen helps develop female sex organs and regulates the menstrual cycle.'],
+['A','Table 6.1: releasing hormones are secreted by the','hypothalamus','pancreas','thyroid gland','testes','They stimulate the pituitary gland to release hormones.'],
+['A','Table 6.1: adrenaline is secreted by the','adrenal gland','pituitary gland','pancreas','thyroid gland','Adrenal glands secrete adrenaline directly into the blood.'],
+['C','A swollen neck can be a symptom of','goitre','diabetes','dwarfism','fever','Goitre can occur when iodine is deficient in the diet.'],
+['C','Deficiency of growth hormone in childhood leads to','dwarfism','goitre','diabetes','a faster heart beat','Growth hormone from the pituitary regulates growth and development of the body.'],
+['C','The timing and amount of hormone released are regulated by','feedback mechanisms','the size of the gland only','the food we chew','body temperature only','For example, rising blood sugar makes the pancreas produce more insulin.'],
+['C','When the sugar level in blood rises, the pancreas','produces more insulin','stops making insulin','releases adrenaline','releases thyroxin','As the blood sugar level falls, insulin secretion is reduced.'],
+['C','The changes of puberty are brought about by','testosterone in males and oestrogen in females','insulin in both','thyroxin in males and adrenaline in females','growth hormone only','These sex hormones are secreted by the testes and the ovaries.'],
+['C','Thyroxin regulates','carbohydrate, protein and fat metabolism','the menstrual cycle','the size of the pupil','blood pressure and vomiting','This provides the best balance for growth.'],
+['C','During an adrenaline response, less blood reaches the digestive system because','muscles around small arteries in these organs contract','the heart stops pumping there','the stomach absorbs the blood','the lungs take all the blood','This diverts blood to the skeletal muscles.'],
+['C','One limit of electrical impulses is that they','reach only those cells that are connected by nervous tissue','reach every cell of the body at once','travel too slowly to be useful','can never be repeated','This is one reason multicellular organisms also use chemical communication.'],
+['C','After a nerve cell sends an impulse, it','needs some time to reset before it can send a new one','can never send another impulse','sends impulses continuously','turns into a muscle cell','So cells cannot continually create and transmit electrical impulses.'],
+['C','The hypothalamus releases growth hormone releasing factor when','the level of growth hormone is low','blood sugar is high','iodine is low','adrenaline is high','This factor stimulates the pituitary gland to release growth hormone.']
+]};
+const TAGS={I:'In-text question',E:'Exercise',A:'Activity',C:'Concept check'};
+TAGS.T='True or false';TAGS.R='Assertion and reason';
+// [statement, isTrue, explanation]
+const TF=[
+['The gap between two neurons is called a synapse.',1,'Chemicals cross this gap to start the impulse in the next neuron.'],
+['The cerebellum is a part of the fore-brain.',0,'The cerebellum is a part of the hind-brain.'],
+['Reflex arcs are formed in the spinal cord.',1,'This makes the response quick. The information also reaches the brain.'],
+['We must think before a reflex action can happen.',0,'A reflex happens without thinking. That is why it is fast.'],
+['The medulla controls blood pressure, salivation and vomiting.',1,'These involuntary actions are controlled by the medulla in the hind-brain.'],
+['Gustatory receptors detect smell.',0,'Gustatory receptors detect taste. Olfactory receptors detect smell.'],
+['Plants have a nervous system and muscles.',0,'Plants have neither. They use electrical-chemical means and hormones.'],
+['Auxin is synthesised at the shoot tip.',1,'Auxin helps the cells to grow longer.'],
+['Abscisic acid promotes cell division.',0,'Abscisic acid inhibits growth. Cytokinins promote cell division.'],
+['Roots show positive geotropism.',1,'Roots grow downward, towards the pull of gravity.'],
+['The folding of touch-me-not leaves is a growth movement.',0,'It is not due to growth. The cells change shape by changing their water content.'],
+['Insulin is secreted by the pancreas.',1,'Insulin helps in regulating blood sugar levels.'],
+['Iodine is needed to make thyroxin.',1,'This is why iodised salt is advised.'],
+['Adrenaline is secreted by the pituitary gland.',0,'Adrenaline is secreted by the adrenal glands.'],
+['Deficiency of growth hormone in childhood leads to dwarfism.',1,'Growth hormone is secreted by the pituitary gland.'],
+['Hormones reach their target through the blood.',1,'Endocrine glands secrete hormones into the blood.'],
+['The brain and spinal cord form the peripheral nervous system.',0,'They form the central nervous system.'],
+['Inside a neuron, the impulse travels from the axon to the dendrite.',0,'It travels from the dendrite to the cell body and then along the axon.'],
+['Oestrogen is secreted by the testes.',0,'Oestrogen is secreted by the ovaries. Testes secrete testosterone.'],
+['Growth of a pollen tube towards the ovule is chemotropism.',1,'It is a movement in response to chemicals.']
+];
+const AR_OPTS=['Both A and R are true, and R is the correct explanation of A','Both A and R are true, but R is not the correct explanation of A','A is true but R is false','A is false but R is true'];
+// [assertion, reason, index of correct option, explanation]
+const AR=[
+['Reflex actions are very quick.','Reflex arcs are formed in the spinal cord, so the body does not wait for the brain to think.',0,'The short path through the spinal cord is the reason for the speed.'],
+['The use of iodised salt is advised.','Iodine is needed by the thyroid gland to make thyroxin.',0,'Without enough iodine we may suffer from goitre.'],
+['A shoot bends towards light.','Auxin diffuses to the shady side and the cells there grow longer.',0,'Unequal growth on the two sides bends the shoot towards light.'],
+['The cerebellum maintains posture and balance.','The cerebellum is a part of the fore-brain.',2,'The cerebellum is a part of the hind-brain, so R is false.'],
+['The leaves of the touch-me-not plant fold quickly when touched.','Plant cells change shape by changing the amount of water in them.',0,'This movement does not depend on growth, so it is fast.'],
+['Adrenaline makes the heart beat faster.','Adrenaline is secreted by the adrenal glands.',1,'Both are true, but where it is secreted does not explain why the heart beats faster.'],
+['Plants do not have a nervous system.','Plants cannot respond to stimuli.',2,'Plants do respond, for example to light, gravity and touch. So R is false.'],
+['Abscisic acid helps in the growth of the stem.','Gibberellins help in the growth of the stem.',3,'Abscisic acid inhibits growth, so A is false. R is true.'],
+['Animals use hormones as well as nerves for coordination.','Electrical impulses reach only those cells that are connected by nervous tissue.',0,'Hormones travel in the blood and can reach all cells.'],
+['The brain is protected by a bony box.','The spinal cord is protected by the vertebral column.',1,'Both are true, but R is a separate fact and does not explain A.']
+];
+(function(){
+'use strict';
+const $=s=>document.querySelector(s);
+const app=$('#app'),stage=$('#stage'),canvas=$('#gl'),panel=$('#panel'),tools=$('#tools'),home=$('#home'),tagEl=$('#tag');
+const esc=s=>String(s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const reduce=window.matchMedia&&matchMedia('(prefers-reduced-motion:reduce)').matches;
+
+// ---------- save ----------
+let save={stars:{},snd:true};
+try{const s=JSON.parse(localStorage.getItem('neuroatlas3d')||'null');if(s&&s.stars)save=s}catch(e){}
+const persist=()=>{try{localStorage.setItem('neuroatlas3d',JSON.stringify(save))}catch(e){}};
+const totalStars=()=>Object.values(save.stars).reduce((a,b)=>a+b,0);
+function updTop(){$('#tot').textContent='★ '+totalStars();$('#snd').textContent=save.snd?'Sound on':'Sound off'}
+
+// ---------- sound ----------
+let AC=null;
+function beep(f,d,type,vol){if(!save.snd)return;try{AC=AC||new (window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type||'sine';o.frequency.value=f;g.gain.setValueAtTime(vol||.08,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const sfx={ok(){beep(660,.12);setTimeout(()=>beep(990,.18),90)},no(){beep(170,.22,'sawtooth',.05)},tap(){beep(440,.05,'triangle',.05)},win(){[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.2),i*110))},zap(){beep(1400,.06,'square',.03)}};
+
+// ---------- mini WebGL engine (no libraries) ----------
+const gl=canvas.getContext('webgl',{antialias:true,alpha:false})||canvas.getContext('experimental-webgl',{antialias:true,alpha:false});
+if(!gl){panel.innerHTML='<h3>3D not available</h3><p>This device could not start WebGL, which the 3D models need. Open the game in an up-to-date browser such as Chrome.</p>';home.hidden=true;return}
+const HP=gl.getShaderPrecisionFormat(gl.FRAGMENT_SHADER,gl.HIGH_FLOAT).precision>0;
+const VS='attribute vec3 aP,aN,aC;uniform mat4 uVP,uM;uniform mat3 uN;varying vec3 vN,vW,vC,vO;void main(){vec4 w=uM*vec4(aP,1.);vW=w.xyz;vN=uN*aN;vC=aC;vO=aP;gl_Position=uVP*w;}';
+const FS='precision '+(HP?'highp':'mediump')+' float;varying vec3 vN,vW,vC,vO;uniform vec3 uCam,uCol,uEm;uniform float uOp,uMode,uCoat,uBump,uAsp;'+
+'float hh(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}'+
+'float nz(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);return mix(mix(mix(hh(i),hh(i+vec3(1,0,0)),f.x),mix(hh(i+vec3(0,1,0)),hh(i+vec3(1,1,0)),f.x),f.y),mix(mix(hh(i+vec3(0,0,1)),hh(i+vec3(1,0,1)),f.x),mix(hh(i+vec3(0,1,1)),hh(i+vec3(1,1,1)),f.x),f.y),f.z);}'+
+'vec3 env(vec3 r){float a=smoothstep(.5,.96,dot(r,normalize(vec3(.4,.72,.56))));float b=smoothstep(.45,.95,dot(r,normalize(vec3(-.8,.25,-.45))));float c=smoothstep(.6,.97,dot(r,normalize(vec3(.75,-.1,-.6))));return vec3(1.,.93,.82)*a*3.2+vec3(.6,.75,1.)*b*1.7+vec3(1.,.85,.7)*c*.8+mix(vec3(.02,.024,.034),vec3(.1,.11,.14),smoothstep(-.3,1.,r.y));}'+
+'vec3 aces(vec3 x){return clamp((x*(2.51*x+.03))/(x*(2.43*x+.59)+.14),0.,1.);}'+
+'void main(){'+
+'if(uMode>4.5){float d=length(vec2(vO.x*min(uAsp,1.6),vO.y-.25));gl_FragColor=vec4(mix(vec3(.2,.22,.28),vec3(.025,.028,.038),smoothstep(0.,1.25,d)),1.);return;}'+
+'if(uMode>3.5){gl_FragColor=vec4(0.,0.,0.,.6*(1.-smoothstep(0.,1.,length(vO.xz))));return;}'+
+'if(uMode>2.5){gl_FragColor=vec4(uCol,1.);return;}'+
+'vec3 N=normalize(vN),V=normalize(uCam-vW);'+
+'if(uMode>1.5){float f=1.-abs(dot(N,V));gl_FragColor=vec4(uCol*(.6+f*.6),(.045+pow(f,2.4)*.7)*uOp);return;}'+
+'if(uMode>.5){gl_FragColor=vec4(uCol,uOp);return;}'+
+(HP?'if(uBump>0.){vec3 p=vO*uBump;float e=.35;float n0=nz(p);vec3 g=vec3(nz(p+vec3(e,0,0)),nz(p+vec3(0,e,0)),nz(p+vec3(0,0,e)))-n0;N=normalize(N-.7*(g-dot(g,N)*N));}':'')+
+'vec3 base=uCol*vC;base*=base;vec3 dif=vec3(0.),spc=vec3(0.),sss=vec3(0.);'+
+'vec3 L=normalize(vec3(.45,.62,.64));vec3 lc=vec3(1.,.94,.86)*1.75;float nl=dot(N,L);float w=clamp((nl+.3)/1.3,0.,1.);dif+=lc*w*w;vec3 H=normalize(L+V);float nh=max(dot(N,H),0.);spc+=lc*(pow(nh,28.)*.10+pow(nh,260.)*uCoat*1.3)*step(0.,nl);sss+=lc*smoothstep(-.6,.15,nl)*(1.-smoothstep(.05,.7,nl));'+
+'L=normalize(vec3(-.7,.3,-.6));lc=vec3(.62,.76,1.)*1.0;nl=dot(N,L);w=clamp((nl+.3)/1.3,0.,1.);dif+=lc*w*w;H=normalize(L+V);nh=max(dot(N,H),0.);spc+=lc*(pow(nh,28.)*.10+pow(nh,260.)*uCoat*1.3)*step(0.,nl);'+
+'vec3 amb=mix(vec3(.05,.052,.07),vec3(.22,.215,.21),N.y*.5+.5);float F=.04+.96*pow(1.-max(dot(N,V),0.),5.);'+
+'vec3 col=base*(dif+amb)+base*vec3(1.,.28,.2)*sss*.22+spc+env(reflect(-V,N))*F*(.25+uCoat)+uEm;'+
+'gl_FragColor=vec4(pow(aces(col*.82),vec3(1./2.2)),uOp);}';
+function sh(t,s){const o=gl.createShader(t);gl.shaderSource(o,s);gl.compileShader(o);if(!gl.getShaderParameter(o,gl.COMPILE_STATUS))throw new Error(gl.getShaderInfoLog(o));return o}
+const prog=gl.createProgram();gl.attachShader(prog,sh(gl.VERTEX_SHADER,VS));gl.attachShader(prog,sh(gl.FRAGMENT_SHADER,FS));
+['aP','aN','aC'].forEach((n,i)=>gl.bindAttribLocation(prog,i,n));gl.linkProgram(prog);gl.useProgram(prog);
+const U={};['uVP','uM','uN','uCam','uCol','uEm','uOp','uMode','uCoat','uBump','uAsp'].forEach(n=>U[n]=gl.getUniformLocation(prog,n));
+[0,1,2].forEach(i=>gl.enableVertexAttribArray(i));
+const hexc=h=>[(h>>16&255)/255,(h>>8&255)/255,(h&255)/255],S3=k=>[k,k,k];
+const ID4=new Float32Array([1,0,0,0,0,1,0,0,0,0,1,0,0,0,0,1]);
+function mmul(a,b,o){for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o}
+function compose(p,r,s,o){const cx=Math.cos(r[0]),sx=Math.sin(r[0]),cz=Math.cos(r[2]),sz=Math.sin(r[2]);
+  o[0]=cz*s[0];o[1]=cx*sz*s[0];o[2]=sx*sz*s[0];o[3]=0;o[4]=-sz*s[1];o[5]=cx*cz*s[1];o[6]=sx*cz*s[1];o[7]=0;o[8]=0;o[9]=-sx*s[2];o[10]=cx*s[2];o[11]=0;o[12]=p[0];o[13]=p[1];o[14]=p[2];o[15]=1;return o}
+function persp(fov,asp,n,f,o){const t=1/Math.tan(fov/2);o.fill(0);o[0]=t/asp;o[5]=t;o[10]=(f+n)/(n-f);o[11]=-1;o[14]=2*f*n/(n-f);return o}
+function lookAt(e,c,o){let zx=e[0]-c[0],zy=e[1]-c[1],zz=e[2]-c[2];let l=Math.hypot(zx,zy,zz);zx/=l;zy/=l;zz/=l;let xx=zz,xy=0,xz=-zx;l=Math.hypot(xx,xz)||1;xx/=l;xz/=l;const yx=zy*xz-zz*xy,yy=zz*xx-zx*xz,yz=zx*xy-zy*xx;
+  o[0]=xx;o[1]=yx;o[2]=zx;o[3]=0;o[4]=xy;o[5]=yy;o[6]=zy;o[7]=0;o[8]=xz;o[9]=yz;o[10]=zz;o[11]=0;o[12]=-(xx*e[0]+xy*e[1]+xz*e[2]);o[13]=-(yx*e[0]+yy*e[1]+yz*e[2]);o[14]=-(zx*e[0]+zy*e[1]+zz*e[2]);o[15]=1;return o}
+const N3=new Float32Array(9);
+function normalMat(m){const a=m[0],b=m[1],c=m[2],d=m[4],e=m[5],f=m[6],g=m[8],h=m[9],i=m[10];
+  N3[0]=e*i-f*h;N3[1]=f*g-d*i;N3[2]=d*h-e*g;N3[3]=c*h-b*i;N3[4]=a*i-c*g;N3[5]=b*g-a*h;N3[6]=b*f-c*e;N3[7]=c*d-a*f;N3[8]=a*e-b*d;
+  if(a*N3[0]+b*N3[1]+c*N3[2]<0)for(let k=0;k<9;k++)N3[k]=-N3[k];return N3}
+// geometry: a (nu x nv) grid surface; fn(u,v,out) writes position and colour
+function grid(nu,nv,fn,wrap){
+  const W=nu+1,H=nv+1,D=new Float32Array(W*H*9),o=[0,0,0,1,1,1];
+  for(let j=0;j<H;j++)for(let i=0;i<W;i++){o[3]=o[4]=o[5]=1;fn(i/nu,j/nv,o);const k=(j*W+i)*9;D[k]=o[0];D[k+1]=o[1];D[k+2]=o[2];D[k+6]=o[3];D[k+7]=o[4];D[k+8]=o[5]}
+  const I=new Uint16Array(nu*nv*6);let q=0;
+  const acc=(a,b,c)=>{const A=a*9,B=b*9,C=c*9,ux=D[B]-D[A],uy=D[B+1]-D[A+1],uz=D[B+2]-D[A+2],vx=D[C]-D[A],vy=D[C+1]-D[A+1],vz=D[C+2]-D[A+2],nx=uy*vz-uz*vy,ny=uz*vx-ux*vz,nz=ux*vy-uy*vx;
+    [A,B,C].forEach(k=>{D[k+3]+=nx;D[k+4]+=ny;D[k+5]+=nz})};
+  for(let j=0;j<nv;j++)for(let i=0;i<nu;i++){const a=j*W+i,b=a+1,c=a+W,d=c+1;I[q++]=a;I[q++]=c;I[q++]=b;I[q++]=b;I[q++]=c;I[q++]=d;acc(a,c,b);acc(b,c,d)}
+  const mix2=(k1,k2)=>{for(let t=3;t<6;t++){const s=D[k1+t]+D[k2+t];D[k1+t]=D[k2+t]=s}};
+  if(wrap)for(let j=0;j<H;j++)mix2(j*W*9,(j*W+nu)*9);
+  [0,nv].forEach(j=>{const k0=j*W*9,k1=k0+9;if(Math.abs(D[k0]-D[k1])+Math.abs(D[k0+1]-D[k1+1])+Math.abs(D[k0+2]-D[k1+2])<1e-6){let sx=0,sy=0,sz=0;for(let i=0;i<W;i++){const k=k0+i*9;sx+=D[k+3];sy+=D[k+4];sz+=D[k+5]}for(let i=0;i<W;i++){const k=k0+i*9;D[k+3]=sx;D[k+4]=sy;D[k+5]=sz}}});
+  for(let k=0;k<D.length;k+=9){const l=Math.hypot(D[k+3],D[k+4],D[k+5])||1;D[k+3]/=l;D[k+4]/=l;D[k+5]/=l}
+  const vb=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,vb);gl.bufferData(gl.ARRAY_BUFFER,D,gl.STATIC_DRAW);
+  const ib=gl.createBuffer();gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,ib);gl.bufferData(gl.ELEMENT_ARRAY_BUFFER,I,gl.STATIC_DRAW);
+  return {vb,ib,n:I.length};
+}
+const TAU=Math.PI*2;
+function sphereGeo(nu,nv,fn){return grid(nu,nv,(u,v,o)=>{const st=Math.sin(Math.PI*v);o[0]=-Math.cos(TAU*u)*st;o[1]=Math.cos(Math.PI*v);o[2]=Math.sin(TAU*u)*st;if(fn)fn(o)},true)}
+function latheGeo(S,nu,cf){const m=S.length-1;return grid(nu,m,(u,v,o)=>{const s=S[Math.round(v*m)];o[0]=-s[0]*Math.cos(TAU*u);o[1]=s[1];o[2]=s[0]*Math.sin(TAU*u);if(cf)cf(o)},true)}
+function curve(P){const n=P.length-1;return t=>{const x=Math.min(.99999,Math.max(0,t))*n,i=Math.floor(x),f=x-i,a=P[Math.max(0,i-1)],b=P[i],c=P[i+1],d=P[Math.min(n,i+2)],r=[0,0,0];
+  for(let k=0;k<3;k++)r[k]=.5*((2*b[k])+(-a[k]+c[k])*f+(2*a[k]-5*b[k]+4*c[k]-d[k])*f*f+(-a[k]+3*b[k]-3*c[k]+d[k])*f*f*f);return r}}
+function tubeGeo(P,r0,r1,segs,rad){const c=curve(P),F=[];let N=null;
+  for(let j=0;j<=segs;j++){const t=j/segs,p=c(t),a=c(Math.max(0,t-.01)),b=c(Math.min(1,t+.01));let T=[b[0]-a[0],b[1]-a[1],b[2]-a[2]];const l=Math.hypot(T[0],T[1],T[2])||1;T=T.map(x=>x/l);
+    if(!N)N=Math.abs(T[1])<.9?[0,1,0]:[1,0,0];const d=N[0]*T[0]+N[1]*T[1]+N[2]*T[2];N=[N[0]-T[0]*d,N[1]-T[1]*d,N[2]-T[2]*d];const ln=Math.hypot(N[0],N[1],N[2])||1;N=N.map(x=>x/ln);
+    F.push({p,N,B:[T[1]*N[2]-T[2]*N[1],T[2]*N[0]-T[0]*N[2],T[0]*N[1]-T[1]*N[0]]})}
+  return grid(rad,segs,(u,v,o)=>{const f=F[Math.round(v*segs)],r=r0+(r1-r0)*v,cs=-Math.cos(TAU*u)*r,sn=Math.sin(TAU*u)*r;for(let k=0;k<3;k++)o[k]=f.p[k]+cs*f.N[k]+sn*f.B[k]},true)}
+// scene graph
+const nodes=[];
+function node(par,geo,mat,o){const n=Object.assign({par:par||null,geo:geo||null,mat:mat||null,pos:[0,0,0],rot:[0,0,0],scale:[1,1,1],visible:true,layer:0,id:null,W:new Float32Array(16)},o||{});nodes.push(n);return n}
+const Mat=o=>Object.assign({mode:0,color:[1,1,1],em:[0,0,0],op:1,coat:.5,bump:0},o);
+const LM=new Float32Array(16);
+function shown(n){for(;n;n=n.par)if(!n.visible)return false;return true}
+function updateWorld(){for(const n of nodes){compose(n.pos,n.rot,n.scale,LM);if(n.par)mmul(n.par.W,LM,n.W);else n.W.set(LM)}}
+function drawNode(n,pickCol,ps){const g=n.geo,m=n.mat;let Wm=n.W;
+  if(ps){Wm=LM;Wm.set(n.W);for(let k=0;k<12;k++)Wm[k]*=ps}
+  gl.uniformMatrix4fv(U.uM,false,Wm);gl.uniformMatrix3fv(U.uN,false,normalMat(Wm));
+  if(pickCol){gl.uniform1f(U.uMode,3);gl.uniform3fv(U.uCol,pickCol)}else{gl.uniform1f(U.uMode,m.mode);gl.uniform3fv(U.uCol,m.color);gl.uniform3fv(U.uEm,m.em);gl.uniform1f(U.uOp,m.op);gl.uniform1f(U.uCoat,m.coat);gl.uniform1f(U.uBump,m.bump)}
+  gl.bindBuffer(gl.ARRAY_BUFFER,g.vb);gl.vertexAttribPointer(0,3,gl.FLOAT,false,36,0);gl.vertexAttribPointer(1,3,gl.FLOAT,false,36,12);gl.vertexAttribPointer(2,3,gl.FLOAT,false,36,24);
+  gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER,g.ib);gl.drawElements(gl.TRIANGLES,g.n,gl.UNSIGNED_SHORT,0)}
+// ---------- noise ----------
+function h3(x,y,z){const n=Math.sin(x*127.1+y*311.7+z*74.7)*43758.5453;return n-Math.floor(n)}
+function vn(x,y,z){const X=Math.floor(x),Y=Math.floor(y),Z=Math.floor(z);let a=x-X,b=y-Y,c=z-Z;a=a*a*(3-2*a);b=b*b*(3-2*b);c=c*c*(3-2*c);
+  const L=(p,q,t)=>p+(q-p)*t;
+  return L(L(L(h3(X,Y,Z),h3(X+1,Y,Z),a),L(h3(X,Y+1,Z),h3(X+1,Y+1,Z),a),b),L(L(h3(X,Y,Z+1),h3(X+1,Y,Z+1),a),L(h3(X,Y+1,Z+1),h3(X+1,Y+1,Z+1),a),b),c)}
+function fbm(x,y,z){return vn(x,y,z)*.6+vn(x*2.1+5.2,y*2.1+3.1,z*2.1+7.7)*.3+vn(x*4.3+1.3,y*4.3+9.2,z*4.3+2.8)*.1}
+const sstep=(a,b,x)=>{x=Math.min(1,Math.max(0,(x-a)/(b-a)));return x*x*(3-2*x)};
+function gyri(x,y,z){const w=fbm(x*2.2+11,y*2.2+4,z*2.2+7);const v=fbm(x*2.9+w*1.6,y*2.9+w*1.6,z*2.9-w*1.6);return 1-sstep(.05,.6,Math.abs(Math.sin(v*27)))}
+
+// ---------- brain ----------
+function hemisphereGeo(seed,res){
+  return sphereGeo(res,Math.round(res*.7),o=>{const x=o[0],y=o[1],z=o[2];
+    const gr=gyri(x+seed,y,z),m=fbm(x*1.4+9+seed,y*1.4,z*1.4),r=1-.085*gr+.04*(m-.5);
+    let X=x*r*.80*(1-.10*z),Y=y*r*.70,Z=z*r;if(Y<-.36)Y=-.36+(Y+.36)*.32;
+    if(X<.016){X=.016;const d=Math.hypot((Y+.02)/.34,(Z+.03)/.56),s=.94+.12*m;
+      if(d>.55&&d<.72&&Y>-.1){o[3]=.97*s;o[4]=.94*s;o[5]=.87*s}else if(d<=.55){o[3]=.80*s;o[4]=.67*s;o[5]=.64*s}else{o[3]=.88*s;o[4]=.75*s;o[5]=.71*s}}
+    else{const t=Math.min(1,X/.16);if(Y>0)Y-=.07*(1-t)*(1-t);const k=Math.pow(gr,.8),s=.84+.3*m;o[3]=(.87-.50*k)*s;o[4]=(.60-.43*k)*s;o[5]=(.59-.40*k)*s}
+    o[0]=X;o[1]=Y;o[2]=Z});
+}
+function cerebellumGeo(res){return sphereGeo(res,Math.round(res*.8),o=>{const x=o[0],y=o[1],z=o[2],n=fbm(x*2+3,y*2,z*2);
+  const rd=1-sstep(0,.55,Math.abs(Math.sin(y*30+n*5))),r=1-.04*rd-.07*Math.exp(-(x*x)/.008)*(z<.2?1:.3),k=rd*.7,s=.88+.24*n;
+  o[0]=x*r*.60;o[1]=y*r*.31;o[2]=z*r*.40;o[3]=(.80-.40*k)*s;o[4]=(.52-.32*k)*s;o[5]=(.47-.28*k)*s})}
+function lumpGeo(sx,sy,sz,col,amp){return sphereGeo(40,28,o=>{const n=fbm(o[0]*3+sx*40,o[1]*3,o[2]*3),r=1+(amp||.06)*(n-.5),s=.88+.24*n;o[0]*=r*sx;o[1]*=r*sy;o[2]*=r*sz;o[3]=col[0]*s;o[4]=col[1]*s;o[5]=col[2]*s})}
+function stemGeo(rt,rb,h,col){const S=[[0,h/2]];for(let i=0;i<=8;i++)S.push([rt+(rb-rt)*i/8,h/2-h*i/8]);S.push([0,-h/2]);return latheGeo(S,28,o=>{const n=fbm(o[0]*9,o[1]*5,o[2]*9),s=.9+.2*n;o[3]=col[0]*s;o[4]=col[1]*s;o[5]=col[2]*s})}
+function buildBrain(res,withCord,par){
+  const G=node(par),parts={};
+  const add=(id,geo,p,rx,bump)=>{const n=node(G,geo,Mat({coat:.55,bump:bump||0}),{id,pos:p||[0,0,0]});if(rx)n.rot[0]=rx;if(withCord&&!bump)n.mat.bump=60;(parts[id]=parts[id]||[]).push(n);return n};
+  const fine=withCord?70:0;
+  add('cerebrum',hemisphereGeo(0,res),null,0,fine);const L=add('cerebrum',hemisphereGeo(17.3,res),null,0,fine);L.scale[0]=-1;
+  add('cerebellum',cerebellumGeo(Math.round(res*.6)),[0,-.66,-.60],0,fine);
+  add('midbrain',lumpGeo(.14,.13,.14,[.86,.74,.64]),[0,-.27,-.10]);
+  add('pons',lumpGeo(.20,.15,.17,[.90,.78,.66]),[0,-.52,-.13]);
+  add('medulla',stemGeo(.115,.072,.34,[.89,.75,.64]),[0,-.76,-.235],.29);
+  if(withCord)add('cord',stemGeo(.066,.05,.72,[.94,.87,.72]),[0,-1.255,-.383],.29);
+  add('hypothalamus',lumpGeo(.09,.065,.11,[.84,.47,.42]),[0,-.21,.10]);
+  add('pituitary',lumpGeo(.055,.05,.055,[.93,.53,.44]),[0,-.47,.20]);
+  add('pituitary',stemGeo(.014,.012,.2,[.87,.57,.5]),[0,-.35,.16],-.38);
+  const skull=node(G,sphereGeo(48,36),Mat({color:[.93,.88,.78],op:.2,coat:.4}),{layer:2,pos:[0,-.08,-.03],scale:[.95,.9,1.16],visible:false});
+  return {G,parts,left:L,skull};
+}
+// ---------- body statue ----------
+const glassMat=Mat({mode:2,color:[.77,.86,1]}),marbleMat=Mat({color:[.95,.93,.88],coat:.45});
+function buildBody(){
+  const G=node(null),skin=[],items={},unit=sphereGeo(28,20);
+  const sk=(geo,par,o)=>{const n=node(par||G,geo,glassMat,Object.assign({layer:2},o));skin.push(n);return n};
+  const ell=(sx,sy,sz,p,par)=>sk(unit,par,{scale:[sx,sy,sz],pos:p});
+  const cap=(a,b,r1,r2,par)=>{sk(tubeGeo([a,b],r1,r2,1,24),par);ell(r1,r1,r1,a,par);ell(r2,r2,r2,b,par)};
+  sk(sphereGeo(36,28,o=>{if(o[1]<0){o[0]*=1+.34*o[1];o[2]*=1+.2*o[1]}}),G,{scale:[.097,.12,.108],pos:[0,1.635,0]});
+  ell(.012,.02,.014,[0,1.62,.106]);
+  cap([0,1.45,-.005],[0,1.54,0],.052,.048);
+  const pc=curve([[.001,1.48,0],[.06,1.475,0],[.15,1.44,0],[.178,1.38,0],[.158,1.26,0],[.14,1.12,0],[.172,1.0,0],[.165,.92,0],[.10,.85,0],[.001,.84,0]]),prof=[];
+  for(let i=0;i<=40;i++){const p=pc(i/40);prof.push([Math.max(0,p[0]),p[1]])}prof[0][0]=0;prof[40][0]=0;
+  sk(latheGeo(prof,40),G,{scale:[1,1,.62]});
+  const E_R=[-.25,1.12,0],E_L=[.25,1.12,0];
+  ell(.062,.062,.058,[.2,1.41,0]);ell(.062,.062,.058,[-.2,1.41,0]);
+  cap([.2,1.41,0],E_L,.047,.039);cap(E_L,[.28,.86,0],.038,.027);ell(.03,.075,.018,[.288,.775,0]);
+  cap([-.2,1.41,0],E_R,.047,.039);
+  const fore=node(G,null,null,{pos:E_R,rot:[-1.2,0,0]});
+  cap([0,0,0],[0,-.26,0],.038,.027,fore);ell(.03,.075,.018,[0,-.335,0],fore);
+  [1,-1].forEach(s=>{cap([.085*s,.9,0],[.09*s,.5,0],.078,.052);cap([.09*s,.5,0],[.09*s,.08,0],.05,.031);ell(.043,.032,.105,[.09*s,.032,.05])});
+  node(G,latheGeo([[0,0],[.34,0],[.37,-.07],[0,-.07]],48),Mat({color:[.22,.23,.26],coat:.15}));
+  const nerv=node(G),glg=node(G);
+  const reg=(id,n)=>{n.id=id;(items[id]=items[id]||[]).push(n)};
+  const mb=buildBrain(56,false,nerv);mb.G.scale=S3(.086);mb.G.pos=[0,1.672,.004];
+  for(const k in mb.parts)mb.parts[k].forEach(n=>reg('brain',n));
+  const NE=hexc(0x8a6a14).map(x=>x*.5);
+  const tube=(id,pts,r,par)=>reg(id,node(par||nerv,tubeGeo(pts,r,r,Math.max(8,pts.length*8),7),Mat({color:[.97,.9,.66],em:NE.slice(),coat:.3})));
+  tube('cord',[[0,1.57,-.02],[0,1.46,-.035],[0,1.3,-.055],[0,1.1,-.05],[0,.95,-.05]],.013);
+  const shp=s=>[[0,1.42,-.05],[.12*s,1.435,-.03],[.2*s,1.41,0],[.25*s,1.12,0]];
+  tube('nerves',shp(1).concat([[.28,.86,0],[.288,.74,0]]),.0045);tube('nerves',shp(-1),.0045);
+  tube('nerves',[[0,0,0],[0,-.26,0],[0,-.38,0]],.0045,fore);
+  [1,-1].forEach(s=>{tube('nerves',[[0,.96,-.05],[.07*s,.9,-.02],[.09*s,.5,-.01],[.09*s,.1,-.01],[.09*s,.035,.1]],.0045);
+    for(let y=1.36;y>1.0;y-=.065)tube('nerves',[[0,y,-.05],[.09*s,y-.02,-.035],[.14*s,y-.045,.02]],.003)});
+  const og=sphereGeo(18,14);
+  const organ=(id,grp,hex,list,par)=>{const c=hexc(hex),mat=Mat({color:c,em:c.map(x=>x*.45),coat:.6});items[id]=items[id]||[];items[id].base=c.map(x=>x*.45);
+    list.forEach(o=>{const n=node(par||grp,og,mat,{layer:1,pos:[o[0],o[1],o[2]],scale:[o[3],o[4]||o[3],o[5]||o[3]],organ:true,grp});if(o[6])n.rot[2]=o[6];reg(id,n)})};
+  organ('receptor',nerv,0x58d6e8,[[0,-.40,.012,.008],[.012,-.395,.012,.007],[-.012,-.395,.012,.007]],fore);
+  organ('nose',nerv,0x9be7a0,[[0,1.622,.112,.009]]);
+  organ('tongue',nerv,0xff9aa8,[[0,1.565,.078,.014,.007,.018]]);
+  organ('muscle',nerv,0xd9483b,[[-.222,1.275,.012,.026,.085,.026,-.17]]);
+  organ('pineal',glg,0xc79bff,[[0,1.662,-.022,.007]]);
+  organ('hypothalamus',glg,0xffd166,[[0,1.652,.012,.009,.007,.01]]);
+  organ('pituitary',glg,0xff8a5c,[[0,1.628,.022,.008]]);
+  organ('thyroid',glg,0xff5d73,[[.017,1.505,.045,.012,.02,.01],[-.017,1.505,.045,.012,.02,.01],[0,1.497,.05,.01,.006,.006]]);
+  organ('parathyroid',glg,0xffe08a,[[.02,1.515,.03,.005],[-.02,1.515,.03,.005],[.02,1.495,.03,.005],[-.02,1.495,.03,.005]]);
+  organ('thymus',glg,0x7fe3c4,[[.012,1.375,.06,.016,.032,.01],[-.012,1.375,.06,.016,.032,.01]]);
+  organ('pancreas',glg,0xf6c453,[[.02,1.16,.04,.055,.014,.014,.18]]);
+  organ('adrenal',glg,0xff9f40,[[.062,1.21,-.03,.016,.01,.012],[-.062,1.21,-.03,.016,.01,.012]]);
+  organ('ovary',glg,0xff8fd0,[[.062,.975,.02,.014,.01,.01],[-.062,.975,.02,.014,.01,.01]]);
+  organ('testis',glg,0x7fb8ff,[[.024,.845,.05,.012,.016,.012],[-.024,.845,.05,.012,.016,.012]]);
+  const hot=node(G,null,null,{visible:false});
+  node(hot,latheGeo([[0,.86],[.008,.86],[.012,0],[0,0]],12),Mat({color:[.3,.31,.34],coat:.8}),{pos:[-.25,0,.345]});
+  node(hot,latheGeo([[0,.02],[.05,.02],[.03,-.02],[0,-.02]],24),Mat({color:[.55,.4,.2],coat:.9}),{pos:[-.25,.875,.345]});
+  const flame=node(hot,latheGeo([[0,.06],[.012,.02],[.024,-.02],[.014,-.04],[0,-.045]],16),Mat({mode:1,color:[1,.62,.2],op:.92}),{layer:2,pos:[-.25,.938,.345]});
+  const pulse=node(G,og,Mat({mode:1,color:hexc(0x58d6e8)}),{layer:1,scale:S3(.016),visible:false});
+  const gp=f=>({getPoint:f});const paths={s:gp(curve([[-.25,.99,.37],[-.25,1.05,.2],[-.25,1.12,0],[-.2,1.41,0],[-.12,1.435,-.03],[0,1.42,-.05]])),m:gp(curve([[0,1.42,-.05],[-.12,1.435,-.03],[-.2,1.41,0],[-.222,1.3,.012]])),b:gp(curve([[0,1.42,-.05],[0,1.5,-.03],[0,1.57,-.02],[0,1.66,0]]))};
+  G.scale=S3(1.6);G.pos=[0,-1.42,0];
+  return {G,skin,items,nerv,gl:glg,fore,hot,flame,pulse,paths};
+}
+// ---------- scene objects ----------
+const bg=node(null,grid(1,1,(u,v,o)=>{o[0]=u*2-1;o[1]=v*2-1;o[2]=.999}),Mat({mode:5}),{layer:9});
+const floor=node(null,grid(1,1,(u,v,o)=>{o[0]=u*2-1;o[1]=0;o[2]=v*2-1}),Mat({mode:4}),{layer:8,pos:[0,-1.75,0],scale:S3(1.6)});
+const brain=buildBrain(Math.min(window.innerWidth,window.innerHeight)<500?150:200,true,null);
+const body=buildBody();body.G.visible=false;
+// ---------- camera rig ----------
+const cam={th:.7,ph:1.3,r:4.6,t:[0,-.3,-.1]},goal={th:.7,ph:1.3,r:4.6,t:[0,-.3,-.1]};
+let spin=!reduce,lastTouch=0,which='brain';
+const PM=new Float32Array(16),VM=new Float32Array(16),VP=new Float32Array(16),eye=[0,0,0];
+function view(w,th,ph){which=w;const portrait=stage.clientWidth<stage.clientHeight;
+  if(w==='brain'){goal.t=[0,-.33,-.1];goal.r=portrait?6.4:4.8}else{goal.t=[0,0,0];goal.r=portrait?6.8:6.3}
+  if(th!=null)goal.th=th;if(ph!=null)goal.ph=ph}
+let CW=1,CH=1,pickFB=null,pickTex=null,pickRB=null;
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;if(!w||!h)return;const d=Math.min(window.devicePixelRatio||1,2);CW=canvas.width=Math.round(w*d);CH=canvas.height=Math.round(h*d);
+  if(!pickFB){pickFB=gl.createFramebuffer();pickTex=gl.createTexture();pickRB=gl.createRenderbuffer()}
+  gl.bindTexture(gl.TEXTURE_2D,pickTex);gl.texImage2D(gl.TEXTURE_2D,0,gl.RGBA,CW,CH,0,gl.RGBA,gl.UNSIGNED_BYTE,null);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_MIN_FILTER,gl.NEAREST);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_S,gl.CLAMP_TO_EDGE);gl.texParameteri(gl.TEXTURE_2D,gl.TEXTURE_WRAP_T,gl.CLAMP_TO_EDGE);
+  gl.bindRenderbuffer(gl.RENDERBUFFER,pickRB);gl.renderbufferStorage(gl.RENDERBUFFER,gl.DEPTH_COMPONENT16,CW,CH);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,pickFB);gl.framebufferTexture2D(gl.FRAMEBUFFER,gl.COLOR_ATTACHMENT0,gl.TEXTURE_2D,pickTex,0);gl.framebufferRenderbuffer(gl.FRAMEBUFFER,gl.DEPTH_ATTACHMENT,gl.RENDERBUFFER,pickRB);gl.bindFramebuffer(gl.FRAMEBUFFER,null)}
+new ResizeObserver(resize).observe(stage);resize();
+// ---------- selection and picking ----------
+let sel=null,hintId=null;
+function meshesOf(id){return which==='brain'?(brain.parts[id]||[]):(body.items[id]||[])}
+function glow(id,hex,k){const ms=meshesOf(id),c=hex==null?null:hexc(hex).map(x=>x*k);
+  ms.forEach(n=>{const b=which==='body'?(ms.base||(id==='cord'||id==='nerves'?[.27,.21,.04]:[0,0,0])):[0,0,0];n.mat.em=c||b})}
+function select(id){if(sel)glow(sel,null);sel=id;if(!id)tagEl.hidden=true}
+const PICK_IDS=[];
+function pick(cx,cy){
+  const b=canvas.getBoundingClientRect(),px=Math.round((cx-b.left)/b.width*CW),py=Math.round((1-(cy-b.top)/b.height)*CH);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,pickFB);gl.viewport(0,0,CW,CH);gl.clearColor(0,0,0,0);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
+  PICK_IDS.length=0;const col=[0,0,0];
+  const pass=org=>{for(const n of nodes){if(!n.geo||!n.id||!!n.organ!==org||!shown(n))continue;let k=PICK_IDS.indexOf(n.id);if(k<0){PICK_IDS.push(n.id);k=PICK_IDS.length-1}col[0]=(k+1)/255;drawNode(n,col,org?1.8:0)}};
+  pass(false);gl.disable(gl.DEPTH_TEST);pass(true);
+  const Rr=Math.round(9*CW/b.width),S=Rr*2+1,x0=Math.max(0,px-Rr),y0=Math.max(0,py-Rr),buf=new Uint8Array(S*S*4);gl.readPixels(x0,y0,S,S,gl.RGBA,gl.UNSIGNED_BYTE,buf);
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);
+  let best=0,bd=1e9;for(let y=0;y<S;y++)for(let x=0;x<S;x++){const v=buf[(y*S+x)*4];if(v){const d=(x+x0-px)*(x+x0-px)+(y+y0-py)*(y+y0-py);if(d<bd){bd=d;best=v}}}
+  return best?PICK_IDS[best-1]:null}
+const ptr=new Map();let moved=0,pinch=0;
+canvas.addEventListener('pointerdown',e=>{try{canvas.setPointerCapture(e.pointerId)}catch(_){}ptr.set(e.pointerId,{x:e.clientX,y:e.clientY});moved=0;lastTouch=performance.now();if(ptr.size===2){const a=[...ptr.values()];pinch=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y)}});
+canvas.addEventListener('pointermove',e=>{const p=ptr.get(e.pointerId);if(!p)return;const dx=e.clientX-p.x,dy=e.clientY-p.y;p.x=e.clientX;p.y=e.clientY;lastTouch=performance.now();
+  if(ptr.size===1){moved+=Math.abs(dx)+Math.abs(dy);goal.th-=dx*.008;goal.ph=Math.min(2.7,Math.max(.35,goal.ph-dy*.006))}
+  else if(ptr.size===2){const a=[...ptr.values()];const d=Math.hypot(a[0].x-a[1].x,a[0].y-a[1].y);if(pinch&&d)goal.r=Math.min(11,Math.max(2.2,goal.r*pinch/d));pinch=d;moved=99}});
+const up=e=>{const had=ptr.has(e.pointerId);ptr.delete(e.pointerId);if(had&&e.type==='pointerup'&&moved<8&&ptr.size===0){const id=pick(e.clientX,e.clientY);if(id)onPick(id)}};
+canvas.addEventListener('pointerup',up);canvas.addEventListener('pointercancel',up);
+canvas.addEventListener('wheel',e=>{e.preventDefault();goal.r=Math.min(11,Math.max(2.2,goal.r*(1+Math.sign(e.deltaY)*.08)));lastTouch=performance.now()},{passive:false});
+// ---------- loop ----------
+const S16=k=>S3(.016*k);let reflex=null,T0=performance.now(),FR=0;
+function frame(now){
+  requestAnimationFrame(frame);
+  if(window.__naPause)return;
+  const t=(now-T0)/1000;FR++;
+  if(spin&&now-lastTouch>2500&&!reflex&&mode!=='reflex')goal.th+=.0022;
+  cam.th+=(goal.th-cam.th)*.12;cam.ph+=(goal.ph-cam.ph)*.12;cam.r+=(goal.r-cam.r)*.1;for(let k=0;k<3;k++)cam.t[k]+=(goal.t[k]-cam.t[k])*.1;
+  eye[0]=cam.t[0]+cam.r*Math.sin(cam.ph)*Math.sin(cam.th);eye[1]=cam.t[1]+cam.r*Math.cos(cam.ph);eye[2]=cam.t[2]+cam.r*Math.sin(cam.ph)*Math.cos(cam.th);
+  persp(34*Math.PI/180,CW/CH,.1,60,PM);lookAt(eye,cam.t,VM);mmul(PM,VM,VP);
+  const pk=.55+.35*Math.sin(t*5);
+  if(sel)glow(sel,0xd9a441,which==='brain'||!body.items[sel].base?pk*.3:pk*1.3);
+  if(hintId&&hintId!==sel)glow(hintId,0x58d6e8,which==='brain'||!body.items[hintId].base?pk*.4:pk*1.5);
+  if(body.hot.visible)body.flame.scale=[1+.15*Math.sin(t*17),1+.2*Math.sin(t*23+1),1];
+  if(reflex)stepReflex(now);
+  updateWorld();
+  gl.bindFramebuffer(gl.FRAMEBUFFER,null);gl.viewport(0,0,CW,CH);gl.clearColor(.03,.03,.04,1);gl.clear(gl.COLOR_BUFFER_BIT|gl.DEPTH_BUFFER_BIT);
+  gl.uniform3fv(U.uCam,eye);gl.uniform1f(U.uAsp,CW/CH);
+  gl.disable(gl.DEPTH_TEST);gl.disable(gl.BLEND);gl.uniformMatrix4fv(U.uVP,false,ID4);drawNode(bg);
+  gl.uniformMatrix4fv(U.uVP,false,VP);gl.enable(gl.BLEND);gl.blendFunc(gl.SRC_ALPHA,gl.ONE_MINUS_SRC_ALPHA);drawNode(floor);
+  gl.disable(gl.BLEND);gl.enable(gl.DEPTH_TEST);gl.depthMask(true);
+  for(const n of nodes)if(n.geo&&n.layer===0&&shown(n))drawNode(n);
+  gl.enable(gl.BLEND);gl.disable(gl.DEPTH_TEST);
+  for(const n of nodes)if(n.geo&&n.layer===1&&shown(n))drawNode(n);
+  gl.enable(gl.DEPTH_TEST);gl.depthMask(false);
+  for(const n of nodes)if(n.geo&&n.layer===2&&shown(n))drawNode(n);
+  gl.depthMask(true);
+  if(sel&&!tagEl.hidden){const ms=meshesOf(sel);if(ms.length){const W=ms[0].W;let x=W[12],y=W[13],z=W[14];if(sel==='cerebrum'&&which==='brain'){x=0;y=.72;z=0}
+    const w=VP[3]*x+VP[7]*y+VP[11]*z+VP[15],sx=(VP[0]*x+VP[4]*y+VP[8]*z+VP[12])/w,sy=(VP[1]*x+VP[5]*y+VP[9]*z+VP[13])/w;tagEl.style.left=((sx+1)/2*stage.clientWidth)+'px';tagEl.style.top=Math.max(34,(1-sy)/2*stage.clientHeight)+'px'}}}
+
+// ---------- UI state ----------
+let mode='home',M=null;
+const LEVELS=[
+ {id:'brainX',g:'Explore',t:'Brain Atlas',d:'Turn a life-like 3D brain. Open it to see inside. Tap any part to read what it does.',free:true},
+ {id:'bodyX',g:'Explore',t:'Body Atlas',d:'A glass anatomy statue with the brain, spinal cord, nerves and every endocrine gland of Fig. 6.7.',free:true},
+ {id:'brainM',g:'Missions',t:'Brain Mission',d:'10 tasks. Read the clue and tap the correct part on the real model.'},
+ {id:'bodyM',g:'Missions',t:'Gland Hunt',d:'10 tasks. Find the gland or organ on the statue.'},
+ {id:'reflex',g:'Missions',t:'Reflex Arc Lab',d:'Touch the flame, watch the impulse travel, then rebuild the arc in order.'},
+ {id:'qN',g:'Question Vault',t:'Nervous System',d:'20 questions: in-text, exercise, activity and concept checks.'},
+ {id:'qP',g:'Question Vault',t:'Coordination in Plants',d:'20 questions on tropisms and plant hormones.'},
+ {id:'qH',g:'Question Vault',t:'Hormones in Animals',d:'20 questions with Table 6.1.'},
+ {id:'qT',g:'Question Vault',t:'True or False Sprint',d:'20 quick statements from the whole chapter. Decide: true or false?'},
+ {id:'qR',g:'Question Vault',t:'Assertion and Reason',d:'10 board-style assertion and reason questions.'},
+ {id:'boss',g:'Final',t:'Grand Viva',d:'15 mixed questions from the whole chapter. You have 3 lives.'}
+];
+function starStr(n){return '★'.repeat(n)+'<i>'+'★'.repeat(3-n)+'</i>'}
+function showHome(){
+  mode='home';M=null;select(null);hintId=null;stopReflex();app.classList.remove('big');app.classList.add('menu');
+  setScene('brain');view('brain',.7,1.3);brain.left.visible=true;brain.skull.visible=false;tools.innerHTML='';$('#hint').hidden=true;
+  let h='<div class="in"><div class="eyebrow">Saurabh\'s Eduverse · Class 10 Science · Chapter 6</div><h1>NeuroAtlas <em>3D</em></h1><p class="lead">Control and Coordination on real-looking 3D models. Study the human brain and the body\'s nerves and glands, then test yourself. Every level is open from the start.</p>';
+  let g='';LEVELS.forEach(l=>{if(l.g!==g){if(g)h+='</div>';g=l.g;h+='<div class="grp">'+g+'</div><div class="grid">'}
+    h+='<button class="card" data-l="'+l.id+'"><b>'+l.t+'</b><span>'+l.d+'</span>'+(l.free?'':'<span class="st">'+starStr(save.stars[l.id]||0)+'</span>')+'</button>'});
+  h+='</div></div>';home.innerHTML=h;home.hidden=false;home.scrollTop=0;
+  panel.innerHTML='<h3>How to play</h3><h2>Choose a gallery</h2><ul class="facts"><li>Drag the model to turn it. Pinch or scroll to zoom.</li><li>In the atlases, tap a part or pick it from the list to read its plaque.</li><li>In missions, read the clue and tap the part on the model.</li><li>All content follows the NCERT chapter: in-text questions, exercises and activities are tagged.</li></ul>';
+  updTop();
+}
+home.addEventListener('click',e=>{const b=e.target.closest('[data-l]');if(b){sfx.tap();start(b.dataset.l)}});
+$('#hm').onclick=()=>{sfx.tap();showHome()};
+$('#snd').onclick=()=>{save.snd=!save.snd;persist();updTop();sfx.tap()};
+
+function setScene(w){which=w;brain.G.visible=w==='brain';body.G.visible=w==='body';floor.pos[1]=w==='brain'?-1.75:-1.47;floor.scale=S3(w==='brain'?1.6:1.1)}
+function toolBar(defs){tools.innerHTML='';defs.forEach(d=>{const b=document.createElement('button');b.className='ib'+(d.on&&d.on()?' on':'');b.textContent=d.t;b.onclick=()=>{sfx.tap();d.f();toolBar(defs)};tools.appendChild(b)})}
+function brainTools(){toolBar([
+  {t:'Open brain',on:()=>!brain.left.visible,f(){brain.left.visible=!brain.left.visible;if(!brain.left.visible){goal.th=-1.25;goal.ph=1.45}}},
+  {t:'Skull',on:()=>brain.skull.visible,f(){brain.skull.visible=!brain.skull.visible;if(brain.skull.visible&&mode==='brainX')plaque('cranium')}},
+  {t:'Auto-turn',on:()=>spin,f(){spin=!spin}},
+  {t:'Reset view',f(){brain.left.visible=true;brain.skull.visible=false;view('brain',.7,1.3)}}])}
+let marble=false;
+function setSkin(m){marble=m;body.skin.forEach(s=>{s.mat=m?marbleMat:glassMat;s.layer=m?0:2})}
+function bodyTools(){toolBar([
+  {t:'Nervous system',on:()=>body.nerv.visible,f(){body.nerv.visible=!body.nerv.visible}},
+  {t:'Glands',on:()=>body.gl.visible,f(){body.gl.visible=!body.gl.visible}},
+  {t:marble?'Surface: marble':'Surface: glass',on:()=>marble,f(){setSkin(!marble)}},
+  {t:'Auto-turn',on:()=>spin,f(){spin=!spin}},
+  {t:'Reset view',f(){view('body',.5,1.45)}}])}
+
+function start(id){
+  app.classList.remove('menu');home.hidden=true;$('#hint').hidden=false;select(null);hintId=null;stopReflex();mode=id;app.classList.toggle('big',/^q|boss/.test(id));
+  body.nerv.visible=body.gl.visible=true;setSkin(false);body.hot.visible=false;body.fore.rot[0]=-1.2;
+  if(id==='brainX'||id==='brainM'){setScene('brain');view('brain',.7,1.3);brain.left.visible=true;brain.skull.visible=false;brainTools()}
+  else if(id==='bodyX'||id==='bodyM'){setScene('body');view('body',.5,1.45);bodyTools()}
+  else if(id==='reflex'){setScene('body');view('body',-.95,1.4);goal.r*=.8;body.hot.visible=true;body.gl.visible=false;tools.innerHTML=''}
+  else{setScene('brain');view('brain',.7,1.3);brain.left.visible=true;tools.innerHTML='';$('#hint').hidden=true}
+  if(id==='brainX')plaque('cerebrum');else if(id==='bodyX')plaque('brain');
+  else if(id==='brainM')startMission(BRAIN_TASKS);else if(id==='bodyM')startMission(BODY_TASKS);
+  else if(id==='reflex')reflexIntro();else startQuiz(id);
+  panel.scrollTop=0;
+}
+
+// ---------- atlas ----------
+function chipList(order,cur){return '<div class="chips">'+order.map(k=>'<button class="chip'+(k===cur?' on':'')+'" data-p="'+k+'">'+esc(INFO[k].n)+'</button>').join('')+'</div>'}
+function plaque(id){
+  const I=INFO[id];if(!I)return;
+  if(id!=='cranium'){select(id);tagEl.textContent=I.n;tagEl.hidden=false}else select(null);
+  if(which==='brain'&&INSIDE.includes(id)&&brain.left.visible){brain.left.visible=false;goal.th=-1.25;goal.ph=1.45;brainTools()}
+  panel.innerHTML='<h3>'+esc(I.r)+'</h3><h2>'+esc(I.n)+'</h2><ul class="facts">'+I.f.map(f=>'<li>'+esc(f)+'</li>').join('')+'</ul><p class="src">Source: NCERT Science Class 10, Chapter 6</p>'+chipList(which==='brain'?BRAIN_ORDER:BODY_ORDER,id);
+  panel.scrollTop=0;
+}
+panel.addEventListener('click',e=>{const c=e.target.closest('[data-p]');if(c&&(mode==='brainX'||mode==='bodyX')){sfx.tap();plaque(c.dataset.p)}});
+function onPick(id){
+  if(mode==='brainX'||mode==='bodyX'){sfx.tap();plaque(id)}
+  else if((mode==='brainM'||mode==='bodyM')&&M&&!M.done)answerMission(id);
+}
+
+// ---------- missions ----------
+function startMission(bank){M={tasks:shuffle(bank).slice(0,10),i:0,score:0,tries:0,done:false};showTask()}
+function showTask(msg,cls){
+  const t=M.tasks[M.i];
+  panel.innerHTML='<h3>Task '+(M.i+1)+' of '+M.tasks.length+' · Score '+M.score+'</h3><div class="bar"><i style="width:'+(M.i/M.tasks.length*100)+'%"></i></div><p class="q">'+esc(t.q)+'</p><p class="src">Tap the part on the 3D model.</p>'+(msg?'<div class="fb '+cls+'">'+msg+'</div>':'')+(M.done?'<button class="go" id="nx">'+(M.i+1<M.tasks.length?'Next task':'See result')+'</button>':'');
+  const n=$('#nx');if(n)n.onclick=()=>{sfx.tap();select(null);hintId=null;M.i++;M.tries=0;M.done=false;if(M.i>=M.tasks.length)finish(M.score,M.tasks.length*10);else showTask()};
+}
+function answerMission(id){
+  const t=M.tasks[M.i];
+  if(t.a.includes(id)){const pts=M.tries===0?10:M.tries===1?5:2;M.score+=pts;M.done=true;if(hintId){glow(hintId,null);hintId=null}select(id);tagEl.textContent=INFO[id].n;tagEl.hidden=false;sfx.ok();showTask('<b>Correct, +'+pts+'.</b> '+esc(t.w),'ok')}
+  else{M.tries++;sfx.no();let m='That is the <b>'+esc(INFO[id].n)+'</b>. Try again.';
+    if(M.tries>=2){hintId=t.a[0];if(which==='brain'&&INSIDE.concat('pituitary').includes(hintId)&&brain.left.visible){brain.left.visible=false;goal.th=-1.25;goal.ph=1.45;brainTools()}m+=' The correct part is now glowing blue.'}
+    else if(which==='brain'&&INSIDE.includes(t.a[0]))m+=' Tip: use Open brain to look inside.';
+    showTask(m,'no')}
+}
+function finish(score,max,extra){
+  const pct=score/max,st=pct>=.85?3:pct>=.6?2:pct>0?1:0;
+  if(st>(save.stars[mode]||0)){save.stars[mode]=st;persist()}updTop();if(st>=2)sfx.win();
+  select(null);hintId=null;
+  panel.innerHTML='<h3>Result</h3><h2>'+(st===3?'Excellent work':st===2?'Good work':'Keep practising')+'</h2><div class="stars">'+'★'.repeat(st)+'<b>'+'★'.repeat(3-st)+'</b></div><p>You scored <b>'+score+'</b> out of '+max+'.'+(extra?' '+extra:'')+'</p><div class="row"><button class="go" id="re">Play again</button><button class="go alt" id="bk">Menu</button></div>';
+  const m=mode;$('#re').onclick=()=>{sfx.tap();start(m)};$('#bk').onclick=()=>{sfx.tap();showHome()};
+}
+
+// ---------- reflex lab ----------
+function reflexIntro(){
+  panel.innerHTML='<h3>Reflex Arc Lab · Fig. 6.2</h3><h2>Touching a flame</h2><p>If we waited to think before pulling the hand away, we would get burnt. The body uses a shortcut called a reflex arc.</p><ul class="facts"><li>The statue\'s hand is just above a flame.</li><li>Press the button and watch the impulse. Blue is the sensory signal. Orange is the motor command.</li></ul><button class="go" id="fire">Touch the flame</button><div id="cap" class="fb" hidden></div>';
+  $('#fire').onclick=()=>{if(reflex)return;sfx.tap();reflex={t0:performance.now(),stage:-1};$('#fire').disabled=true};
+}
+const CAPS=['1. Receptors in the skin detect the heat.','2. A sensory neuron carries the impulse to the spinal cord.','3. A relay neuron in the spinal cord passes it on. No thinking is needed.','4. A motor neuron carries the command to the arm.','5. The effector muscle shortens and the hand is pulled away. The message also reaches the brain a moment later.'];
+function cap(i){const c=$('#cap');if(c){c.hidden=false;c.textContent=CAPS[i]}}
+function stepReflex(now){
+  const t=(now-reflex.t0)/1000,p=body.pulse,st=n=>{if(reflex.stage<n){reflex.stage=n;cap(n);sfx.zap()}};
+  p.visible=true;
+  if(t<.6){st(0);p.mat.color=hexc(0x58d6e8);p.pos=(body.paths.s.getPoint(0));p.scale=S16(1+Math.sin(t*20)*.5)}
+  else if(t<2.1){st(1);p.scale=S16(1);p.pos=(body.paths.s.getPoint((t-.6)/1.5))}
+  else if(t<2.9){st(2);p.mat.color=hexc(0xffffff);p.pos=(body.paths.s.getPoint(1));p.scale=S16(1.3+Math.sin(t*25)*.5)}
+  else if(t<4.1){st(3);p.mat.color=hexc(0xff9f40);p.scale=S16(1);p.pos=(body.paths.m.getPoint((t-2.9)/1.2))}
+  else if(t<6.4){st(4);const k=sstep(0,1,(t-4.1)/.5);body.fore.rot[0]=-1.2-1.0*k;glow('muscle',0xffffff,1.5*k);
+    p.mat.color=hexc(0xc79bff);p.pos=(body.paths.b.getPoint(Math.min(1,(t-4.1)/1.4)))}
+  else{p.visible=false;glow('muscle',null);body.fore.rot[0]=-1.2;reflex=null;orderGame()}
+}
+function stopReflex(){reflex=null;body.pulse.visible=false}
+function orderGame(){
+  const O={next:0,wrong:0,opts:shuffle(REFLEX_STEPS.map((s,i)=>({s,i})))};
+  const draw=(msg,cls)=>{panel.innerHTML='<h3>Rebuild the reflex arc</h3><h2>Tap the steps in order</h2><div class="bar"><i style="width:'+(O.next/5*100)+'%"></i></div>'+O.opts.map(o=>'<button class="opt'+(o.i<O.next?' r':'')+'" data-o="'+o.i+'"'+(o.i<O.next?' disabled':'')+'>'+(o.i<O.next?(o.i+1)+'. ':'')+esc(o.s)+'</button>').join('')+(msg?'<div class="fb '+cls+'">'+msg+'</div>':'');
+    panel.querySelectorAll('[data-o]').forEach(b=>b.onclick=()=>{const i=+b.dataset.o;if(i===O.next){O.next++;sfx.ok();if(O.next===5){finish(Math.max(10,50-O.wrong*10),50,'Receptor → sensory neuron → relay neuron in spinal cord → motor neuron → effector.')}else draw('Correct. What comes next?','ok')}else{O.wrong++;sfx.no();draw('Not yet. Think of the path the impulse took on the statue.','no')}})};
+  draw();
+}
+
+// ---------- quiz ----------
+function startQuiz(id){
+  let qs;if(id==='boss'){qs=shuffle(QB.N.concat(QB.P,QB.H)).slice(0,15)}else if(id==='qT')qs=shuffle(TF).map(x=>{const a=['T',x[0],x[1]?'True':'False',0,0,0,x[2]];a.o=['True','False'];return a});
+  else if(id==='qR')qs=shuffle(AR).map(x=>{const a=['R','Assertion (A): '+x[0]+'\nReason (R): '+x[1],AR_OPTS[x[2]],0,0,0,x[3]];a.o=AR_OPTS;return a});
+  else qs=shuffle(QB[id[1]]);
+  M={qs,i:0,score:0,lives:id==='boss'?3:null};showQ();
+}
+function showQ(){
+  const q=M.qs[M.i],opts=q.o||shuffle(q.slice(2,6));
+  panel.innerHTML='<div class="row"><span class="badge">'+TAGS[q[0]]+'</span><span class="src">Question '+(M.i+1)+' of '+M.qs.length+' · Score '+M.score+(M.lives!=null?' · Lives '+'♥'.repeat(M.lives):'')+'</span></div><div class="bar"><i style="width:'+(M.i/M.qs.length*100)+'%"></i></div><p class="q">'+esc(q[1])+'</p>'+opts.map(o=>'<button class="opt">'+esc(o)+'</button>').join('')+'<div id="fbq"></div>';
+  panel.scrollTop=0;
+  const bs=[...panel.querySelectorAll('.opt')];
+  bs.forEach((b,k)=>b.onclick=()=>{const ok=opts[k]===q[2];bs.forEach((x,j)=>{x.disabled=true;if(opts[j]===q[2])x.classList.add('r')});
+    if(ok){M.score++;sfx.ok()}else{b.classList.add('w');sfx.no();if(M.lives!=null)M.lives--}
+    const out=M.lives===0,last=M.i+1>=M.qs.length;
+    $('#fbq').innerHTML='<div class="fb '+(ok?'ok':'no')+'"><b>'+(ok?'Correct.':'Not quite.')+'</b> '+esc(q[6])+'</div><button class="go" id="nq">'+(out||last?'See result':'Next question')+'</button>';
+    $('#nq').onclick=()=>{sfx.tap();M.i++;if(out||last)finish(M.score,M.qs.length,out?'You ran out of lives.':'');else showQ()};$('#nq').scrollIntoView({block:'nearest'})});
+}
+
+window.__na={start,showHome,pick:onPick,state:()=>({mode,M,sel,which,fr:FR}),body,brain};
+showHome();requestAnimationFrame(frame);
+})();
+</script>
+
+</body></html>

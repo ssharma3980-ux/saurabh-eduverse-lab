@@ -1,0 +1,745 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Bharat ki Yatra 3D</title>
+<style>
+[hidden]{display:none!important}
+/* Layout: one bright "water world" column. A live WebGL scene sits on top (sticky inside a level); lessons, games and quizzes sit on frosted cards beneath it. Single light theme by design. */
+:root{color-scheme:light;--ink:#0f2d44;--mut:#46667e;--card:rgba(255,255,255,.88);--line:#f0d4b0;--sea:#c0503a;--sea2:#e8823c;--lem:#ffb627;--coral:#ff6f59;--leaf:#21a862;--okbg:#d9f7e6;--nobg:#ffe1dc;
+ --f:"Trebuchet MS","Segoe UI",Verdana,system-ui,sans-serif}
+*{box-sizing:border-box}
+body{background:linear-gradient(180deg,#ffd9a6 0,#fff0d9 40%,#fffaf2 100%) fixed,#fff6ea;color:var(--ink);font:16px/1.55 var(--f);padding-inline:16px;padding-block:0 48px;margin:0}
+.wrap{max-width:960px;margin:0 auto}
+header{display:flex;align-items:center;gap:10px;padding-block:12px;flex-wrap:wrap}
+.brand{font-weight:800;letter-spacing:.06em;text-transform:uppercase;font-size:12px;color:var(--deep,#0b4f7a)}
+.sp{flex:1}
+.pill{background:var(--card);border:2px solid var(--line);border-radius:999px;padding:4px 12px;font-weight:700;font-variant-numeric:tabular-nums}
+button{font:inherit;color:var(--ink);cursor:pointer;border:2px solid var(--line);background:#fff;border-radius:14px;padding:10px 14px;box-shadow:0 4px 0 #e8c9a0;transition:transform .12s,box-shadow .12s,background .15s}
+button:hover:not(:disabled){transform:translateY(-2px);box-shadow:0 6px 0 #e8c9a0}
+button:active:not(:disabled){transform:translateY(3px);box-shadow:0 1px 0 #e8c9a0}
+button:focus-visible{outline:3px solid var(--lem);outline-offset:2px}
+button:disabled{cursor:default;opacity:.75}
+button.pri{background:var(--sea);border-color:var(--sea);color:#fff;font-weight:700;box-shadow:0 4px 0 #8a3322}
+button.on{background:var(--sea2);border-color:var(--sea2);color:#fff;font-weight:700}
+#view{position:relative;aspect-ratio:16/9;max-height:60vh;width:100%;border-radius:22px;overflow:hidden;border:3px solid #fff;background:#cfe9ff;touch-action:pan-y;cursor:grab;box-shadow:0 14px 40px rgba(120,60,20,.25)}
+body.inzone #view{position:sticky;top:env(safe-area-inset-top,0px);z-index:3;max-height:46vh}
+body.inzone #panel *,body.inzone #tabs *{scroll-margin-top:calc(46vh + 20px)}
+#gl{width:100%;height:100%;display:block}
+#labels{position:absolute;inset:0;pointer-events:none;overflow:hidden}
+.lb{position:absolute;transform:translate(-50%,-50%);font-size:13px;font-weight:700;background:rgba(255,255,255,.88);border:2px solid #fff;border-radius:10px;padding:2px 8px;white-space:nowrap;color:var(--ink);box-shadow:0 2px 6px rgba(0,40,80,.18)}
+.lb.sm{font-size:11px;font-weight:600;color:var(--mut)}
+.lb.big{font-size:16px;background:#fffbe8}
+.lb.mk{background:var(--lem);font-size:14px;animation:pulse 1.2s ease-in-out infinite}
+.lb.mk.done{background:var(--okbg);animation:none}
+.lb.tap{pointer-events:auto;cursor:pointer;font-size:22px;padding:2px 5px;background:rgba(255,255,255,.75);border-radius:50%}.lb.tap:hover{transform:translate(-50%,-50%) scale(1.25)}
+.lb.mascot{font-size:34px;background:none;border:0;box-shadow:none;padding:0;filter:drop-shadow(0 4px 4px rgba(0,60,120,.35))}
+.lb.mascot.happy{animation:jump .8s ease}
+@keyframes jump{30%{transform:translate(-50%,-110%) rotate(-15deg) scale(1.3)}60%{transform:translate(-50%,-70%) rotate(12deg)}}
+@keyframes pulse{50%{transform:translate(-50%,-50%) scale(1.12)}}
+#hud{position:absolute;left:10px;top:10px;font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--ink);background:rgba(255,255,255,.8);border-radius:10px;padding:3px 10px;pointer-events:none;max-width:calc(100% - 20px)}
+#load{position:absolute;inset:0;display:grid;place-content:center;justify-items:center;gap:6px;background:linear-gradient(180deg,#ff9f5a,#ffd9a6);transition:opacity .6s;font-weight:700;color:#fff;text-shadow:0 2px 4px rgba(0,60,120,.4)}
+#load.gone{opacity:0;pointer-events:none}
+#load .dropl{font-size:64px;animation:drip 1.1s ease-in infinite}
+@keyframes drip{0%{transform:translateY(-30px) scale(.8)}70%{transform:translateY(20px) scale(1,1)}85%{transform:translateY(24px) scale(1.25,.7)}100%{transform:translateY(-30px) scale(.8)}}
+#nogl{position:absolute;inset:0;display:grid;place-items:center;padding:20px;text-align:center;background:#dff3ff}
+h1{font-size:clamp(30px,6.5vw,52px);line-height:1.05;margin:18px 0 6px;text-wrap:balance;color:var(--sea);text-shadow:0 3px 0 #fff,0 5px 0 rgba(160,70,20,.2);letter-spacing:-.01em}
+.sub{color:var(--mut);margin:0 0 6px;max-width:65ch}
+.mascotline{background:var(--card);border:2px solid #fff;border-radius:18px 18px 18px 4px;padding:10px 14px;margin-top:10px;max-width:640px;box-shadow:0 4px 14px rgba(0,60,110,.1)}
+.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:14px;margin-top:20px}
+.zone{text-align:left;padding:14px;border-radius:20px;background:var(--card);border:3px solid #fff;display:flex;gap:12px;align-items:center;box-shadow:0 6px 0 var(--c),0 10px 20px rgba(0,60,110,.12)}
+.zone:hover:not(:disabled){transform:translateY(-4px) rotate(-.5deg);box-shadow:0 10px 0 var(--c),0 14px 24px rgba(0,60,110,.16)}
+.zone .ic{font-size:40px;width:62px;height:62px;display:grid;place-items:center;border-radius:18px;background:var(--c);flex:none;box-shadow:inset 0 -5px 0 rgba(0,0,0,.12)}
+.zone .zt{min-width:0}.zone b{display:block;font-size:17px}.zone small{color:var(--mut);display:block;font-size:12.5px}.zone .st{font-size:14px;letter-spacing:1px}
+.top{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:14px 0 8px}.top h2{margin:0;font-size:22px;flex:1;min-width:0}
+#tip{background:var(--card);border-radius:14px;padding:8px 12px;margin-bottom:10px;border:2px solid #fff}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px}
+.card{background:var(--card);border:3px solid #fff;border-radius:22px;padding:18px;animation:pop .35s ease;box-shadow:0 8px 24px rgba(0,60,110,.1)}
+@keyframes pop{from{opacity:.3;transform:translateY(10px) scale(.98)}}
+.card h3{margin:0 0 8px;color:var(--sea);font-size:21px}
+.card p{margin:0 0 8px;max-width:68ch}
+.seg{display:flex;gap:5px;margin-bottom:10px}.seg i{flex:1;height:7px;border-radius:9px;background:#f6e2c8}.seg i.d{background:var(--sea2)}.seg i.n{background:var(--lem)}
+.ln{color:var(--mut)}.ln.now{color:var(--ink);font-size:17px;border-left:4px solid var(--lem);padding-left:10px;animation:pop .35s ease}
+.nav{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:12px;color:var(--mut);flex-wrap:wrap}.nav.top{margin:0 0 8px}
+.tag{display:inline-block;font-size:11px;letter-spacing:.08em;text-transform:uppercase;border:2px solid var(--line);color:var(--sea);border-radius:999px;padding:1px 9px;margin-bottom:8px;font-weight:700}
+.ctl{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.ctl.mid{justify-content:center;margin-top:10px}
+.ctl input[type=range]{flex:1;min-width:180px;accent-color:var(--coral)}
+.ctl label{font-weight:700}
+.out{margin-top:12px;background:#fff7ec;border-radius:14px;padding:10px 12px;min-height:46px;border:2px solid var(--line)}
+.out.model{background:#fffbe8;border-color:#ffe7a0}
+.lead{font-weight:700;font-size:17px}
+.q{font-size:19px;font-weight:700;margin:0 0 12px}
+.opts{display:grid;gap:10px}.opts button{text-align:left}
+.ok{background:var(--okbg)!important;border-color:var(--leaf)!important;color:var(--ink)!important}
+.no{background:var(--nobg)!important;border-color:var(--coral)!important;animation:shake .3s}
+@keyframes shake{25%{transform:translateX(-6px)}75%{transform:translateX(6px)}}
+.bar{height:10px;background:#f6e2c8;border-radius:9px;overflow:hidden;margin-bottom:12px}.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--sea2),var(--leaf));transition:width .3s}
+.item{font-size:22px;font-weight:800;text-align:center;padding:20px 10px;background:linear-gradient(180deg,#fff,#fff1df);border:2px solid var(--line);border-radius:16px;margin-bottom:12px}
+.cats,.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}.two .tall{min-height:84px;font-size:17px;font-weight:700}
+.big{font-size:56px;text-align:center}.center{text-align:center}.mid{margin-inline:auto!important;text-align:center}.stars{font-size:34px;margin:4px 0!important;text-align:center;max-width:none!important}
+.ord{margin:4px 0 12px;padding-left:24px}.ord li{padding:6px 8px;margin:4px 0;border-radius:10px}.ord .okli{background:var(--okbg)}.ord .ask{background:#fff3cc;font-weight:700}
+.ans.list{display:grid;gap:8px}.ans.list button{text-align:left}.slips button{font-size:14px}
+.badge.wide{border-radius:10px;padding:0 8px;width:auto}
+.badge{display:inline-grid;place-items:center;min-width:28px;height:28px;border-radius:50%;background:var(--lem);color:var(--ink)}
+.dg{display:grid;grid-template-columns:repeat(6,1fr);grid-template-areas:". s1 s1 s2 s2 ." "sA sA sB sB sC sC" ". s3 s3 s4 s4 .";gap:8px;margin:6px 0 14px}
+.slot{border:2px dashed var(--sea2);border-radius:12px;padding:8px;text-align:center;font-weight:700;background:#fff;min-width:0}
+.slot.filled{border-style:solid;background:var(--okbg);border-color:var(--leaf)}.slot.ask{background:#fff3cc;border-color:var(--lem);animation:pulse2 1s infinite}
+@keyframes pulse2{50%{box-shadow:0 0 0 5px rgba(255,182,39,.35)}}
+.sA{grid-area:sA}.sB{grid-area:sB}.sC{grid-area:sC}.s1{grid-area:s1}.s2{grid-area:s2}.s3{grid-area:s3}.s4{grid-area:s4}
+.conf{position:fixed;top:-30px;z-index:9;font-size:24px;animation:fall 2.4s linear forwards;pointer-events:none}
+@keyframes fall{to{transform:translateY(110vh) rotate(540deg)}}
+@media (max-width:560px){#view{aspect-ratio:4/3}.lb{font-size:10px;padding:1px 5px;white-space:normal;max-width:46%;text-align:center}.lb.sm{font-size:9px}.lb.mascot{font-size:30px}.two{grid-template-columns:1fr}.item{font-size:19px}}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}.conf{display:none}}
+</style>
+<div class="wrap">
+<header><span class="brand">Saurabh's Eduverse · Class 6 Curiosity · Ch 9</span><span class="sp"></span><span class="pill" id="tot">⭐ 0</span><button id="snd" aria-label="Toggle sound">🔊</button></header>
+<div id="view"><canvas id="gl"></canvas><div id="labels"></div><div id="hud"></div><div id="load"><div class="dropl">🚂</div><p>The train is arriving…</p></div><div id="nogl" hidden>This device cannot show the 3D view (WebGL is off). The lessons, games and quizzes still work. 🚂</div></div>
+<section id="home">
+  <h1>Bharat ki Yatra 3D</h1>
+  <p class="sub">Methods of Separation in Everyday Life 🚂 · 9 stations, all open · every exercise question · Wise Fish game · a boss round 🏆</p>
+  <div class="mascotline">👦👧 <b>Malli & Valli:</b> Hop on our train! We're travelling across India and finding separation methods everywhere: in fields, kitchens, salt pans and even a carpenter's shop. Pick any stop! 🇮🇳</div>
+  <div class="grid" id="grid"></div>
+</section>
+<section id="zone" hidden>
+  <div class="top"><button id="back">🗺️ Levels</button><h2 id="zt"></h2></div>
+  <div id="tip"></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="panel"></div>
+</section>
+</div>
+<script>
+const $=s=>document.querySelector(s),KEY='eduverse_c6_ch9_separation';
+let save={stars:{}};try{Object.assign(save,JSON.parse(localStorage.getItem(KEY)||'{}'))}catch(e){}
+const persist=()=>{try{localStorage.setItem(KEY,JSON.stringify(save))}catch(e){}};
+let AC=null,mute=false;
+function beep(f,d=.12,type='sine',v=.08){if(mute)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();o.type=type;o.frequency.value=f;g.gain.value=v;g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+d);o.connect(g);g.connect(AC.destination);o.start();o.stop(AC.currentTime+d)}catch(e){}}
+const good=()=>{happyT=performance.now();beep(880,.08);setTimeout(()=>beep(1320,.14),70)},bad=()=>beep(170,.25,'sawtooth',.05),win=()=>[523,659,784,1047].forEach((f,i)=>setTimeout(()=>beep(f,.18),i*120));
+$('#snd').onclick=e=>{mute=!mute;e.currentTarget.textContent=mute?'🔇':'🔊'};
+function confetti(){const E=['🌾','🧂','🧲','⭐','🚂','🧈','🐟'];for(let i=0;i<30;i++){const s=document.createElement('span');s.className='conf';s.textContent=E[i%E.length];s.style.left=Math.random()*100+'vw';s.style.animationDelay=Math.random()*.6+'s';document.body.appendChild(s);setTimeout(()=>s.remove(),3300)}}
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[a[i],a[j]]=[a[j],a[i]]}return a};
+/* ---------- content: NCERT Curiosity Grade 6, Chapter 9: Methods of Separation in Everyday Life ---------- */
+const LV=[
+{id:'l1',st:0,ic:'✋',col:'#ffb35c',t:'Handpicking',s:"Haryana · Nani's courtyard",tip:"Our trip starts at Nani's house! Let's help pick stones out of the grains. 🌾",
+ learn:[
+ ["Bharat ki Yatra begins 🚂",["Malli and his sister Valli are going on a summer trip to visit relatives and friends across India. 🇮🇳","First halt: Nani's house in Haryana, surrounded by large fields. 🌾","In the courtyard, Mami, Mama and others are separating small stones and husk from the grains with their hands. ✋"],'map',{to:0}],
+ ["Why separate? 🤔",["Nani explains: we remove the stones so that the grains are fit for cooking. 🍚","When two or more substances are mixed together, we call it a mixture."],'courtyard',{}],
+ ["Handpicking ✋",["Picking small stones and husk out of wheat and rice by hand is called handpicking.","It works because the particles differ in size, colour and shape. 🔴🟤⚪","Handpicking is convenient when the particles to be removed are few and easy to pick."],'courtyard',{}],
+ ["Black pepper in the pulao 🍛",["At lunch, Malli picks the whole black peppers out of his hot vegetable pulao and puts them aside.","Valli teases: Wow! This is a handpicking method, nice one! 😄","Nani tells him about the benefits of black pepper and encourages him to eat it. 😋"],'courtyard',{pepper:1}]],
+ lab:[["🪨 Stones from grains",'courtyard',{},"Stones look different from grains in size, colour and shape, so we can pick them out by hand."],["🍛 Pepper from pulao",'courtyard',{pepper:1},"Malli handpicks the black peppers from his pulao."]],
+ game:{type:'tap'},
+ quiz:[
+ ["When two or more substances are mixed, it is called a…",["Mixture","Solution only","Grain","Husk"],"A mixture has two or more substances mixed together.","Text"],
+ ["Removing small stones from grains by hand is called…",["Handpicking","Threshing","Sieving","Churning"],"We pick them out with our hands.","Text"],
+ ["Handpicking works on the basis of differences in…",["Size, colour and shape","Taste and smell","Weight only","Temperature"],"We can see which particles are different.","Text"],
+ ["Handpicking is convenient when the particles to be removed are…",["Few and easy to pick","Very many and tiny","Dissolved in water","Invisible"],"Small quantities that are easy to see and pick.","Text"],
+ ["Why do Mami and Mama remove stones from the grains?",["So that the grains are fit for cooking","To make the grains heavier","To colour the grains","To grow more plants"],"Nani explains this to Malli and Valli.","Text"],
+ ["Malli took black peppers out of his pulao. This is…",["Handpicking","Winnowing","Decantation","Evaporation"],"Valli calls it a handpicking method.","Fig. 9.1"],
+ ["Where was Malli and Valli's first halt?",["Nani's house in Haryana","Shillong","Puducherry","Bhopal"],"Nani's house is surrounded by large fields.","Text"],
+ ["Which of these is best separated by handpicking?",["A few stones in a plate of rice","Salt in seawater","Mud in water","Butter in curd"],"A few large, visible particles can be picked out.","Text"]]},
+
+{id:'l2',st:0,ic:'🌬️',col:'#f2d15c',t:'Threshing & Winnowing',s:'Haryana · the wheat fields',tip:"So many grains stuck to stalks, and piles of husk! Let's see how farmers do it. 🌾",
+ learn:[
+ ["Threshing 🪵",["Mama takes them to the fields. Bundles of harvested wheat stalks lie there, and some are spread in the sun to dry. ☀️","Each stalk has many grains attached to it. 🌾","A group of farmers beat the stalks on a large wooden log to separate the grains.","Separating grains from the stalks is called threshing. Farmers sing folk songs while they work! 🎶"],'thresh',{}],
+ ["So much husk! 😮",["The separated grains get mixed with piles of husk.","Valli wonders: will farmers handpick the grains from so much husk? How long would that take? ⏳"],'thresh',{}],
+ ["Activity 9.1: Let us explore 🥜",["Rub a handful of roasted peanuts between your palms. The skins come off.","Now blow on them. 💨 The light skins fly away and the heavier peanuts stay.","Blowing air separates the heavier and the lighter components."],'winnow',{peanut:1}],
+ ["Winnowing with a soop 🌬️",["Traditionally a soop (bamboo tray) is used to separate heavy and light parts of a mixture.","A farmer on a raised platform moves the soop with threshed wheat in the direction of the wind.","Heavier grains fall straight down into a heap. Lighter husk is blown away. 🍂","Separating heavier and lighter components by wind or blowing air is called winnowing."],'winnow',{}],
+ ["Threshers ⚙️",["Machines called threshers separate grains from the stalks and husk. 🚜","They do threshing and winnowing at the same time!","Valli cannot winnow rice in a closed room. How can you help? Use a fan or blow air! 🌀"],'thresh',{machine:1}]],
+ lab:[["🪵 Threshing",'thresh',{},"Beating the stalks on a log separates the grains from the stalks."],["🌬️ Winnowing",'winnow',{},"The wind blows the light husk away; the heavy grains fall straight down into a heap."],["🥜 Peanut skins",'winnow',{peanut:1},"<b>Activity 9.1.</b> Blowing air carries away the light peanut skins."],["⚙️ Thresher machine",'thresh',{machine:1},"A thresher does threshing and winnowing at the same time."]],
+ game:{type:'order',title:'🌾 Put the farm steps in order: from field to clean grains',items:["Harvest the wheat stalks 🌾","Spread the stalks in the sun to dry ☀️","Beat the stalks on a log: threshing 🪵","Move the soop in the wind: winnowing 🌬️","Clean grains are ready! ✨"]},
+ quiz:[
+ ["Beating stalks to separate the grains is called…",["Threshing","Winnowing","Sieving","Churning"],"Farmers beat the stalks on a wooden log.","Fig. 9.2"],
+ ["Separating heavier and lighter components by wind or blowing air is…",["Winnowing","Threshing","Handpicking","Filtration"],"The wind carries away the light husk.","Fig. 9.4"],
+ ["During winnowing, which part is blown away?",["Husk (lighter)","Grains (heavier)","Both","Neither"],"Grains are heavier and fall in a heap.","Fig. 9.4"],
+ ["A soop is a…",["Bamboo tray","Metal sieve","Clay pot","Magnet"],"It is used for winnowing.","Fig. 9.3"],
+ ["In Activity 9.1, blowing on rubbed peanuts…",["Blows the light skins away","Blows the peanuts away","Melts the peanuts","Does nothing"],"Lighter skins fly off; peanuts stay.","Activity 9.1"],
+ ["Threshers are machines that do…",["Threshing and winnowing together","Only churning","Only sieving","Magnetic separation"],"They separate grains from stalks and husk.","More to know!"],
+ ["Valli cannot winnow rice in a closed room. What can help?",["A fan or blowing air","A magnet","A sieve with no holes","Adding water"],"Winnowing needs moving air.","In-text"],
+ ["Why can't farmers simply handpick grains from the husk?",["There is far too much husk; it would take too long","Husk is magnetic","Grains dissolve in husk","Husk is invisible"],"Handpicking suits small quantities only.","Text"]]},
+
+{id:'l3',st:0,ic:'🥣',col:'#e9c79a',t:'Sieving',s:"Haryana · Mami's kitchen",tip:"Meethi puri for the train! First, the flour needs cleaning. 🫓",
+ learn:[
+ ["Meethi puri for the journey 🫓",["Next day, Malli and Valli will board a train to Ahmedabad.","Valli asks Mami to make meethi puri (sweet Indian bread made from wheat flour).","Mami: first we need to remove the bran that may be present in the flour."],'sieve',{}],
+ ["Sieving 🥣",["Mami uses a sieve.","Fine flour particles pass through the holes of the sieve. ⬇️","Bigger particles like bran and small stones stay on the sieve.","Sieving is used when the parts of a solid–solid mixture have different sizes."],'sieve',{}],
+ ["Look closely 🔍",["Are all the holes of a sieve the same size?","Sieving works only if the particles that must pass through are smaller than the holes.","Builders use big sieves at construction sites to separate pebbles and stones from sand. 🏗️"],'sieve',{sand:1}],
+ ["Puffed rice puzzle 🍿",["A small amount of puffed rice is mixed with chana dal.","Can you separate it in a way other than handpicking?","Puffed rice is very light, so blowing air (winnowing) can carry it away from the heavier dal. 🌬️"],'winnow',{puff:1}]],
+ lab:[["🥣 Flour sieve",'sieve',{},"Fine flour falls through the holes; bran and small stones stay on the sieve."],["🏗️ Sand sieve",'sieve',{sand:1},"At a construction site, sand passes through the big sieve and pebbles stay behind."],["🍿 Puffed rice",'winnow',{puff:1},"Light puffed rice blows away from the heavier chana dal."]],
+ game:{type:'sort',cats:['🥣 Stays on the sieve','⬇️ Passes through'],items:[["Bran in flour",0],["Fine wheat flour",1],["Small stones in flour",0],["Pebbles at a building site",0],["Fine sand at a building site",1],["Big lumps in flour",0],["Fine rice flour",1]]},
+ quiz:[
+ ["Separating solids of different sizes using a sieve is called…",["Sieving","Winnowing","Filtration","Evaporation"],"Small particles pass through the holes.","Fig. 9.5"],
+ ["When flour is sieved, which part stays on the sieve?",["Bran and small stones","Fine flour","Water","Nothing"],"Bigger particles cannot pass through.","Text"],
+ ["Sieving is used when the components of a solid–solid mixture differ in…",["Size","Colour only","Smell","Temperature"],"Holes let only small particles through.","Text"],
+ ["Sieving will NOT work if the holes are…",["Bigger than all the particles","Smaller than the big particles","Of the right size","Clean"],"Then everything falls through.","Text"],
+ ["At construction sites, sieves separate…",["Pebbles and stones from sand","Iron from wood","Salt from water","Butter from curd"],"Sand passes; pebbles stay.","In-text"],
+ ["Why did Mami sieve the flour?",["To remove the bran before making meethi puri","To make it wet","To make it magnetic","To dissolve it"],"Bran stays on the sieve.","Text"],
+ ["A little puffed rice is mixed with chana dal. A method other than handpicking is…",["Winnowing","Magnetic separation","Churning","Decantation"],"Puffed rice is very light.","In-text"],
+ ["Where are Malli and Valli going next by train?",["Ahmedabad","Shillong","Bhopal","Delhi"],"To visit Ghanshyam bhai.","Text"]]},
+
+{id:'l4',st:1,ic:'🧂',col:'#9fd8ff',t:'Evaporation',s:'Ahmedabad · salt from the sea',tip:"Where does our namak come from? From the sea! Let's find out how. 🌊",
+ learn:[
+ ["Sabarmati Ashram 🏛️",["In Ahmedabad, Malli and Valli visit Sabarmati Ashram with their father's friend Ghanshyam bhai.","They learn about the Namak Satyagraha (Dandi March). 🧂","Malli asks: where is namak (common salt) obtained from? Ghanshyam bhai replies: from seawater! 🌊"],'map',{to:1}],
+ ["Salt from seawater 🌊",["Seawater is a mixture of salts and some other substances dissolved in water.","It is kept in shallow pits and exposed to sunlight and air. ☀️","In a few days the water evaporates completely, leaving a solid mixture behind.","Common salt is then obtained from it by further purification. Sambhar Lake in Rajasthan is another salt source."],'saltpan',{}],
+ ["Activity 9.2: Salt art 🎨",["Dissolve 2–3 teaspoons of salt in half a bowl of water.","Spread a few drops of the solution on thick black paper and let it dry.","White patches appear! The water evaporated and left the salt behind. ✨","This is why white patches form on dark clothes after sweating in hot summers. 😓"],'paper',{}],
+ ["Activity 9.3: China dish ⚗️",["Your teacher heats salt solution in a china dish on a wire gauze over a spirit lamp. ⚠️ Be careful!","The water boils away. Let the dish cool down.","Salt is left in the dish! Evaporation separates a solid dissolved in a liquid."],'chinadish',{}],
+ ["Salt AND water? 🫖",["Malli: is there a way to get back both the salt and the water?","Yes! The steam touches a cold plate and condenses into water drops that drip into a glass. 💧","Ayurveda: medicinal herbs are dried in the shade so the extra water evaporates, leaving the useful part. 🌿"],'chinadish',{kettle:1}]],
+ lab:[["🌊 Salt pans",'saltpan',{},"Sun and air evaporate the seawater in shallow pits; the salt mixture is left behind."],["🎨 Black paper",'paper',{},"<b>Activity 9.2.</b> As the drops dry, white salt patches appear."],["⚗️ China dish",'chinadish',{},"<b>Activity 9.3.</b> Heating boils away the water and leaves the salt."],["💧 Salt + water",'chinadish',{kettle:1},"Steam condenses on a cold plate, so we can collect the water as well."]],
+ game:{type:'order',title:'🧂 Put the salt-making steps in order',items:["Seawater is let into shallow pits 🌊","Sunlight and air evaporate the water ☀️","A solid mixture is left behind ⬜","Further purification gives common salt 🧂"]},
+ quiz:[
+ ["How is common salt obtained from seawater?",["The water is evaporated in shallow pits","By sieving the sea","By churning seawater","With a magnet"],"Sun and air evaporate the water.","Fig. 9.6"],
+ ["Seawater is…",["A mixture of salts and other substances dissolved in water","Pure water","Only salt","A gas"],"Salts are dissolved in it.","Text"],
+ ["In Activity 9.2, what is left on the black paper after drying?",["Salt (white patches)","Water","Nothing","Ink"],"The water evaporates.","Activity 9.2"],
+ ["White patches on dark clothes in summer are formed because…",["Sweat evaporates and leaves salt behind","The clothes melt","Dust sticks to them","Sunlight paints them"],"Sweat has salt dissolved in it.","In-text"],
+ ["Evaporation can be used to separate…",["A solid dissolved in a liquid","Iron from sawdust","Stones from rice","Husk from grains"],"The liquid goes away as vapour.","Summary"],
+ ["To get back BOTH salt and water, we also need…",["Condensation of the steam","Winnowing","Sieving","Threshing"],"Cool the vapour to turn it back into water.","In-text"],
+ ["A lake in Rajasthan that is a source of common salt is…",["Sambhar Lake","Dal Lake","Chilika Lake","Loktak Lake"],"Named in the More to do! box.","More to do!"],
+ ["Why are Ayurvedic herbs dried in the shade?",["So excess water evaporates, leaving the useful part","To make them magnetic","To make them heavier","To dissolve them"],"Drying removes water by evaporation.","Do you know?"]]},
+
+{id:'l5',st:2,ic:'☕',col:'#c9925a',t:'Sedimentation & Decantation',s:"Puducherry · Dadi's tea time",tip:"Tea time with Dadi! But how do we get rid of the tea leaves? 🍃",
+ learn:[
+ ["Tea time in Puducherry ☕",["Malli and Valli visit Dada and Dadi in Puducherry and meet their friend Balan.","It is Dadi's tea time, and Dada makes tea with the children's help. 🫖","Balan asks: after making tea, how do you remove the tea leaves?"],'map',{to:2}],
+ ["No strainer? No problem! 🫖",["Leave the saucepan undisturbed for some time.","The heavier tea leaves settle at the bottom. This is sedimentation. ⬇️","Then gently tilt the pan and pour the tea into a cup.","Removing the liquid by tilting the vessel is called decantation."],'tea',{}],
+ ["Not perfect 😅",["Dada: I can still get a few tea leaves in my mouth!","Decantation does not separate all the tea leaves.","Balan: so it is not a proper method of separation."],'tea',{}],
+ ["Washing rice 🍚",["Decantation is also used when washing and cleaning rice and pulses.","The grains settle and the dirty water is poured off."],'tea',{rice:1}],
+ ["Oil and water 🫗",["Oil does not mix with water; it forms a separate layer when left undisturbed.","We can separate them by decantation: carefully pour off the top oil layer."],'tea',{oil:1}]],
+ lab:[["☕ Tea leaves settle",'tea',{},"<b>Sedimentation</b>: the heavy leaves settle. <b>Decantation</b>: tilt the pan and pour off the tea."],["🍚 Washing rice",'tea',{rice:1},"The rice settles; the dirty water is decanted."],["🫗 Oil on water",'tea',{oil:1},"Oil floats in a separate layer on top of water, so it can be poured off."]],
+ game:{type:'tf',items:[["Heavier tea leaves settle at the bottom when the pan is left undisturbed.",true,"This settling is sedimentation."],["Pouring off the liquid by tilting the vessel is decantation.",true,"Dada tilts the pan to pour the tea."],["Decantation removes every single tea leaf.",false,"Dada still gets a few leaves; it is not a complete separation."],["Decantation is used while washing rice and pulses.",true,"Grains settle and the water is poured off."],["Oil mixes completely with water.",false,"Oil forms a separate layer on top."],["Sedimentation means heavier insoluble parts settle at the bottom of a liquid.",true,"Like tea leaves or mud."]]},
+ quiz:[
+ ["The settling of heavier insoluble components at the bottom of a liquid is…",["Sedimentation","Decantation","Evaporation","Churning"],"Tea leaves sink to the bottom.","Text"],
+ ["Removing a liquid by tilting the vessel is called…",["Decantation","Sedimentation","Winnowing","Sieving"],"Dada gently pours the tea into the cup.","Fig. 9.9"],
+ ["Which comes first?",["Sedimentation, then decantation","Decantation, then sedimentation","Both at the same time","Neither is needed"],"The solid must settle before we pour.","Text"],
+ ["Why is decantation 'not a proper method' for tea?",["A few tea leaves still come with the tea","It takes no time","It removes the milk","It boils the tea"],"It does not separate all the leaves.","Text"],
+ ["Decantation is also used while…",["Washing rice and pulses","Churning curd","Picking stones","Threshing wheat"],"The dirty water is poured off.","Text"],
+ ["Which method separates oil from water?",["Decantation","Sieving","Threshing","Handpicking"],"Oil forms a separate layer on top.","In-text"],
+ ["Where do Dada and Dadi live?",["Puducherry","Haryana","Shillong","Ahmedabad"],"Located in southern India.","Text"],
+ ["Mud settles at the bottom of a bucket of muddy water left still. This is…",["Sedimentation","Evaporation","Churning","Magnetic separation"],"Heavier insoluble particles settle.","Summary"]]},
+
+{id:'l6',st:2,ic:'🫖',col:'#7fc8a9',t:'Filtration',s:'Puducherry · strainers, cloth and filter paper',tip:"Strainers, cloth, filter paper… and a fishing net! 🎣",
+ learn:[
+ ["The tea strainer 🫖",["Malli picks up the tea strainer and gives it to Dada.","Dada pours the tea through it. All the tea leaves are collected in the strainer!","This process of separating tea leaves from tea is called filtration."],'tea',{strain:1}],
+ ["Cloth as a filter 🧣",["Balan asks: can a tea strainer filter muddy water? Dada says to try a piece of cloth too.","Cloth has very small holes (pores) between its woven threads, so it can work as a filter.","People in ancient times also did this. How many layers of cloth do you need for clear water? 🤔"],'filter',{cloth:1}],
+ ["Activity 9.4: Filter paper 📄",["If the water is still muddy, use a filter with even smaller pores, like filter paper.","Fold a filter paper twice to make a cone. Place it in a funnel on a conical flask.","Pour in the muddy water.","Mud stays on the paper as the residue. Clear water collects in the flask as the filtrate. ✨"],'filter',{}],
+ ["Other filters 🪨",["Cotton, charcoal and sand can also be used as filters.","The choice of filter depends on the size of the particles to be removed.","Activity 9.5: design and create a low-cost water filter for pond water! 💡","Tea bags were first made of silk, then gauze or muslin, and now filter paper. 🍵"],'filter',{}],
+ ["The fishing net 🎣",["On a boat ride with Otukkam the fisherman, water drains out through the net's mesh. That is like filtration!","But the net also traps plastic bags, broken bottles, food wrappers and a fish with a straw in its mouth. 😢","Stop plastic pollution at the source. Rivers are our huge resource. 💙"],'net',{}]],
+ lab:[["📄 Filter paper",'filter',{},"<b>Activity 9.4.</b> Mud stays on the filter paper (residue); clear water drips into the flask (filtrate)."],["🧣 Cloth filter",'filter',{cloth:1},"Small pores between the threads of a cloth hold back mud."],["🫖 Tea strainer",'tea',{strain:1},"The strainer holds the tea leaves; the tea passes through."],["🎣 Fishing net",'net',{},"Water drains through the mesh, but fish and plastic waste stay in the net."]],
+ game:{type:'label3d',scene:'filter',marks:{'Filter paper':[-.55,1.68,0],'Funnel':[.5,1.3,0],'Muddy water':[0,1.95,0],'Tripod stand':[.75,.55,.45],'Conical flask':[-.65,.45,.35],'Filtrate':[0,.12,.5],'Residue':[0,1.4,.35]}},
+ quiz:[
+ ["Separating tea leaves from tea with a strainer is called…",["Filtration","Decantation","Churning","Winnowing"],"The leaves stay in the strainer.","Text"],
+ ["Why can a piece of cloth work as a filter?",["It has very small pores between its threads","It is magnetic","It is waterproof","It is heavy"],"Tiny holes hold back larger particles.","Text"],
+ ["In Activity 9.4, the mud left on the filter paper is called the…",["Residue","Filtrate","Solution","Vapour"],"It stays behind on the paper.","Activity 9.4"],
+ ["The clear water collected in the conical flask is the…",["Filtrate","Residue","Husk","Sediment"],"It passed through the filter.","Activity 9.4"],
+ ["Filtration separates…",["Insoluble solids from a liquid","Salt dissolved in water","Iron from sawdust","Butter from curd"],"Dissolved salt passes through a filter.","Summary"],
+ ["Which of these can also be used as a filter?",["Cotton, charcoal and sand","Iron nails","Butter","Salt"],"Choice depends on the size of the particles.","More to know!"],
+ ["Today, most tea bags are made of…",["Filter paper","Silk","Plastic","Iron"],"Earlier they were silk, then gauze or muslin.","Do you know?"],
+ ["Water drains through a fishing net but fish stay. This is similar to…",["Filtration","Evaporation","Churning","Threshing"],"The mesh works like a filter.","Text"],
+ ["Milk has gone sour. To make paneer from it, the solid is separated from the liquid by…",["Straining it through a cloth (filtration)","Winnowing","Magnetic separation","Threshing"],"The cloth holds back the paneer.","Discuss"]]},
+
+{id:'l7',st:3,ic:'🧈',col:'#ffe07a',t:'Churning',s:'Bhopal · chhach at the dhaba',tip:"Fresh chhach on a hot morning! And a painting with a secret. 🖼️",
+ learn:[
+ ["Chhach at the dhaba 🥛",["The train reaches Bhopal in Madhya Pradesh. The sun is rising and it is getting hot. ☀️","On the way to Maasi's home, they drink chhach (buttermilk) at a dhaba (roadside eatery).","Malli asks about a big painting on the dhaba wall. 🖼️"],'map',{to:3}],
+ ["Churning 🧈",["The painting shows a lady churning curd with a big mathni (churner).","Churning separates butter from curd.","Butter is lighter, so it floats at the top. Buttermilk is left behind. ✨"],'churn',{}],
+ ["Electric churning ⚡",["Which kitchen appliance that runs on electricity can make buttermilk?","A mixer or blender spins very fast and churns too! 🌀"],'churn',{fast:1}]],
+ lab:[["🧈 Mathni churning",'churn',{},"The spinning mathni churns the curd; light butter floats up to the top."],["⚡ Fast churning",'churn',{fast:1},"A mixer churns much faster than a hand mathni."]],
+ game:{type:'tf',items:[["Churning curd separates butter from it.",true,"Butter floats at the top."],["Butter is heavier, so it sinks.",false,"Butter is lighter and floats at the top."],["Buttermilk (chhach) is left behind after the butter is taken out.",true,"Malli and Valli drink chhach at the dhaba."],["A mathni is a churner.",true,"The lady in the painting uses a big mathni."],["Churning is used to separate iron from sawdust.",false,"That is magnetic separation."]]},
+ quiz:[
+ ["Churning is used to…",["Extract butter from curd","Separate salt from water","Remove stones from rice","Separate husk from grains"],"The mathni churns the curd.","Summary"],
+ ["During churning, butter…",["Floats at the top because it is lighter","Sinks because it is heavier","Dissolves completely","Turns into salt"],"Buttermilk is left below.","Text"],
+ ["Which substances are commonly separated using churning?",["Cream from milk","Oil from water","Sand from water","Oxygen from air"],"Exercise Q2: option (iii).","Exercise"],
+ ["The big churner in the painting is called a…",["Mathni","Soop","Sieve","Tawa"],"It is used to churn curd.","Text"],
+ ["What did Malli and Valli drink at the dhaba?",["Chhach (buttermilk)","Tea","Lemonade","Coconut water"],"On their way to Maasi's home.","Text"],
+ ["An electric kitchen appliance that can make buttermilk is a…",["Mixer or blender","Toaster","Electric iron","Bulb"],"It spins fast to churn.","In-text"],
+ ["Bhopal is in…",["Madhya Pradesh","Meghalaya","Gujarat","Haryana"],"The train reaches Bhopal.","Text"]]},
+
+{id:'l8',st:4,ic:'🧲',col:'#ff7f7f',t:'Magnetic Separation',s:'Shillong · the carpenter',tip:"Oops, nails in the sawdust! Our magnet will save the day. 🧲",
+ learn:[
+ ["The carpenter 🪚",["The final stop is Shillong, the capital of Meghalaya. 🏔️","At Bua's house, a carpenter is making a wooden door.","He accidentally drops a few iron nails into the sawdust and starts handpicking them."],'map',{to:4}],
+ ["Magnet to the rescue 🧲",["The children tell him to wait. They get a magnet from Bua.","They ask the carpenter to move the magnet through the sawdust.","All the nails get attracted to it! ✨"],'magnet',{}],
+ ["Magnetic separation",["Substances attracted towards a magnet are called magnetic substances. Iron is a common example.","Separating magnetic and non-magnetic substances by using a magnet is called magnetic separation."],'magnet',{}],
+ ["Magnets in recycling ♻️",["Recyclers use magnets fitted to cranes to separate scrap iron from heaps of waste. 🏗️","The scrap iron can be recycled and reused."],'magnet',{crane:1}]],
+ lab:[["🪚 Nails in sawdust",'magnet',{},"Iron nails are magnetic and jump to the magnet. Sawdust is non-magnetic and stays."],["🏗️ Scrap crane",'magnet',{crane:1},"A big magnet on a crane lifts iron scrap from a heap of waste."]],
+ game:{type:'sort',cats:['🧲 Sticks to a magnet','🚫 Does not stick'],items:[["Iron nails",0],["Sawdust",1],["Iron pins",0],["Scrap iron",0],["Wood",1],["Plastic bag",1],["Iron powder",0],["Paper",1]]},
+ quiz:[
+ ["Substances attracted towards a magnet are called…",["Magnetic substances","Non-magnetic substances","Liquids","Mixtures"],"Iron is a common example.","Text"],
+ ["Separating magnetic and non-magnetic substances with a magnet is…",["Magnetic separation","Filtration","Sieving","Churning"],"Like nails from sawdust.","Text"],
+ ["Which is a magnetic substance?",["Iron","Wood","Plastic","Sawdust"],"Iron is attracted to magnets.","Text"],
+ ["Recyclers separate scrap iron from waste using…",["Magnets fitted to cranes","Sieves","Fans","Filter paper"],"The iron is recycled and reused.","More to know!"],
+ ["Iron powder mixed with sawdust is best separated by…",["Magnetic separation","Decantation","Evaporation","Winnowing"],"Exercise Q5 (iv).","Exercise"],
+ ["The last stop of the Bharat ki Yatra was…",["Shillong","Bhopal","Puducherry","Ahmedabad"],"The capital of Meghalaya.","Text"],
+ ["The carpenter first tried to pick the nails by hand. Why was the magnet better?",["It attracted all the nails quickly","It made the nails heavier","It burnt the sawdust","It dissolved the nails"],"All the nails got attracted to it.","Text"]]},
+
+{id:'l9',st:5,ic:'🐟',col:'#7aa8ff',t:'Wise Fish Review',s:'Activity 9.6 baskets · Wise Fish game · summary',tip:"Back home! Let's play the textbook's games: two baskets and Wise Fish! 🎣",
+ learn:[
+ ["Why do we separate? 🧺",["To remove a component that is not useful, like stones from pulses. 🪨","To separate two different but useful components, like butter and buttermilk. 🧈🥛"],'baskets',{}],
+ ["Methods for solids ✋🌬️🥣",["Handpicking: by size, colour and shape.","Threshing: beating stalks to separate the grains.","Winnowing: lighter husk is separated from heavier grains by wind or blowing air.","Sieving: separating solids by particle size using a sieve."],'map',{hub:1}],
+ ["Methods with liquids 💧",["Evaporation: a liquid turns into vapour; it separates a solid dissolved in a liquid.","Sedimentation: heavier insoluble parts settle. Decantation: the liquid is poured off by tilting.","Filtration: separates insoluble solids from a liquid.","Churning: extracts butter from curd."],'map',{hub:1}],
+ ["Magnets and mixed mixtures 🧲",["Magnetic separation: magnetic and non-magnetic substances are separated by a magnet.","A mixture with more than two components needs a combination of methods! 🧠"],'tank',{}]],
+ lab:[["🐟 Wise Fish tank",'tank',{},"<b>Wise Fish.</b> Each red fish carries the name of a method. Catch it with the magnet rod, then find its blue slip."],["🧺 Two baskets",'baskets',{},"<b>Activity 9.6.</b> Basket 1: remove a part that is not useful. Basket 2: separate two useful parts."]],
+ game:{type:'combo',parts:[
+  {type:'sort',title:'🧺 Activity 9.6: Which basket?',cats:['🗑️ Remove a part that is not useful','🤝 Separate two useful parts'],items:[["Separating small stones from pulses",0],["Churning curd to obtain butter",1],["Taking out green chillies from cooked dalia or poha",0],["Taking out seeds from watermelon",0],["Sorting piles of sawdust and iron nails from building material",1],["Picking marigold flowers from a heap of other flowers",1],["Separating coconut pieces from rice flour",1]]},
+  {type:'fish',pairs:[["Filtration","insoluble particles get filtered as residue"],["Decantation","mixture of oil and water"],["Condensation","conversion of water vapour into its liquid state"],["Handpicking","larger particles are handpicked"],["Churning","extract butter from curd"],["Evaporation","separate salt from seawater"],["Winnowing","lighter component of mixture is separated by blowing air"],["Sedimentation","heavier particles settle down"],["Sieving","difference in size of solid particles"],["Threshing","beating stalks to remove grains"],["Magnetic separation","difference in magnetic properties"]]}]},
+ quiz:[
+ ["Stones from rice: which purpose does this separation serve?",["Removing a part that is not useful","Separating two useful parts","Neither","Both equally"],"Stones are not useful in food.","Activity 9.6"],
+ ["Butter and buttermilk: which purpose?",["Separating two useful parts","Removing a part that is not useful","Neither","Making a solution"],"Both are useful.","Activity 9.6"],
+ ["A mixture with more than two components needs…",["A combination of several methods","Only handpicking","Only a magnet","No separation"],"Hint in Think like a scientist.","Learning further"],
+ ["Which method uses differences in particle size and a tool with holes?",["Sieving","Churning","Evaporation","Decantation"],"Small particles pass through.","Summary"],
+ ["'Difference in magnetic properties' matches…",["Magnetic separation","Filtration","Sieving","Winnowing"],"From the Wise Fish tanks.","Wise Fish"],
+ ["'Heavier particles settle down' matches…",["Sedimentation","Decantation","Churning","Threshing"],"From the Wise Fish tanks.","Wise Fish"],
+ ["Which is NOT a method of separation listed in this chapter?",["Photosynthesis","Winnowing","Sieving","Churning"],"Photosynthesis is how plants make food.","Keywords"],
+ ["To separate salt from salt solution, use…",["Evaporation","Sieving","Handpicking","A magnet"],"Activity 9.6, slip 10.","Activity 9.6"]]}
+];
+const STATIONS=[['Haryana','🌾'],['Ahmedabad','🧂'],['Puducherry','☕'],['Bhopal','🧈'],['Shillong','🧲'],['Home','🏡']];
+
+/* "Let us enhance our learning": every exercise question, grouped by tab. o[0] is the textbook answer; ok[] marks other acceptable options; fix keeps the option order. */
+const EXS={
+ mcq:{t:'Q1–3 · Choose',items:[
+  {n:'1',q:"What purpose does handpicking serve in the process of separation?",o:["(ii) Sorting","(i) Filtration","(iii) Evaporation","(iv) Decantation"],a:"Handpicking is a way of <b>sorting</b>: we pick out particles that look different in size, colour and shape.",sc:['courtyard',{}]},
+  {n:'2',q:"Which of the following substances are commonly separated using the churning method?",o:["(iii) Cream from milk","(i) Oil from water","(ii) Sand from water","(iv) Oxygen from air"],a:"Churning separates the lighter <b>cream/butter</b> from milk or curd. Oil and water are decanted; sand and water are filtered.",sc:['churn',{}]},
+  {n:'3',q:"Which factor is usually essential for the filtration?",o:["(iii) Pore size","(i) Apparatus size","(ii) Presence of air","(iv) Temperature of the mixture"],a:"The <b>pore size</b> of the filter decides which particles are held back and which pass through.",sc:['filter',{}]}]},
+ tf:{t:'Q4 · True or False',items:[
+  {n:'4 (i)',q:"Salt can be separated from salt solution by keeping it under the Sun.",o:["True","False"],fix:1,a:"<b>True.</b> The Sun's heat evaporates the water and the salt is left behind, as in salt pans.",sc:['saltpan',{}]},
+  {n:'4 (ii)',q:"Handpicking should be used only when the quantity of one component is less.",o:["True","False"],fix:1,a:"<b>True.</b> Handpicking is convenient only when the particles to be removed are few and easy to pick (and look different in size, colour or shape).",sc:['courtyard',{}]},
+  {n:'4 (iii)',q:"A mixture of puffed rice and rice grains can be separated by threshing.",o:["False","True"],fix:1,a:"<b>False.</b> Threshing separates grains from stalks. Correct: puffed rice and rice grains can be separated by <b>winnowing</b> (puffed rice is lighter) or sieving.",sc:['winnow',{puff:1}]},
+  {n:'4 (iv)',q:"A mixture of mustard oil and lemon water can be separated by decantation.",o:["True","False"],fix:1,a:"<b>True.</b> Mustard oil does not mix with lemon water and floats on top, so the oil layer can be poured off.",sc:['tea',{oil:1}]},
+  {n:'4 (v)',q:"Sieving is used to separate a mixture of rice flour and water.",o:["False","True"],fix:1,a:"<b>False.</b> Sieving separates solids of different sizes. Correct: rice flour and water can be separated by <b>filtration</b> (or by letting it settle and decanting).",sc:['filter',{}]}]},
+ match:{t:'Q5 · Match',items:[
+  {n:'5 (i)',q:"Gram flour mixed with black gram →",o:["(d) Sieving","(a) Handpicking","(b) Magnetic separation","(c) Decantation","(e) Filtration"],fix:1,ok:[1],a:"<b>Sieving (d)</b>: fine gram flour passes through; whole black gram stays on the sieve. (Handpicking the black gram also works.)",sc:['sieve',{}]},
+  {n:'5 (ii)',q:"Chalk powder mixed with water →",o:["(e) Filtration","(a) Handpicking","(b) Magnetic separation","(c) Decantation","(d) Sieving"],fix:1,a:"<b>Filtration (e)</b>: insoluble chalk stays on the filter paper as residue.",sc:['filter',{}]},
+  {n:'5 (iii)',q:"Corn mixed with potatoes →",o:["(a) Handpicking","(b) Magnetic separation","(c) Decantation","(d) Sieving","(e) Filtration"],fix:1,a:"<b>Handpicking (a)</b>: potatoes and corn are big and look very different.",sc:['courtyard',{}]},
+  {n:'5 (iv)',q:"Iron powder mixed with sawdust →",o:["(b) Magnetic separation","(a) Handpicking","(c) Decantation","(d) Sieving","(e) Filtration"],fix:1,a:"<b>Magnetic separation (b)</b>: the magnet attracts the iron powder.",sc:['magnet',{}]},
+  {n:'5 (v)',q:"Oil mixed with water →",o:["(c) Decantation","(a) Handpicking","(b) Magnetic separation","(d) Sieving","(e) Filtration"],fix:1,a:"<b>Decantation (c)</b>: oil floats as a separate layer and is poured off.",sc:['tea',{oil:1}]}]},
+ think:{t:'Q6–9 · Think',items:[
+  {n:'6',q:"In what situations would you use decantation instead of filtration to separate solids from liquids?",o:["When the solid is heavy and settles quickly at the bottom, like washing rice or pulses","When the solid is dissolved, like salt in water","When the solid is very light and floats everywhere","When there is no liquid at all"],a:"Use decantation when the insoluble solid is <b>heavy and settles down</b> (sedimentation) and we only need roughly clear liquid quickly, for example washing rice, pulses, or pouring tea off settled leaves. It is quicker and needs no filter.",sc:['tea',{rice:1}]},
+  {n:'7',q:"Can you relate the presence of nasal hair to any separation process?",o:["Filtration: nasal hair traps dust and germs from the air we breathe","Evaporation of air","Churning of air","Magnetic separation"],a:"Nasal hair works like a <b>filter</b>. It traps dust particles and germs so that cleaner air goes into our lungs.",sc:['filter',{cloth:1}]},
+  {n:'8',q:"During the COVID-19 pandemic, all of us wore masks. What are they made of, and what is their role?",o:["Layers of cloth or non-woven fabric with tiny pores that filter out droplets, dust and germs","Iron, to attract germs like a magnet","Plastic sheets with no pores","Paper that dissolves germs"],a:"Masks are made of <b>layers of cotton cloth or non-woven fabric</b>. Their tiny pores work as a <b>filter</b>, stopping droplets, dust and germs while letting air pass.",sc:['filter',{cloth:1}]},
+  {n:'9',q:"A mixture of potatoes, salt and sawdust is given. Which stepwise procedure separates each component?",o:["Handpick potatoes → add water to dissolve the salt → filter out the sawdust → evaporate the water to get salt","Evaporate first → then use a magnet → then churn","Sieve everything at once","Use a magnet to pick out the potatoes"],a:"1️⃣ <b>Handpick</b> the big potatoes. 2️⃣ Add <b>water</b> and stir: salt dissolves, sawdust does not. 3️⃣ <b>Filter</b> (sawdust stays as residue; it floats, so it can also be skimmed or decanted). 4️⃣ <b>Evaporate</b> the filtrate to get the salt back.",sc:['chinadish',{}]}]},
+ leela:{t:'Q10 · Intelligent Leela',items:[
+  {n:'10 a',q:"Leela realised they had left their drinking water at home. Before her father felt ____ …",o:["thirsty","hungry"],fix:1,a:"<b>thirsty</b>: they had no drinking water.",sc:['net',{pond:1}]},
+  {n:'10 b',q:"…she went to the nearby pond to fetch some ____.",o:["water","grains"],fix:1,a:"<b>water</b>.",sc:['net',{pond:1}]},
+  {n:'10 c',q:"She noticed that the water was muddy and ____ for drinking.",o:["unfit","fit"],fix:1,a:"<b>unfit</b>: muddy water is not safe to drink.",sc:['net',{pond:1}]},
+  {n:'10 d',q:"To purify it, she kept it for some time and then she ____ the muddy water…",o:["filtered","churned"],fix:1,a:"<b>filtered</b> (after letting the mud settle).",sc:['filter',{cloth:1}]},
+  {n:'10 e',q:"…using a piece of ____.",o:["muslin cloth","paper"],fix:1,a:"<b>muslin cloth</b>: its fine pores hold back the mud.",sc:['filter',{cloth:1}]},
+  {n:'10 f',q:"Leela then ____ the water for about 10 minutes in a covered pan.",o:["boiled","cooled"],fix:1,a:"<b>boiled</b>: boiling kills germs.",sc:['chinadish',{boil:1}]},
+  {n:'10 g',q:"After ____ , …",o:["cooling","boiling"],fix:1,ok:[1],a:"<b>cooling</b> (or 'boiling'): she let the boiled water cool before filtering it again.",sc:['chinadish',{boil:1}]},
+  {n:'10 h',q:"…she ____ it again…",o:["filtered","churned"],fix:1,a:"<b>filtered</b> again.",sc:['filter',{cloth:1}]},
+  {n:'10 i',q:"…and made it ____ for drinking.",o:["fit","unfit"],fix:1,a:"<b>fit</b>: clean, safe water. Her father blessed her! 🙏",sc:['filter',{}]},
+  {n:'10 j',q:"Choose a suitable title for the story.",o:["Leela purifies the pond water 💧","Leela plays football","The magic magnet","A day at the dhaba"],a:"Any title about making dirty water safe works, for example <b>'Leela purifies the pond water'</b> or <b>'Clean water for Father'</b>.",sc:['filter',{}]}]}};
+const FURTHER=["🌿 <b>Fun with parents:</b> while making tulsi kadha with your elders, which methods of separation do you use? (Boiling, then straining or filtering out the leaves.)","🎭 <b>Stage play:</b> act out Malli and Valli's Bharat ki Yatra with all the separation methods they saw.","📋 <b>Group activity:</b> list the separation methods you use or see in one week, and compare with your group.","🤝 <b>Be a stalwart of your community:</b> interview a ragpicker about the separation methods they use. Encourage children under 14 to join a neighbourhood school.","📰 <b>Be a reporter:</b> collect news about separation methods in fields and construction sites, and interview local farmers."];
+const SCIENTIST=["Use a magnet to pull out the iron nails 🧲","Handpick the big stones and black pepper ✋","Filter the water to remove the sand (sand stays as residue) 📄","Evaporate the clear salt water to get the common salt ☀️"];
+
+/* ================= WebGL 3D engine (hand-written, no libraries) ================= */
+let SC=['map',{hub:1}],yaw=0,happyT=0,MP=null;
+const cv=$('#gl'),gl=cv.getContext('webgl',{antialias:true,alpha:false})||cv.getContext('experimental-webgl');
+const sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],add=(a,b)=>[a[0]+b[0],a[1]+b[1],a[2]+b[2]],mulS=(a,s)=>[a[0]*s,a[1]*s,a[2]*s],dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],
+cross=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],norm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]};
+const M4={
+ mul(a,b){const o=new Float32Array(16);for(let c=0;c<4;c++)for(let r=0;r<4;r++)o[c*4+r]=a[r]*b[c*4]+a[4+r]*b[c*4+1]+a[8+r]*b[c*4+2]+a[12+r]*b[c*4+3];return o},
+ persp(f,as,n,fa){const t=1/Math.tan(f/2),o=new Float32Array(16);o[0]=t/as;o[5]=t;o[10]=(fa+n)/(n-fa);o[11]=-1;o[14]=2*fa*n/(n-fa);return o},
+ look(e,c,u){const z=norm(sub(e,c)),x=norm(cross(u,z)),y=cross(z,x);return new Float32Array([x[0],y[0],z[0],0,x[1],y[1],z[1],0,x[2],y[2],z[2],0,-dot(x,e),-dot(y,e),-dot(z,e),1])},
+ trs(p,s,ry=0){const c=Math.cos(ry),n=Math.sin(ry),[sx,sy,sz]=typeof s=='number'?[s,s,s]:s;return new Float32Array([c*sx,0,-n*sx,0,0,sy,0,0,n*sz,0,c*sz,0,p[0],p[1],p[2],1])},
+ basis(p,x,y,z,s){return new Float32Array([x[0]*s[0],x[1]*s[0],x[2]*s[0],0,y[0]*s[1],y[1]*s[1],y[2]*s[1],0,z[0]*s[2],z[1]*s[2],z[2]*s[2],0,p[0],p[1],p[2],1])}};
+const hsh=(x,y)=>{const s=Math.sin(x*127.1+y*311.7)*43758.5453;return s-Math.floor(s)};
+function vn(x,y){const i=Math.floor(x),j=Math.floor(y),f=x-i,g=y-j,u=f*f*(3-2*f),v=g*g*(3-2*g);return(hsh(i,j)*(1-u)+hsh(i+1,j)*u)*(1-v)+(hsh(i,j+1)*(1-u)+hsh(i+1,j+1)*u)*v}
+const ss=(a,b,x)=>{const t=Math.max(0,Math.min(1,(x-a)/(b-a)));return t*t*(3-2*t)};
+const loop=(t,sp,hold=1.3)=>Math.min(1,(t*sp)%hold);
+/* landscape: mountain on the right, land and lake in the middle, ocean on the left */
+function WH(x,z){return 1.9*Math.exp(-((x-2.7)**2+(z+.5)**2*.6)/1.2)+1.1*Math.exp(-((x-1.3)**2+(z+1.9)**2)/.9)+.28+.1*vn(x*2+3,z*2+7)+.12*vn(x*.8,z*.8)-1.1*ss(-1.3,-3.2,x)-.5*Math.exp(-((x-.2)**2+(z-.5)**2)/.3)}
+
+const NOISE=`
+#ifdef GL_FRAGMENT_PRECISION_HIGH
+precision highp float;
+#else
+precision mediump float;
+#endif
+float h(vec3 p){return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453);}
+float n3(vec3 p){vec3 i=floor(p),f=fract(p);f=f*f*(3.-2.*f);
+ return mix(mix(mix(h(i),h(i+vec3(1,0,0)),f.x),mix(h(i+vec3(0,1,0)),h(i+vec3(1,1,0)),f.x),f.y),
+  mix(mix(h(i+vec3(0,0,1)),h(i+vec3(1,0,1)),f.x),mix(h(i+vec3(0,1,1)),h(i+vec3(1,1,1)),f.x),f.y),f.z);}
+float fbm(vec3 p){float a=.5,s=0.;for(int i=0;i<5;i++){s+=a*n3(p);p=p*2.03+vec3(1.7);a*=.5;}return s;}
+`;
+const VS_OBJ=`attribute vec3 aP,aN;attribute vec4 aC;uniform mat4 uVP,uM;varying vec3 vW,vN;varying vec4 vC;
+void main(){vec4 w=uM*vec4(aP,1.);vW=w.xyz;vN=(uM*vec4(aN,0.)).xyz;vC=aC;gl_Position=uVP*w;}`;
+const FS_OBJ=NOISE+`uniform vec3 uSun,uCam,uFog;uniform vec4 uTint;uniform float uAmb,uMode,uSnow,uFogD,uSpec,uT;varying vec3 vW,vN;varying vec4 vC;
+void main(){vec3 N=normalize(vN);vec3 c=vC.rgb*uTint.rgb;float em=vC.a+uTint.a,sp=uSpec;
+ if(uMode==1.){float n=n3(vW*3.);vec3 g=mix(vec3(.2,.55,.17),vec3(.36,.64,.2),n);
+  c=mix(g,vec3(.5,.44,.38)*(.85+.3*n),smoothstep(.75,1.15,vW.y+n*.25));
+  c=mix(c,vec3(.96,.98,1.),smoothstep(uSnow,uSnow+.15,vW.y+n*.2));
+  c=mix(c,vec3(.9,.8,.56),smoothstep(.12,.03,vW.y));
+  c=mix(c,vec3(.47,.31,.18)*(.8+.4*n),smoothstep(-.05,-.25,vW.y));em=0.;sp=0.;}
+ if(uMode==2.){float r=n3(vec3(vW.xz*6.,uT*.8))+.5*n3(vec3(vW.xz*13.,uT*1.3));N=normalize(N+vec3(r-.75,0.,n3(vec3(vW.zx*7.,uT))-.5)*.3);sp=1.3;}
+ vec3 V=normalize(uCam-vW);float df=max(dot(N,uSun),0.);
+ vec3 col=c*(uAmb+df*(1.-uAmb))+c*em+pow(max(dot(N,normalize(uSun+V)),0.),40.)*sp*vec3(1.,.97,.9);
+ if(uMode==2.)col+=vec3(.55,.8,1.)*pow(1.-max(dot(N,V),0.),3.)*.45;
+ col=mix(col,uFog,1.-exp(-length(uCam-vW)*uFogD));gl_FragColor=vec4(col,1.);}`;
+const FS_GL=`precision mediump float;uniform vec3 uCam,uCol;uniform float uPow,uA,uB,uInv;varying vec3 vW,vN;
+void main(){vec3 N=normalize(vN),V=normalize(uCam-vW);float d=dot(N,V),a;
+ if(uInv>.5){if(d<0.)discard;a=uA*pow(d,uPow);}else a=clamp(uB+uA*pow(1.-abs(d),uPow),0.,1.);gl_FragColor=vec4(uCol*a,a);}`;
+const VS_PT=`attribute vec3 aP;attribute vec4 aC;uniform mat4 uVP;uniform float uScale;varying vec3 vC;
+void main(){gl_Position=uVP*vec4(aP,1.);vC=aC.rgb;gl_PointSize=aC.a<0.?-aC.a:max(1.5,aC.a*uScale/gl_Position.w);}`;
+const FS_PT=`precision mediump float;varying vec3 vC;void main(){float d=length(gl_PointCoord-.5)*2.;float a=pow(max(1.-d,0.),1.3)*.95;gl_FragColor=vec4(vC*a,a);}`;
+const VS_BG=`attribute vec3 aP;varying vec2 vP;void main(){vP=aP.xy;gl_Position=vec4(aP.xy,0.,1.);}`;
+const FS_BG=NOISE+`varying vec2 vP;uniform vec3 uF,uR,uU,uSun,uGr;uniform float uAs,uTan,uT,uGrey;
+void main(){vec3 d=normalize(uF+vP.x*uAs*uTan*uR+vP.y*uTan*uU);float s=max(dot(d,uSun),0.);
+ vec3 sky=mix(vec3(.84,.94,1.),vec3(.2,.53,.93),clamp(d.y*1.8+.05,0.,1.));
+ if(d.y>0.){vec2 q=d.xz/(d.y+.15);float c=smoothstep(.5,.82,fbm(vec3(q*.9+vec2(uT*.01,0.),1.)));sky=mix(sky,vec3(1.),c*.85*smoothstep(0.,.15,d.y));}
+ sky+=vec3(1.,.9,.6)*pow(s,400.)*3.+vec3(1.,.85,.6)*pow(s,10.)*.25;
+ sky=mix(sky,vec3(.52,.57,.64)*(.65+.35*clamp(d.y+.5,0.,1.)),uGrey);
+ sky=mix(sky,uGr,smoothstep(0.,-.05,d.y));gl_FragColor=vec4(sky,1.);}`;
+
+function prog(vs,fs){const p=gl.createProgram();[[gl.VERTEX_SHADER,vs],[gl.FRAGMENT_SHADER,fs]].forEach(([t,s])=>{const sh=gl.createShader(t);gl.shaderSource(sh,s);gl.compileShader(sh);
+  if(!gl.getShaderParameter(sh,gl.COMPILE_STATUS))console.error('shader',gl.getShaderInfoLog(sh));gl.attachShader(p,sh)});
+ gl.bindAttribLocation(p,0,'aP');gl.bindAttribLocation(p,1,'aN');gl.bindAttribLocation(p,2,'aC');gl.linkProgram(p);
+ if(!gl.getProgramParameter(p,gl.LINK_STATUS))console.error('link',gl.getProgramInfoLog(p));
+ p.u={};const n=gl.getProgramParameter(p,gl.ACTIVE_UNIFORMS);for(let i=0;i<n;i++){const nm=gl.getActiveUniform(p,i).name;p.u[nm]=gl.getUniformLocation(p,nm)}
+ p.n=gl.getAttribLocation(p,'aN')>=0;p.c=gl.getAttribLocation(p,'aC')>=0;return p}
+function set(p,o){for(const k in o){const l=p.u[k],v=o[k];if(l==null)continue;if(typeof v=='number')gl.uniform1f(l,v);else if(v.length==3)gl.uniform3fv(l,v);else if(v.length==4)gl.uniform4fv(l,v);else gl.uniformMatrix4fv(l,false,v)}}
+function MB(){const a=[],o={a,
+ v(p,n,c){a.push(p[0],p[1],p[2],n[0],n[1],n[2],c[0],c[1],c[2],c[3])},
+ tri(p,q,r,c){const n=norm(cross(sub(q,p),sub(r,p)));o.v(p,n,c);o.v(q,n,c);o.v(r,n,c)},
+ quad(p,q,r,s,c){o.tri(p,q,r,c);o.tri(p,r,s,c)},
+ box(c,s,col){const w=s[0]/2,h=s[1]/2,d=s[2]/2,P=(i,j,k)=>[c[0]+i*w,c[1]+j*h,c[2]+k*d];
+  o.quad(P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1),col);o.quad(P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1),col);
+  o.quad(P(1,-1,1),P(1,-1,-1),P(1,1,-1),P(1,1,1),col);o.quad(P(-1,-1,-1),P(-1,-1,1),P(-1,1,1),P(-1,1,-1),col);
+  o.quad(P(-1,1,1),P(1,1,1),P(1,1,-1),P(-1,1,-1),col);o.quad(P(-1,-1,-1),P(1,-1,-1),P(1,-1,1),P(-1,-1,1),col)},
+ cone(c,r,h,col,n=8){for(let i=0;i<n;i++){const a0=i/n*6.2832,a1=(i+1)/n*6.2832;o.tri([c[0]+Math.cos(a1)*r,c[1],c[2]+Math.sin(a1)*r],[c[0]+Math.cos(a0)*r,c[1],c[2]+Math.sin(a0)*r],[c[0],c[1]+h,c[2]],col)}},
+ done(){const b=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,b);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array(a),gl.STATIC_DRAW);return{b,n:a.length/10}}};return o}
+function lathe(pr,n=32){const m=MB(),W=[1,1,1,0];for(let i=0;i<pr.length-1;i++){const[r0,y0]=pr[i],[r1,y1]=pr[i+1];let nr=y1-y0,ny=-(r1-r0);const l=Math.hypot(nr,ny)||1;nr/=l;ny/=l;
+ for(let j=0;j<n;j++){const a0=j/n*6.2832,a1=(j+1)/n*6.2832,V=(r,y,a)=>[r*Math.cos(a),y,r*Math.sin(a)],N=a=>[nr*Math.cos(a),ny,nr*Math.sin(a)];
+  const A=V(r0,y0,a0),B=V(r1,y1,a0),C=V(r1,y1,a1),D=V(r0,y0,a1);m.v(A,N(a0),W);m.v(B,N(a0),W);m.v(C,N(a1),W);m.v(A,N(a0),W);m.v(C,N(a1),W);m.v(D,N(a1),W)}}return m.done()}
+
+let BAND,PO,PG,PT,PB,SPH,BOX,CYL,CONE,MATKA,BIGPOT,SMALLPOT,SURAHI,BOTTLE,POT,RING,BOWL,TERR,TREES,GRASS1,GRASS2,QUAD,ptBuf,VP,camE,env,cF,cR,cU,cAs,cTan,T=0;
+const PD=new Float32Array(7*6000);let pn=0;const LBS=[],GQ=[],HQ=[];
+function initGL(){
+ PO=prog(VS_OBJ,FS_OBJ);PG=prog(VS_OBJ,FS_GL);PT=prog(VS_PT,FS_PT);PB=prog(VS_BG,FS_BG);
+ let m=MB();const W=[1,1,1,0],N=40,K=24,sp=(i,j)=>{const th=i/K*Math.PI,ph=j/N*6.2832;return[Math.sin(th)*Math.sin(ph),Math.cos(th),Math.sin(th)*Math.cos(ph)]};
+ for(let i=0;i<K;i++)for(let j=0;j<N;j++){const a=sp(i,j),b=sp(i+1,j),c=sp(i+1,j+1),d=sp(i,j+1);[a,b,c,a,c,d].forEach(p=>m.v(p,p,W))}SPH=m.done();
+ m=MB();m.box([0,0,0],[1,1,1],W);BOX=m.done();
+ CYL=lathe([[0,0],[1,0],[1,1],[0,1]]);CONE=lathe([[0,0],[1,0],[0,1]],12);
+ MATKA=lathe([[0,0],[.35,0],[.55,.08],[.74,.3],[.78,.5],[.66,.75],[.4,.88],[.32,.95],[.38,1.02],[.3,1.03]]);
+ BIGPOT=lathe([[0,0],[.45,0],[.6,.2],[.69,.6],[.72,.9],[.78,.95],[.74,.97]]);SMALLPOT=lathe([[0,0],[.3,0],[.42,.25],[.46,.6],[.5,.72],[.47,.74]]);
+ SURAHI=lathe([[0,0],[.3,0],[.42,.06],[.55,.25],[.58,.42],[.45,.62],[.2,.72],[.14,1.05],[.21,1.15],[.13,1.16]]);
+ BOTTLE=lathe([[0,0],[.3,0],[.32,.03],[.32,.7],[.26,.82],[.12,.93],[.1,1.05],[.1,1.1]]);
+ POT=lathe([[.47,.03],[.47,.6],[.5,.6],[.5,0],[0,0]]);RING=lathe([[.72,0],[.5,0]]);BAND=lathe([[1,0],[1,1]]);BOWL=lathe([[0,0],[.85,0],[1,.15],[1,1]]);EXTRA();
+ let sd=11;const R=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ m=MB();const GX=80,GZ=60,TP=(i,j)=>{const x=-5+i/GX*10,z=-4+j/GZ*8;return[x,WH(x,z),z]},dn=p=>[p[0],-1.5,p[2]];
+ for(let i=0;i<GX;i++)for(let j=0;j<GZ;j++)m.quad(TP(i,j),TP(i,j+1),TP(i+1,j+1),TP(i+1,j),W);
+ for(let i=0;i<GX;i++){let a=TP(i,GZ),b=TP(i+1,GZ);m.quad(a,dn(a),dn(b),b,W);a=TP(i+1,0);b=TP(i,0);m.quad(a,dn(a),dn(b),b,W)}
+ for(let j=0;j<GZ;j++){let a=TP(0,j),b=TP(0,j+1);m.quad(a,dn(a),dn(b),b,W);a=TP(GX,j+1);b=TP(GX,j);m.quad(a,dn(a),dn(b),b,W)}TERR=m.done();
+ m=MB();for(let i=0,k=0;i<900&&k<110;i++){const x=-1.4+R()*6,z=-3.6+R()*7.2,y=WH(x,z);if(y<.15||y>.85)continue;k++;const s=.7+R()*.6;m.box([x,y+.06*s,z],[.04*s,.14*s,.04*s],[.36,.22,.1,0]);m.cone([x,y+.1*s,z],.12*s,.34*s,[.06,.3+R()*.15,.1,0],7)}TREES=m.done();
+ m=MB();for(let i=0;i<300;i++)m.cone([-1.4+(R()-.5)*2.1,.05,(R()-.5)*1.9],.035,.1+R()*.14,[.12+R()*.15,.42+R()*.22,.1,0],4);GRASS1=m.done();
+ m=MB();for(let i=0;i<22;i++)for(let j=0;j<20;j++)m.cone([1.4-1.05+i*.1,.04,-.95+j*.1],.04,.11,[.12,.9,.3,0],4);GRASS2=m.done();
+ QUAD=gl.createBuffer();gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.bufferData(gl.ARRAY_BUFFER,new Float32Array([-1,-1,0,3,-1,0,-1,3,0]),gl.STATIC_DRAW);
+ ptBuf=gl.createBuffer();gl.enableVertexAttribArray(0)}
+function bindMesh(p,m){gl.bindBuffer(gl.ARRAY_BUFFER,m.b);gl.vertexAttribPointer(0,3,gl.FLOAT,false,40,0);
+ if(p.n){gl.enableVertexAttribArray(1);gl.vertexAttribPointer(1,3,gl.FLOAT,false,40,12)}else gl.disableVertexAttribArray(1);
+ if(p.c){gl.enableVertexAttribArray(2);gl.vertexAttribPointer(2,4,gl.FLOAT,false,40,24)}else gl.disableVertexAttribArray(2)}
+const IN={sun:norm([.4,.85,.5]),amb:.5,fogD:0,fog:[.85,.93,1],gr:[.8,.86,.82],grey:0},OUT={sun:norm([.45,.7,.55]),amb:.45,fogD:.018,fog:[.8,.9,.98],gr:[.6,.77,.55],grey:0};
+function begin(eye,tgt,e){env=Object.assign({},IN,e||{});
+ cAs=cv.width/cv.height;const k=Math.max(1,1.6/cAs),c=Math.cos(yaw),s=Math.sin(yaw),d=mulS(sub(eye,tgt),k);
+ camE=[tgt[0]+d[0]*c+d[2]*s,tgt[1]+d[1],tgt[2]-d[0]*s+d[2]*c];const fov=.8;cTan=Math.tan(fov/2);
+ VP=M4.mul(M4.persp(fov,cAs,.05,300),M4.look(camE,tgt,[0,1,0]));cF=norm(sub(tgt,camE));cR=norm(cross(cF,[0,1,0]));cU=cross(cR,cF);
+ gl.viewport(0,0,cv.width,cv.height);gl.clear(gl.DEPTH_BUFFER_BIT);gl.disable(gl.DEPTH_TEST);gl.depthMask(false);
+ gl.useProgram(PB);gl.bindBuffer(gl.ARRAY_BUFFER,QUAD);gl.disableVertexAttribArray(1);gl.disableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,12,0);
+ set(PB,{uF:cF,uR:cR,uU:cU,uSun:env.sun,uAs:cAs,uTan:cTan,uT:T,uGrey:env.grey,uGr:env.gr});gl.drawArrays(gl.TRIANGLES,0,3);gl.enable(gl.DEPTH_TEST);gl.depthMask(true)}
+function draw(mesh,M,tint,mode,o){gl.useProgram(PO);bindMesh(PO,mesh);set(PO,Object.assign({uVP:VP,uM:M,uSun:env.sun,uCam:camE,uFog:env.fog,uFogD:env.fogD,uAmb:env.amb,uTint:tint||[1,1,1,0],uMode:mode||0,uSnow:1.35,uSpec:.15,uT:T},o||{}));gl.drawArrays(gl.TRIANGLES,0,mesh.n)}
+function shells(Q,addv){if(!Q.length)return;gl.useProgram(PG);gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,addv?gl.ONE:gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);
+ for(const[mesh,M,col,pw,A,B,inv]of Q){bindMesh(PG,mesh);set(PG,{uVP:VP,uM:M,uCam:camE,uCol:col,uPow:pw,uA:A,uB:B||0,uInv:inv||0});gl.drawArrays(gl.TRIANGLES,0,mesh.n)}
+ gl.depthMask(true);gl.disable(gl.BLEND);Q.length=0}
+function drawPts(){if(!pn)return;gl.useProgram(PT);gl.bindBuffer(gl.ARRAY_BUFFER,ptBuf);gl.bufferData(gl.ARRAY_BUFFER,PD.subarray(0,pn*7),gl.DYNAMIC_DRAW);
+ gl.disableVertexAttribArray(1);gl.enableVertexAttribArray(2);gl.vertexAttribPointer(0,3,gl.FLOAT,false,28,0);gl.vertexAttribPointer(2,4,gl.FLOAT,false,28,12);
+ set(PT,{uVP:VP,uScale:cv.height*1.15});gl.enable(gl.BLEND);gl.blendFunc(gl.ONE,gl.ONE_MINUS_SRC_ALPHA);gl.depthMask(false);gl.drawArrays(gl.POINTS,0,pn);gl.depthMask(true);gl.disable(gl.BLEND)}
+function P(x,y,z,r,g,b,s){if(pn>=6000)return;PD.set([x,y,z,r,g,b,s],pn*7);pn++}
+function LB(t,p,c,d){LBS.push([t,p,c||'',d])}
+function mascot(p){const b=Math.sin(T*2.2)*.06;MP=[p[0],p[1]+b,p[2]];LB('👦👧',MP,'mascot'+(performance.now()-happyT<900?' happy':''))}
+
+/* ---------- reusable props ---------- */
+const WATER=[.3,.66,1,.06];
+function table(){draw(BOX,M4.trs([0,-.09,0],[7.4,.18,4.6]),[.72,.5,.3,0]);draw(BOX,M4.trs([0,-.2,0],[7.5,.06,4.7]),[.55,.36,.2,0])}
+function lawn(){draw(BOX,M4.trs([0,-.1,0],[18,.2,13]),[.45,.72,.32,0])}
+function cup(pos,r,h,lvl,wc){if(lvl>.005)draw(CYL,M4.trs([pos[0],pos[1]+.01,pos[2]],[r*.92,h*lvl,r*.92]),wc||WATER,2);GQ.push([CYL,M4.trs(pos,[r,h,r]),[.82,.93,1],2.2,.75,.07])}
+function ice(pos,s,ry){draw(BOX,M4.trs(pos,s,ry||0),[.82,.94,1,.3],0,{uSpec:1.3});GQ.push([BOX,M4.trs(pos,s*1.05,ry||0),[.85,.95,1],1.4,.6,.12])}
+function steel(mesh,M){draw(mesh,M,[.72,.75,.8,0],0,{uSpec:1.6})}
+function sunBall(pos,r){draw(SPH,M4.trs(pos,r),[1,.86,.45,2.3]);HQ.push([SPH,M4.trs(pos,r*2.8),[1,.75,.3],2,.9,0,1])}
+function cloud(c,s,g){const col=g?[.62,.66,.74,.15]:[1,1,1,.4];[[0,0,0,1],[.8,-.1,.1,.75],[-.8,-.1,0,.8],[.35,.35,-.1,.75],[-.35,.3,.15,.7],[0,-.15,.5,.7]].forEach(o=>draw(SPH,M4.trs([c[0]+o[0]*s,c[1]+o[1]*s,c[2]+o[2]*s],[o[3]*s,o[3]*s*.8,o[3]*s]),col,0))}
+function cloth(pos,col,wet,sw){const k=.55+.45*(1-wet);draw(BOX,M4.trs(pos,[.6,.75,.03],sw||0),[col[0]*k,col[1]*k,col[2]*k,0])}
+function tree(pos,s){draw(CYL,M4.trs(pos,[.1*s,1.1*s,.1*s]),[.45,.3,.16,0]);[[0,1.3,0,.6],[.35,1.1,.1,.45],[-.35,1.1,-.1,.45],[0,1.6,0,.45]].forEach(o=>draw(SPH,M4.trs([pos[0]+o[0]*s,pos[1]+o[1]*s,pos[2]+o[2]*s],o[3]*s),[.18,.5,.2,0]))}
+function vapour(cx,cy,cz,rad,n,sp,ht,seed){for(let i=0;i<n;i++){const u=(T*sp+hsh(i,seed||1))%1;P(cx+(hsh(i,2)-.5)*rad*2+Math.sin(T+i)*.04,cy+u*ht,cz+(hsh(i,3)-.5)*rad*1.6,.5,.75,1,.06*(1-u)+.012)}}
+
+
+/* ---------- extra meshes ---------- */
+let FUNNEL,FLASK,LAMP,SACK,DISH,BASKET,PAPERCONE,MUDCONE,KETTLE,TRACK,DECO,ROOF;
+const ST=[[-.8,-2.4],[-3,-.5],[.3,2.6],[-.2,0],[3.2,-1.4],[1.5,.95]];
+function crp(k,f){const n=ST.length,p0=ST[(k-1+n)%n],p1=ST[k%n],p2=ST[(k+1)%n],p3=ST[(k+2)%n],f2=f*f,f3=f2*f;
+ const c=i=>.5*(2*p1[i]+(-p0[i]+p2[i])*f+(2*p0[i]-5*p1[i]+4*p2[i]-p3[i])*f2+(-p0[i]+3*p1[i]-3*p2[i]+p3[i])*f3);return[c(0),.04,c(1)]}
+const PATH=s=>{s=((s%6)+6)%6;return crp(Math.floor(s),s-Math.floor(s))};
+function obox(m,c,f,sx,sy,sz,col){const r=norm(cross(f,[0,1,0])),u=[0,1,0],P=(i,j,k)=>add(c,add(add(mulS(f,i*sx/2),mulS(u,j*sy/2)),mulS(r,k*sz/2)));
+ m.quad(P(-1,1,-1),P(1,1,-1),P(1,1,1),P(-1,1,1),col);m.quad(P(-1,-1,1),P(1,-1,1),P(1,1,1),P(-1,1,1),col);m.quad(P(1,-1,-1),P(-1,-1,-1),P(-1,1,-1),P(1,1,-1),col);
+ m.quad(P(1,-1,1),P(1,-1,-1),P(1,1,-1),P(1,1,1),col);m.quad(P(-1,-1,-1),P(-1,-1,1),P(-1,1,1),P(-1,1,-1),col)}
+function EXTRA(){
+ FUNNEL=lathe([[.045,0],[.06,0],[.06,.38],[.52,.82]]);FLASK=lathe([[0,0],[.45,0],[.48,.05],[.22,.62],[.13,.72],[.13,.98],[.16,1]]);
+ LAMP=lathe([[0,0],[.26,0],[.3,.12],[.22,.26],[.07,.3],[.05,.4]]);SACK=lathe([[0,0],[.42,0],[.5,.3],[.48,.72],[.34,.86],[.4,.95],[0,.97]]);
+ DISH=lathe([[0,0],[.42,0],[.75,.18],[.92,.34]]);BASKET=lathe([[0,0],[.62,0],[.88,.42],[1,.62],[.96,.64]]);
+ PAPERCONE=lathe([[.05,.4],[.47,.82]]);MUDCONE=lathe([[0,.47],[.4,.74],[0,.74]]);KETTLE=lathe([[0,0],[.45,0],[.55,.25],[.5,.5],[.3,.65],[.12,.7],[.15,.78],[0,.8]]);
+ ROOF=lathe([[0,0],[1,0],[0,1]],4);
+ let m=MB();for(let i=0;i<420;i++){const s=i/70,p=PATH(s),q=PATH(s+.01),f=norm(sub(q,p));obox(m,[p[0],.035,p[2]],f,.03,.03,.24,[.42,.27,.14,0])}
+ for(let i=0;i<420;i++){const s=i/70,p=PATH(s),q=PATH(s+1/70),f=sub(q,p),L=Math.hypot(f[0],f[2]);const fn=norm(f),r=norm(cross(fn,[0,1,0]));[-.08,.08].forEach(o=>obox(m,add(mulS(add(p,q),.5),[r[0]*o,.03,r[2]*o]),fn,L+.004,.025,.02,[.62,.64,.68,0]))}TRACK=m.done();
+ m=MB();let sd=5;const R=()=>(sd=(sd*16807)%2147483647)/2147483647;
+ for(let i=0,k=0;i<600&&k<90;i++){const x=-4.2+R()*8.4,z=-3.2+R()*6.4;let near=false;for(let j=0;j<=60;j++){const p=PATH(j/10);if(Math.hypot(p[0]-x,p[2]-z)<.45){near=true;break}}if(near)continue;k++;const s=.6+R()*.6;m.box([x,.06*s,z],[.04*s,.12*s,.04*s],[.36,.22,.1,0]);m.cone([x,.1*s,z],.13*s,.34*s,[.08,.35+R()*.2,.12,0],7)}
+ for(let i=0;i<9;i++){const x=-3.4+i*.85,s=.7+R()*.5;m.cone([x,0,-3.15],.55*s,1.1*s,[.48,.44,.42,0],8);m.cone([x,.75*s,-3.15],.2*s,.36*s,[.97,.98,1,0],8)}DECO=m.done()}
+/* ---------- helpers ---------- */
+function seg(mesh,a,b,w,col){const d=sub(b,a),L=Math.hypot(d[0],d[1],d[2]),y=mulS(d,1/L),x=norm(cross(y,Math.abs(y[1])<.9?[0,1,0]:[1,0,0])),z=cross(x,y);draw(mesh,M4.basis(mesh===CYL?a:mulS(add(a,b),.5),x,y,z,[w,L,w]),col)}
+function rz(p,c,a){const x=p[0]-c[0],y=p[1]-c[1];return[c[0]+x*Math.cos(a)-y*Math.sin(a),c[1]+x*Math.sin(a)+y*Math.cos(a),p[2]]}
+function tilt(mesh,pos,a,s,col,mode,o){const X=[Math.cos(a),Math.sin(a),0],Y=[-Math.sin(a),Math.cos(a),0];draw(mesh,M4.basis(pos,X,Y,[0,0,1],typeof s=='number'?[s,s,s]:s),col,mode,o)}
+const ground=c=>draw(BOX,M4.trs([0,-.1,0],[18,.2,13]),c||[.78,.66,.46,0]);
+function tripod(c,h,r){for(let i=0;i<3;i++){const a=i*2.094+.5;seg(CYL,[c[0]+Math.cos(a)*r*1.3,0,c[2]+Math.sin(a)*r*1.3],[c[0]+Math.cos(a)*r,h,c[2]+Math.sin(a)*r],.025,[.55,.56,.6,0])}draw(BAND,M4.trs([c[0],h-.02,c[2]],[r,.04,r]),[.55,.56,.6,0],0,{uSpec:1})}
+function markers(p){if(!p.markers||!p.mk)return;Object.keys(p.mk).forEach((k,i)=>LB(`${i+1} ${p.markers[i]||'❓'}`,p.mk[k],p.markers[i]?'mk done':'mk'))}
+function fishMesh(c,ang,col,s){const f=[Math.cos(ang),0,Math.sin(ang)],r=[-f[2],0,f[0]];draw(SPH,M4.basis(c,f,[0,1,0],r,[.26*s,.13*s,.07*s]),col,0,{uSpec:.8});draw(CONE,M4.basis(add(c,mulS(f,-.22*s)),[0,1,0],mulS(f,-1),r,[.1*s,.14*s,.03*s]),col)}
+
+const SCN={
+map(p,t){const hub=!p.hasOwnProperty('to'),a=hub?t*.05:0,ss=hub?(t*.12)%6:p.to-.32*(1-Math.min(1,((t*.2)%1.6)));
+ const fc=hub?[0,0,0]:[ST[p.to][0]*.5,0,ST[p.to][1]*.5];begin([fc[0]+Math.sin(a)*7.5,5.2,fc[2]+Math.cos(a)*7.5],[fc[0],0,fc[2]],Object.assign({},OUT,{fogD:.01}));
+ draw(BOX,M4.trs([0,-.3,0],[16,.2,12]),[.1,.45,.75,.04],2);draw(BOX,M4.trs([0,-.12,0],[9,.24,7]),[.5,.74,.36,0]);draw(BOX,M4.trs([0,-.12,0],[9.2,.2,7.2]),[.92,.84,.6,0]);
+ draw(TRACK,M4.trs([0,0,0],1));draw(DECO,M4.trs([0,0,0],1));
+ STATIONS.forEach(([nm,em],i)=>{const[x,z]=ST[i],q=PATH(i+.01),f=norm(sub(q,PATH(i))),r=norm(cross(f,[0,1,0])),c=add([x,0,z],mulS(r,.42));
+  draw(BOX,M4.trs([c[0],.06,c[2]],[.55,.12,.55]),[.86,.82,.74,0]);draw(ROOF,M4.trs([c[0],.42,c[2]],[.45,.22,.45],.785),[[.9,.35,.25],[.95,.75,.2],[.35,.7,.5],[.95,.6,.2],[.5,.45,.9],[.3,.6,.95]][i].concat(0));
+  [[-1,-1],[1,1],[-1,1],[1,-1]].forEach(o=>draw(BOX,M4.trs([c[0]+o[0]*.2,.24,c[2]+o[1]*.2],[.04,.36,.04]),[.6,.45,.3,0]));
+  LB(`${em} ${nm}`,[c[0],.8,c[2]],!hub&&p.to==i?'mk':'')});
+ const car=(s,len,col,eng)=>{const pp=PATH(s),f=norm(sub(PATH(s+.01),pp)),r=norm(cross(f,[0,1,0])),c=[pp[0],.17,pp[2]];
+  draw(BOX,M4.basis(c,f,[0,1,0],r,[len,.2,.2]),col,0,{uSpec:.5});draw(BOX,M4.basis([c[0],.29,c[2]],f,[0,1,0],r,[len*.9,.04,.22]),[.25,.25,.3,0]);
+  if(eng){draw(CYL,M4.basis(add(c,mulS(f,.12)),[0,1,0],f,r,[.07,.18,.07]),[.15,.15,.18,0]);const ch=add([c[0],.32,c[2]],mulS(f,.17));for(let i=0;i<14;i++){const u=(t*.8+i/14)%1;P(ch[0]-f[0]*u*.6,ch[1]+u*.55,ch[2]-f[2]*u*.6,.92,.92,.95,.06+.12*u)}}
+  [-.35,.35].forEach(o=>draw(CYL,M4.basis(add([pp[0],.07,pp[2]],mulS(f,o*len)),f,r,[0,1,0],[.05,.22,.05]),[.1,.1,.12,0]))};
+ car(ss,.42,[.85,.15,.18,0],1);[[.9,.75,.2],[.25,.55,.9],[.3,.75,.45]].forEach((c,i)=>car(ss-.075*(i+1),.4,[c[0],c[1],c[2],0]));
+ sunBall([-8,9,-10],1.4);mascot(add(PATH(ss),[0,1.5,0]))},
+courtyard(p,t){if(p.taps)begin([0,2.15,1.55],[0,0,.12],Object.assign({},OUT,{fogD:.01}));else begin([0,2.6,3.6],[0,.15,0],Object.assign({},OUT,{fogD:.01}));ground();
+ draw(BOX,M4.trs([0,.7,-3],[3,1.4,1.2]),[.9,.6,.45,0]);draw(ROOF,M4.trs([0,1.4,-3],[2.3,.7,1.1],.785),[.8,.2,.15,0]);draw(BOX,M4.trs([0,.45,-2.38],[.5,.9,.02]),[.4,.25,.15,0]);
+ [[-2.3,-.9,[.95,.85,.4]],[-2.8,-.1,[.96,.96,.9]],[2.4,-.8,[.9,.75,.35]]].forEach(([x,z,c])=>{draw(SACK,M4.trs([x,0,z],.7),[.62,.45,.28,0]);for(let i=0;i<40;i++)P(x+(hsh(i,x)-.5)*.42,.66,z+(hsh(i,z)-.5)*.42,c[0],c[1],c[2],.05)});
+ steel(CYL,M4.trs([0,0,0],[1.1,.05,1.1]));steel(BOWL,M4.trs([1.75,0,.6],[.35,.18,.35]));
+ if(p.pepper){for(let i=0;i<260;i++){const a=hsh(i,1)*6.283,r=Math.sqrt(hsh(i,2))*.95;P(Math.cos(a)*r,.07+hsh(i,3)*.04,Math.sin(a)*r,.98,.96,.9,.045)}
+  for(let i=0;i<14;i++){const a=hsh(i,4)*6.283,r=Math.sqrt(hsh(i,5))*.85;draw(BOX,M4.trs([Math.cos(a)*r,.09,Math.sin(a)*r],.07,i),i%2?[.2,.65,.2,0]:[1,.5,.1,0])}
+  for(let i=0;i<7;i++){const a=hsh(i,6)*6.283,r=Math.sqrt(hsh(i,7))*.8,h=[Math.cos(a)*r,.1,Math.sin(a)*r],k=Math.min(1,Math.max(0,(t*.25)%2.4-i*.3)),d=[1.75+(i%3-1)*.1,.08,.6+(i%2)*.08],y=h[1]+Math.sin(k*3.14)*.6;draw(SPH,M4.trs([h[0]+(d[0]-h[0])*k,y,h[2]+(d[2]-h[2])*k],.05),[.08,.07,.07,0],0,{uSpec:.8})}
+  LB('🍛 Hot vegetable pulao',[0,.5,1.1]);LB('⚫ Black peppers picked aside',[1.75,.55,.6],'sm');LB('👦 Malli picks the peppers ✋',[-1.4,1.1,.6],'sm');mascot([-1.6,1.4,-.2]);return}
+ for(let i=0;i<420;i++){const a=hsh(i,1)*6.283,r=Math.sqrt(hsh(i,2))*1;P(Math.cos(a)*r,.07+hsh(i,3)*.04,Math.sin(a)*r,.95,.8,.35,.045)}
+ if(p.taps){p.taps.forEach((it,i)=>{if(it.gone)return;if(it.k=='s')draw(SPH,M4.trs(it.p,[.08,.06,.07]),[.45,.43,.42,0]);if(it.k=='h')draw(BOX,M4.trs(it.p,[.14,.012,.07],i),[.82,.7,.45,0]);LB(it.k=='s'?'🪨':it.k=='h'?'🍂':'🌾',add(it.p,[0,.12,0]),'tap',i)});mascot([-1.6,1.3,-.2]);return}
+ for(let i=0;i<9;i++){const a=hsh(i,6)*6.283,r=.2+Math.sqrt(hsh(i,7))*.75,h=[Math.cos(a)*r,.1,Math.sin(a)*r],k=Math.min(1,Math.max(0,(t*.22)%3-i*.3)),d=[1.75+(i%3-1)*.1,.08,.6+(i%2)*.08];draw(SPH,M4.trs([h[0]+(d[0]-h[0])*k,h[1]+Math.sin(k*3.14)*.6,h[2]+(d[2]-h[2])*k],[.08,.06,.07]),[.45,.43,.42,0])}
+ LB('🌾 Mixture: grains + stones + husk',[0,.45,1.15]);LB('🪨 Stones picked out',[1.75,.55,.6],'sm');LB('✋ Handpicking',[0,1.5,0]);mascot([-1.6,1.3,-.2])},
+thresh(p,t){begin([0,2.1,4.4],[0,.5,0],OUT);lawn();sunBall([-5,6,-8],.8);
+ draw(CONE,M4.trs([-2.4,0,-1],[.7,.7,.7]),[.92,.8,.4,0]);draw(CONE,M4.trs([2.3,0,-.8],[.8,.55,.8]),[.85,.75,.5,0]);
+ if(p.machine){draw(BOX,M4.trs([0,.55,0],[1.6,.8,.9]),[.75,.2,.18,0],0,{uSpec:.5});draw(BOX,M4.trs([-.3,1.15,0],[.6,.4,.6]),[.6,.15,.12,0]);draw(CYL,M4.basis([.25,.6,-.46],[1,0,0],[0,0,1],[0,1,0],[.35,.92,.35]),[.3,.3,.32,0],0,{uSpec:1});
+  draw(BOX,M4.trs([1.05,.35,0],[.5,.08,.4],0),[.5,.5,.55,0]);[[-.6,.2],[.6,.2]].forEach(([x])=>draw(CYL,M4.basis([x,.2,.48],[1,0,0],[0,0,1],[0,1,0],[.2,.06,.2]),[.1,.1,.1,0]));draw(SACK,M4.trs([1.5,0,0],.6),[.62,.45,.28,0]);
+  for(let i=0;i<30;i++){const u=(t*.8+hsh(i,1))%1;P(1.25+u*.25,.35-u*.0,(hsh(i,2)-.5)*.2,.95,.78,.3,.04)}for(let i=0;i<40;i++){const u=(t*.4+hsh(i,3))%1;P(-.9-u*1.6,.7+u*.6+Math.sin(u*6+i)*.1,(hsh(i,4)-.5)*.8,.85,.75,.5,.05)}
+  for(let i=0;i<8;i++){const u=(t*.5+i/8)%1;draw(BOX,M4.trs([-.3,1.6-u*.5,(hsh(i,5)-.5)*.3],[.03,.4,.03],i),[.9,.75,.3,0])}
+  LB('⚙️ Thresher: threshing + winnowing together',[0,1.8,0]);LB('🌾 Grains',[1.5,.8,.3],'sm');LB('🍂 Husk blown out',[-1.8,1.4,0],'sm');mascot([-2.4,1.5,.5]);return}
+ draw(CYL,M4.basis([-.8,.32,0],[0,1,0],[1,0,0],[0,0,1],[.32,1.6,.32]),[.55,.36,.2,0]);
+ const ph=Math.abs(Math.sin(t*2.6)),ang=-.25+1.25*ph,pv=[.3,1.6,0];
+ for(let i=0;i<11;i++){const o=(i-5)*.04,tip=rz([pv[0]-1.25,pv[1]-.1+(i%3)*.03,o],pv,ang),mid=rz([pv[0]-1.05,pv[1]-.1,o],pv,ang);seg(BOX,[pv[0],pv[1],o*.4],tip,.035,[.88,.74,.32,0]);seg(SPH,mid,tip,.07,[.96,.8,.32,0])}
+ if(ph>.85)for(let i=0;i<40;i++){const a=hsh(i,1)*3.14,u=(t*3+hsh(i,2))%1;P(-.5+Math.cos(a)*u*.8,.65+Math.sin(a)*u*.6,(hsh(i,3)-.5)*.6,.98,.82,.3,.04)}
+ for(let i=0;i<120;i++)P(-.5+(hsh(i,4)-.5)*1.8,.02,.55+(hsh(i,5)-.5)*.8,.95,.8,.35,.04);for(let i=0;i<60;i++)P(-.5+(hsh(i,6)-.5)*1.6,.03,.5+(hsh(i,7)-.5)*.8,.82,.72,.5,.05);
+ LB('👩‍🌾',[.5,1.5,.2],'big');LB('🪵 Beating stalks on a log: threshing',[0,2.2,0]);LB('🌾 Grains + husk mixed',[-.5,.25,1.2],'sm');mascot([-2.4,1.4,.6])},
+winnow(p,t){const pe=p.peanut,pu=p.puff;begin([.2,2.1,4.6],[.4,.9,0],OUT);lawn();sunBall([-5,6,-8],.8);
+ if(pe){steel(CYL,M4.trs([0,.0,0],[.8,.04,.8]));for(let i=0;i<14;i++){const a=i*2.4,r=Math.sqrt(i/14)*.6;draw(SPH,M4.trs([Math.cos(a)*r,.1,Math.sin(a)*r],[.09,.07,.07]),[.82,.6,.35,0],0,{uSpec:.4})}
+  for(let i=0;i<40;i++){const u=(t*.4+hsh(i,1))%1;P(-.2+u*2.6,.12+u*.8+Math.sin(u*8+i)*.1,(hsh(i,2)-.5)*.9,.6,.2,.12,.05)}for(let i=0;i<20;i++){const u=(t*1.2+i/20)%1;P(-1.3+u*1.1,.4,(hsh(i,3)-.5)*.3,.75,.9,1,.03)}
+  LB('😮‍💨 Blow air',[-1.4,.7,0]);LB('🥜 Heavier peanuts stay',[0,.4,.9]);LB('🍂 Light skins fly away',[1.8,1.3,0],'sm');mascot([-1.6,1.5,.4]);return}
+ draw(BOX,M4.trs([-.6,.5,0],[.8,.06,.6]),[.6,.42,.25,0]);[[-1,-1],[1,1],[-1,1],[1,-1]].forEach(o=>draw(BOX,M4.trs([-.6+o[0]*.34,.24,o[1]*.24],[.05,.48,.05]),[.5,.34,.2,0]));
+ const sw=Math.sin(t*2)*.08;tilt(BOX,[-.2,1.75,0],-.35+sw,[.95,.05,.7],[.78,.6,.32,0]);
+ draw(BOX,M4.trs([.25,.01,0],[1.2,.02,1]),[.9,.35,.55,0]);draw(CONE,M4.trs([.25,.02,0],[.45,.32,.4]),pu?[.95,.82,.4,0]:[.9,.72,.35,0]);
+ const hv=pu?[.95,.8,.3]:[.95,.75,.3],lt=pu?[1,1,.97]:[.86,.78,.55];
+ for(let i=0;i<60;i++){const u=(t*.9+hsh(i,1))%1;P(.22+(hsh(i,2)-.5)*.15,1.6-u*1.35,(hsh(i,3)-.5)*.3,hv[0],hv[1],hv[2],.04)}
+ for(let i=0;i<70;i++){const u=(t*.35+hsh(i,4))%1;P(.25+u*2.8+Math.sin(u*6+i)*.08,1.6-u*1.5,(hsh(i,5)-.5)*(.3+u),lt[0],lt[1],lt[2],pu?.08:.05)}
+ for(let i=0;i<60;i++)P(1.4+hsh(i,6)*2,.02,(hsh(i,7)-.5)*1.4,lt[0],lt[1],lt[2],.05);for(let i=0;i<24;i++){const u=(t*.7+hsh(i,8))%1;P(-2.2+u*4.5,.6+hsh(i,9)*1.6,-.6,.75,.9,1,.025)}
+ LB('🧑‍🌾',[-.6,1.35,.2],'big');LB('🧺 Soop (bamboo tray)',[-.3,2.15,0],'sm');LB('🌬️ Wind ➡️',[-1.9,2.3,-.6]);LB(pu?'🟡 Chana dal falls down':'🌾 Heavy grains fall straight down',[.25,.55,.8]);LB(pu?'🍿 Light puffed rice blows away':'🍂 Light husk blows away',[2.2,1,.2]);mascot([-2.3,1.5,.6])},
+sieve(p,t){if(p.sand){begin([0,2,4.4],[0,.6,0],OUT);ground([.76,.68,.52,0]);sunBall([-5,6,-8],.8);
+  const fr=(a,b)=>seg(BOX,a,b,.06,[.5,.34,.2,0]);fr([-.8,0,-.4],[-.8,1.6,-.9]);fr([.8,0,-.4],[.8,1.6,-.9]);fr([-.8,1.6,-.9],[.8,1.6,-.9]);fr([-.8,0,-.4],[.8,0,-.4]);
+  for(let i=0;i<9;i++){const x=-.8+i*.2;seg(BOX,[x,0,-.4],[x,1.6,-.9],.01,[.3,.3,.3,0])}for(let j=1;j<8;j++){const y=j*.2;seg(BOX,[-.8,y,-.4-y*.31],[.8,y,-.4-y*.31],.01,[.3,.3,.3,0])}
+  draw(CONE,M4.trs([0,0,-1.6],[.8,.5,.6]),[.85,.72,.5,0]);for(let i=0;i<7;i++)draw(SPH,M4.trs([(hsh(i,1)-.5)*1.4,.07,.1+hsh(i,2)*.4],.08),[.5,.48,.46,0]);
+  for(let i=0;i<50;i++){const u=(t*.7+hsh(i,3))%1;P((hsh(i,4)-.5)*1.2,1.4-u*.4,.8-u*1.6,.86,.74,.5,.04)}
+  LB('🏗️ Builder\'s sieve',[0,2,-.9]);LB('🏖️ Sand passes through',[0,.7,-1.6],'sm');LB('🪨 Pebbles stay in front',[0,.35,.6],'sm');mascot([-1.8,1.4,.3]);return}
+ begin([0,2,3.6],[0,.6,0]);table();steel(CYL,M4.trs([0,0,0],[.95,.05,.95]));const sx=Math.sin(t*9)*.06,y0=1;
+ draw(BAND,M4.trs([sx,y0,0],[.72,.22,.72]),[.75,.77,.8,0],0,{uSpec:1.5});for(let i=-6;i<=6;i++){const w=Math.sqrt(Math.max(0,1-(i/6.5)**2))*1.4;draw(BOX,M4.trs([sx+i*.11,y0+.01,0],[.006,.006,w]),[.4,.4,.42,0]);draw(BOX,M4.trs([sx,y0+.01,i*.11],[w,.006,.006]),[.4,.4,.42,0])}
+ for(let i=0;i<70;i++){const a=hsh(i,1)*6.283,r=Math.sqrt(hsh(i,2))*.6;P(sx+Math.cos(a)*r,y0+.04+Math.abs(Math.sin(t*9+i))*.03,Math.sin(a)*r,.62,.42,.22,.06)}
+ for(let i=0;i<5;i++){const a=i*1.3,r=.3+i*.05;draw(SPH,M4.trs([sx+Math.cos(a)*r,y0+.05,Math.sin(a)*r],.04),[.45,.43,.42,0])}
+ for(let i=0;i<80;i++){const u=(t*.8+hsh(i,3))%1,a=hsh(i,4)*6.283,r=Math.sqrt(hsh(i,5))*.6;P(sx*(1-u)+Math.cos(a)*r,y0-u*.92,Math.sin(a)*r,.98,.96,.9,.03)}
+ draw(SPH,M4.trs([0,.05,0],[.6,.1+.05*Math.sin(t*.3)**2,.6]),[.96,.92,.84,0],0,{uSpec:0});
+ LB('🥣 Sieve',[.95,y0+.15,0],'sm');LB('🟤 Bran and small stones stay on the sieve',[0,y0+.55,0]);LB('⚪ Fine flour falls through',[1.1,.35,.6]);mascot([-1.5,1.3,0])},
+saltpan(p,t){begin([0,2.6,5],[0,0,0],OUT);ground([.88,.8,.62,0]);sunBall([-5,6,-8],.9);draw(BOX,M4.trs([0,-.05,-4.5],[18,.2,5]),[.1,.5,.8,.04],2);const m=loop(t,.07,1.25);
+ for(let i=0;i<3;i++)for(let j=0;j<2;j++){const x=-1.5+i*1.5,z=-.6+j*1.3;[[0,.6,1.35,.08],[0,-.6,1.35,.08]].forEach(o=>draw(BOX,M4.trs([x,.06,z+o[1]],[o[2],.12,o[3]]),[.8,.7,.52,0]));[[.66],[-.66]].forEach(o=>draw(BOX,M4.trs([x+o[0],.06,z],[.08,.12,1.25]),[.8,.7,.52,0]));
+  if(m<1)draw(BOX,M4.trs([x,.03,z],[1.25,.06*(1-m)+.005,1.15]),[.25,.6,.85,.06],2);for(let k=0;k<30;k++)if(hsh(k,i*3+j)<m*1.1)P(x+(hsh(k,9)-.5)*1.15,.04,z+(hsh(k,8)-.5)*1.05,1,1,1,.09);if(m<1)vapour(x,.08,z,.45,6,.3,1.2,i*2+j)}
+ draw(CONE,M4.trs([2.9,0,.2],[.45,.5,.45]),[.98,.98,.98,.1]);draw(CONE,M4.trs([3.4,0,-.6],[.35,.4,.35]),[.98,.98,.98,.1]);
+ LB('🌊 Seawater',[0,.3,-2.4]);LB(m<1?'☀️ Sun and air evaporate the water':'⬜ Solid salt mixture left behind!',[0,1.6,0]);LB('🧂 Salt heaps',[3.1,.75,0],'sm');LB('🧑‍🏭',[-2.6,.6,.5],'big');mascot([-2.6,1.5,0])},
+paper(p,t){begin([0,1.9,2.8],[0,0,0]);table();draw(BOX,M4.trs([0,.006,0],[1.8,.01,1.3]),[.06,.06,.08,0]);const m=loop(t,.12,1.3);
+ [[-.45,-.2,.25],[.35,.15,.3],[-.1,.35,.18],[.5,-.3,.15]].forEach(([x,z,r],i)=>{const k=Math.min(1,m*1.3);if(k<1)draw(CYL,M4.trs([x,.012,z],[r*(1-k*.3),.006,r*.8*(1-k*.3)]),[.25,.35,.5,.02],2);for(let j=0;j<40;j++)if(hsh(j,i)<k){const a=hsh(j,i+5)*6.283,rr=Math.sqrt(hsh(j,i+9))*r*.8;P(x+Math.cos(a)*rr,.016,z+Math.sin(a)*rr*.8,1,1,1,.04)}if(k<1)vapour(x,.03,z,r*.6,5,.3,.8,i)});
+ steel(BOWL,M4.trs([1.4,0,-.4],[.35,.25,.35]));draw(CYL,M4.trs([1.4,.02,-.4],[.32,.18,.32]),WATER,2);
+ LB(m<.75?'💧 Drops of salt solution on black paper':'⬜ White salt patches left behind!',[0,.6,0]);LB('🥄 Salt solution',[1.4,.55,-.4],'sm');mascot([-1.4,.9,0])},
+chinadish(p,t){begin([0,1.7,3.6],[0,.75,0]);table();
+ if(p.kettle){draw(BOX,M4.trs([-.6,.12,0],[1.1,.24,.9]),[.25,.25,.28,0]);steel(KETTLE,M4.trs([-.6,.24,0],.8));seg(BOX,[-.25,.55,0],[.1,.8,0],.07,[.72,.75,.8,0]);
+  tilt(CYL,[.45,1.05,0],.35,[.45,.03,.45],[.72,.75,.8,0],0,{uSpec:1.4});cup([.75,0,0],.25,.55,.35+.15*((t*.05)%1));
+  for(let i=0;i<30;i++){const u=(t*.4+hsh(i,1))%1;P(.1+u*.35,.82+u*.25,(hsh(i,2)-.5)*.2,.95,.97,1,.08+.1*u)}for(let i=0;i<8;i++){const u=(t*.6+i/8)%1;P(.75,1-u*.45,0,.35,.65,1,.04)}
+  LB('♨️ Steam',[-.1,1.3,0],'sm');LB('❄️ Cold plate: steam condenses',[.6,1.35,0]);LB('💧 Water collected',[.75,.7,.3],'sm');LB('🧂 Salt stays in the kettle',[-.6,.95,.5],'sm');mascot([-1.7,1.2,0]);return}
+ if(p.boil){draw(BOX,M4.trs([0,.12,0],[1.2,.24,1]),[.25,.25,.28,0]);steel(POT,M4.trs([0,.24,0],1));draw(CYL,M4.trs([0,.27,0],[.46,.3,.46]),WATER,2);steel(CYL,M4.trs([0,.85,0],[.55,.03,.55]));
+  for(let i=0;i<9;i++){const a=i/9*6.283;draw(CONE,M4.trs([Math.cos(a)*.25,.24,Math.sin(a)*.25],[.05,.1+.04*Math.sin(t*12+i),.05]),[1,.5,.1,1.6])}for(let i=0;i<20;i++){const u=(t*.4+hsh(i,1))%1;P(.55+u*.2,.85+u*.6,(hsh(i,2)-.5)*.3,.95,.97,1,.06+.1*u)}
+  LB('🔥 Boil for about 10 minutes (covered pan)',[0,1.3,0]);mascot([-1.5,1.1,0]);return}
+ tripod([0,0,0],.85,.36);draw(BOX,M4.trs([0,.87,0],[.85,.012,.85]),[.6,.6,.62,0]);for(let i=-4;i<=4;i++){draw(BOX,M4.trs([i*.09,.88,0],[.006,.006,.8]),[.4,.4,.42,0]);draw(BOX,M4.trs([0,.88,i*.09],[.8,.006,.006]),[.4,.4,.42,0])}
+ GQ.push([LAMP,M4.trs([0,0,0],.9),[.8,.92,1],2,.7,.12]);draw(CYL,M4.trs([0,0,0],[.22,.12,.22]),[.75,.6,.9,.1]);draw(CONE,M4.trs([0,.38,0],[.05,.22+.03*Math.sin(t*15),.05]),[.3,.5,1,2]);HQ.push([SPH,M4.trs([0,.48,0],.18),[.4,.6,1],2,.6,0,1]);
+ const m=loop(t,.1,1.3);draw(DISH,M4.trs([0,.89,0],.55),[.97,.97,.95,0],0,{uSpec:.8});if(m<1)draw(CYL,M4.trs([0,.92,0],[.36,.1*(1-m),.36]),WATER,2);
+ if(m<1)for(let i=0;i<30;i++){const u=(t*.4+hsh(i,3))%1;P((hsh(i,4)-.5)*.5*(1+u),1+u*1.1,(hsh(i,5)-.5)*.4,.95,.97,1,.08+.15*u)}for(let i=0;i<40;i++)if(hsh(i,6)<m*1.2-.2){const a=hsh(i,7)*6.283,r=Math.sqrt(hsh(i,8))*.3;P(Math.cos(a)*r,.94,Math.sin(a)*r,1,1,1,.04)}
+ LB('🥣 China dish',[.85,1,0],'sm');LB('▦ Wire gauze',[-.85,.85,.3],'sm');LB('🔥 Spirit lamp',[.7,.25,.3],'sm');LB(m<1?'♨️ Water boils away':'🧂 Salt is left in the dish!',[0,1.7,0]);LB('⚠️ Be careful while heating',[0,.1,1.3],'sm');mascot([-1.6,1.2,0])},
+tea(p,t){begin([0,1.7,3.6],[0,.55,0]);table();
+ if(p.oil){cup([-.6,0,0],.38,1.1,.85,[.35,.68,1,.06]);draw(CYL,M4.trs([-.6,1.1*.62,0],[.35,.25,.35]),[1,.82,.2,.15],2);LB('🟡 Oil layer on top',[-.6,1.15,.45]);LB('💧 Water below',[-.6,.3,.45]);
+  tilt(BOWL,[.55,1.0,0],2.6,[.18,.3,.18],[.82,.85,.9,0]);for(let i=0;i<14;i++){const u=(t*.8+i/14)%1;P(.45+u*.3,.95-u*.75,0,1,.82,.2,.05)}steel(BOWL,M4.trs([.75,0,0],[.3,.2,.3]));draw(CYL,M4.trs([.75,.02,0],[.27,.1,.27]),[1,.82,.2,.15],2);
+  LB('🫗 Pour off the oil: decantation',[.6,1.5,0]);mascot([-1.6,1.2,0]);return}
+ if(p.rice){const a=.75+.2*Math.sin(t*.8);tilt(BOWL,[-.2,.55,0],a,[.45,.35,.45],[.85,.6,.3,0]);for(let i=0;i<120;i++){const q=rz([(hsh(i,1)-.5)*.6,.02+hsh(i,2)*.08,(hsh(i,3)-.5)*.6],[0,0,0],a);P(q[0]-.2,q[1]+.55,q[2],.98,.97,.92,.04)}
+  for(let i=0;i<20;i++){const u=(t*.8+i/20)%1;P(.12+u*.15,.75-u*.7,(hsh(i,4)-.5)*.1,.75,.72,.6,.05)}LB('🍚 Rice settles in the bowl',[-.5,1.15,0]);LB('🤎 Dirty water poured off',[.55,.5,.4],'sm');mascot([-1.6,1.1,0]);return}
+ const tl=-(p.strain?.7:.55+.15*Math.sin(t*.6)),pv=[.15,.95,0];
+ draw(CYL,M4.trs([.75,0,0],[.28,.05,.28]),[.95,.95,.95,0]);GQ.push([BOWL,M4.trs([.75,.05,0],[.26,.32,.26]),[.85,.9,1],2,.7,.2]);draw(CYL,M4.trs([.75,.06,0],[.24,.12+.12*((t*.08)%1),.24]),[.75,.48,.28,.05],2);
+ tilt(POT,[-.45,.5,0],tl,.8,[.72,.75,.8,0],0,{uSpec:1.4});seg(BOX,rz([-.95,.9,0],[-.45,.5,0],tl),rz([-1.6,.95,0],[-.45,.5,0],tl),.06,[.2,.2,.22,0]);
+ for(let i=0;i<40;i++){const q=rz([-.45+(hsh(i,1)-.5)*.65,.53+hsh(i,2)*.05,(hsh(i,3)-.5)*.65],[-.45,.5,0],tl);P(q[0],q[1],q[2],.25,.15,.06,.045)}
+ const lip=rz([-.45+.4,.5+.48,0],[-.45,.5,0],tl);for(let i=0;i<18;i++){const u=(t*.9+i/18)%1;P(lip[0]+u*(.72-lip[0]),lip[1]+.05*Math.sin(u*3.14)-u*(lip[1]-(p.strain?.56:.36)),0,.75,.48,.28,.05)}
+ if(p.strain){draw(BAND,M4.trs([.75,.55,0],[.22,.05,.22]),[.75,.77,.8,0]);draw(CYL,M4.trs([.75,.52,0],[.21,.01,.21]),[.4,.4,.42,0]);seg(BOX,[.97,.57,0],[1.4,.62,0],.03,[.2,.2,.22,0]);for(let i=0;i<30;i++){const a=hsh(i,6)*6.283,r=Math.sqrt(hsh(i,7))*.18;P(.75+Math.cos(a)*r,.55,Math.sin(a)*r,.25,.15,.06,.04)}LB('🫖 Strainer holds every tea leaf: filtration',[.6,1.4,0])}
+ else{LB('🍃 Tea leaves settle at the bottom: sedimentation',[-.5,1.45,0]);LB('🫗 Tilt and pour: decantation',[.8,.85,0])}
+ mascot([-1.7,1.2,0])},
+filter(p,t){begin([0,1.6,3.4],[0,.95,0]);table();
+ if(p.cloth){cup([0,0,0],.45,1,.2+.35*((t*.06)%1),[.45,.72,1,.06]);draw(SPH,M4.trs([0,1.0,0],[.6,.12,.6]),[.97,.96,.9,0]);for(let i=0;i<30;i++){const a=hsh(i,1)*6.283,r=Math.sqrt(hsh(i,2))*.35;P(Math.cos(a)*r,.98,Math.sin(a)*r,.45,.3,.15,.05)}
+  tilt(KETTLE,[-.75,1.15,0],-1.1,.45,[.62,.42,.25,0]);for(let i=0;i<16;i++){const u=(t*.9+i/16)%1;P(-.45+u*.4,1.35-u*.32,0,.55,.4,.22,.05)}for(let i=0;i<10;i++){const u=(t*.8+i/10)%1;P((hsh(i,3)-.5)*.3,.92-u*.55,(hsh(i,4)-.5)*.3,.4,.7,1,.03)}
+  LB('🧣 Cloth with tiny pores',[.8,1.1,0]);LB('🟤 Mud stays on the cloth',[0,1.35,0],'sm');LB('💧 Clearer water below',[.8,.35,.3],'sm');mascot([-1.6,1.4,0]);return}
+ tripod([0,0,0],1.05,.3);GQ.push([FLASK,M4.trs([0,0,0],[.85,.95,.85]),[.85,.93,1],2,.75,.06]);const m=(t*.05)%1;draw(CYL,M4.trs([0,.01,0],[.35,.1+.12*m,.35]),[.45,.75,1,.05],2);
+ GQ.push([FUNNEL,M4.trs([0,1.02,0],1),[.85,.93,1],2,.8,.1]);draw(PAPERCONE,M4.trs([0,1.0,0],1),[.98,.98,.96,.05]);draw(MUDCONE,M4.trs([0,1.0,0],1),[.5,.36,.2,0],2);
+ for(let i=0;i<40;i++){const a=hsh(i,1)*6.283,h=.42+hsh(i,2)*.3,r=.05+(h-.4)*1.05;P(Math.cos(a)*r*.98,1+h,Math.sin(a)*r*.98,.42,.28,.14,.035)}
+ for(let i=0;i<8;i++){const u=(t*.9+i/8)%1;P(0,1.02-u*.85,0,.45,.75,1,.035)}
+ if(!p.markers){LB('📄 Filter paper',[-.6,1.68,0],'sm');LB('🟤 Residue (mud) on the paper',[0,1.95,0]);LB('🔻 Funnel',[.6,1.3,0],'sm');LB('🧪 Conical flask',[-.65,.45,.35],'sm');LB('💧 Filtrate (clear water)',[.7,.2,.5]);LB('Tripod stand',[.75,.62,.45],'sm')}markers(p);mascot([-1.5,1.6,0])},
+net(p,t){if(p.pond){begin([0,1.9,4.4],[0,.4,0],OUT);lawn();sunBall([-5,6,-8],.8);draw(CYL,M4.trs([0,-.02,-.5],[2.2,.04,1.4]),[.45,.38,.2,.04],2);draw(MATKA,M4.trs([1.8,0,.9],.5),[.76,.38,.2,0]);
+  LB('🏞️ Muddy pond water: unfit for drinking',[0,.5,-.5]);LB('👧 Intelligent Leela',[1.4,1.1,1],'big');LB('👨‍🌾 Father in the farm',[-2.2,.9,.8],'sm');mascot([-1.4,1.4,1]);return}
+ begin([0,2,5],[0,.6,0],OUT);draw(BOX,M4.trs([0,-.1,0],[20,.2,14]),[.12,.48,.75,.05],2);sunBall([-5,6,-8],.8);const bob=Math.sin(t*1.2)*.04;
+ draw(BOWL,M4.trs([-.6,bob,0],[1.5,.38,.55]),[.6,.35,.18,0]);draw(BOX,M4.trs([-.6,.25+bob,0],[2,.04,.04]),[.5,.3,.15,0]);seg(BOX,[.6,.4,0],[1.6,1.6,0],.04,[.45,.3,.15,0]);
+ const ly=1.05+.15*Math.sin(t*.7),nc=[1.6,ly,0];seg(BOX,[1.6,1.6,0],add(nc,[0,.5,0]),.008,[.9,.9,.9,0]);
+ [[0,0,0,[1,.5,.1]],[.15,-.1,.1,[1,.6,.2]],[-.12,-.05,-.1,[.9,.4,.1]],[.05,-.2,-.05,[.3,.6,1]],[-.15,-.18,.08,[.95,.2,.3]],[.1,.08,-.12,[.6,.9,.3]]].forEach(([x,y,z,c],i)=>i<3?fishMesh(add(nc,[x,y,z]),i,[c[0],c[1],c[2],0],.8):draw(BOX,M4.trs(add(nc,[x,y,z]),[.12,.1,.05],i),[c[0],c[1],c[2],.05]));
+ draw(CYL,M4.basis(add(nc,[-.05,.05,.12]),[1,0,0],[.6,.8,0],[0,0,1],[.05,.2,.05]),[.3,.8,.4,.1]);
+ GQ.push([SPH,M4.trs(nc,[.38,.42,.38]),[.95,.95,.9],1.5,.9,.15]);for(let i=0;i<20;i++){const u=(t*.9+hsh(i,1))%1;P(1.6+(hsh(i,2)-.5)*.5,ly-.35-u*(ly-.35),(hsh(i,3)-.5)*.4,.4,.7,1,.04)}
+ LB('🎣 Water drains through the mesh',[1.6,1.9,0]);LB('🐟 Fish',[2.15,1.2,.3],'sm');LB('🧴 Plastic, bottles, wrappers 😢',[2.2,.7,.3],'sm');LB('🚣 Otukkam the fisherman',[-.8,.9,.4],'sm');LB('💙 Stop plastic pollution at source!',[-.8,1.9,0],'sm');mascot([-1.9,1.3,.2])},
+churn(p,t){begin([0,2,3.8],[0,.8,0]);draw(BOX,M4.trs([0,-.05,0],[8,.1,6]),[.78,.6,.4,0]);const sp=p.fast?14:3.5;
+ draw(BIGPOT,M4.trs([0,0,0],[1,1.05,1]),[.3,.55,.65,0],0,{uSpec:.6});draw(CYL,M4.trs([0,.85,0],[.68,.02,.68]),[.97,.96,.92,.1],2);
+ draw(CYL,M4.trs([-1.2,0,-.6],[.1,2.6,.1]),[.5,.32,.18,0]);draw(BOX,M4.trs([-.6,2.2,-.3],[1.4,.06,.06],.46),[.5,.32,.18,0]);
+ const a=t*sp;draw(CYL,M4.trs([0,.5,0],[.04,1.9,.04]),[.62,.42,.22,0]);for(let k=0;k<4;k++)draw(BOX,M4.trs([0,.65,0],[.5,.05,.06],a+k*.785),[.55,.36,.2,0]);
+ draw(BAND,M4.trs([0,1.6,0],[.06,.12,.06]),[.9,.25,.2,0]);seg(BOX,[-.05,1.65,0],[-1.2,1.5,-.6],.012,[.9,.25,.2,0]);seg(BOX,[.05,1.65,0],[-1.2,1.75,-.6],.012,[.9,.25,.2,0]);
+ for(let i=0;i<12;i++){const u=((t*(p.fast?.3:.12)+hsh(i,1))%1),r=.15+hsh(i,2)*.45,b=hsh(i,3)*6.283+a*.2;draw(SPH,M4.trs([Math.cos(b)*r,.87,Math.sin(b)*r],.04+.06*u),[1,.88,.35,.15])}
+ for(let i=0;i<30;i++){const b=hsh(i,4)*6.283+a,r=hsh(i,5)*.6;P(Math.cos(b)*r,.88,Math.sin(b)*r,.9,.9,.85,.03)}
+ LB('👩',[-1.1,1.1,.4],'big');LB(p.fast?'⚡ Mixer: very fast churning':'🥢 Mathni (churner)',[.6,1.9,0]);LB('🧈 Butter floats on top (lighter)',[0,1.2,.7]);LB('🥛 Buttermilk below',[.85,.45,.6],'sm');mascot([1.6,1.4,0])},
+magnet(p,t){begin([0,2.1,3.8],[0,.4,0]);draw(BOX,M4.trs([0,-.05,0],[8,.1,6]),[.62,.45,.3,0]);
+ if(p.crane){draw(BOX,M4.trs([-1.8,.4,-.5],[.8,.8,.8]),[.95,.7,.15,0]);seg(BOX,[-1.8,.8,-.5],[.6,2.4,-.2],.12,[.95,.7,.15,0]);const cy=1.3+.5*Math.sin(t*.7);seg(BOX,[.6,2.4,-.2],[.6,cy,-.2],.015,[.2,.2,.2,0]);
+  draw(CYL,M4.trs([.6,cy-.15,-.2],[.35,.15,.35]),[.25,.25,.28,0],0,{uSpec:1});for(let i=0;i<9;i++){const x=.6+(hsh(i,1)-.5)*.5,z=-.2+(hsh(i,2)-.5)*.5;draw(BOX,M4.trs([x,cy-.22-hsh(i,3)*.15,z],[.14,.05,.08],i),[.45,.45,.48,0],0,{uSpec:1})}
+  for(let i=0;i<40;i++){const x=(hsh(i,4)-.5)*3,z=.5+(hsh(i,5)-.5)*1.4;draw(BOX,M4.trs([x,.08,z],[.2+hsh(i,6)*.2,.12,.15],i),i%3?[.45,.45,.48,0]:[[.8,.3,.2],[.3,.5,.8],[.3,.7,.35]][i%3==0?i%9/3|0:0].concat(0))}
+  LB('🏗️ Crane magnet lifts scrap iron',[.6,2.7,-.2]);LB('♻️ Iron is recycled and reused',[1.5,.5,1.2],'sm');mascot([-1.8,1.6,.6]);return}
+ draw(SPH,M4.trs([0,0,.2],[1.3,.25,.9]),[.85,.68,.42,0]);for(let i=0;i<140;i++){const a=hsh(i,1)*6.283,r=Math.sqrt(hsh(i,2))*1.2;P(Math.cos(a)*r,.12+(1-r/1.2)*.12,.2+Math.sin(a)*r*.7,.9,.72,.45,.05)}
+ const m=(t*.12)%1.3,mx=-1.8+3.6*Math.min(1,m),my=.75;
+ draw(BOX,M4.trs([mx,my+.32,0],[.5,.12,.14]),[.85,.15,.15,0]);[-.19,.19].forEach(o=>{draw(BOX,M4.trs([mx+o,my+.12,0],[.12,.3,.14]),[.85,.15,.15,0]);draw(BOX,M4.trs([mx+o,my-.06,0],[.12,.08,.14]),[.8,.8,.84,0],0,{uSpec:1.4})});
+ for(let i=0;i<8;i++){const nx=-1+i*.28,nz=.2+(hsh(i,3)-.5)*.8,stuck=mx>nx;const pos=stuck?[mx-.19+(i%2)*.38,my-.18-(i%3)*.06,(i%3-1)*.05]:[nx,.2,nz];draw(BOX,M4.trs(pos,[.24,.025,.025],stuck?.5+i:i*.9),[.5,.5,.55,0],0,{uSpec:1.4})}
+ LB('🧲 Magnet',[mx,my+.6,0]);LB('🪵 Sawdust stays (non-magnetic)',[0,.35,1.2],'sm');LB('🔩 Iron nails jump to the magnet!',[-.2,1.75,0]);LB('🧑‍🔧',[1.8,.8,.6],'big');mascot([-2,1.5,.5])},
+baskets(p,t){begin([0,1.8,3.6],[0,.4,0]);draw(BOX,M4.trs([0,-.05,0],[8,.1,6]),[.86,.78,.62,0]);
+ [-1,1].forEach((x,j)=>{draw(BASKET,M4.trs([x,0,0],[.7,.65,.7]),[.72,.45,.2,0]);for(let k=0;k<5;k++)draw(BAND,M4.trs([x,.08+k*.08,0],[.62+.12*k*.5,.012,.62+.12*k*.5]),[.52,.3,.12,0]);seg(BOX,[x-.55,.4,0],[x,1.05,0],.04,[.55,.32,.14,0]);seg(BOX,[x+.55,.4,0],[x,1.05,0],.04,[.55,.32,.14,0]);
+  for(let i=0;i<3;i++){const u=(t*.35+i/3+j*.17)%1;draw(BOX,M4.trs([x+(hsh(i,j)-.5)*.4,1.6-u*1.25,(hsh(j,i)-.5)*.3],[.22,.01,.14],u*6+i),[.98,.98,.95,.1])}});
+ LB('🗑️ Remove a part that is NOT useful',[-1,1.25,0]);LB('🤝 Separate two USEFUL parts',[1,1.25,0]);mascot([0,1.6,-.5])},
+tank(p,t){begin([0,1.7,3.6],[0,.75,0]);table();const names=p.names||['Filtration','Decantation','Handpicking','Churning','Evaporation','Winnowing','Sieving','Threshing'];
+ const W=2.6,H=1.1,D=1;draw(BOX,M4.trs([0,.03,0],[W,.06,D]),[.85,.8,.6,0]);for(let i=0;i<8;i++)draw(CONE,M4.trs([-1+i*.28,.06,-.3+(i%2)*.15],[.04,.2+hsh(i,1)*.2,.04]),[.2,.65,.3,0]);
+ names.forEach((nm,i)=>{const caught=p.k===i,done=p.done&&p.done[i];if(done)return;const a=t*(.35+hsh(i,2)*.3)+i*1.7,cx=Math.cos(a)*(.9-hsh(i,3)*.2),cz=Math.sin(a)*.3,cy=caught?H+.35+.05*Math.sin(t*3):.25+((i*.137)%1)*.65,
+   c=[cx*(caught?0:1),cy,cz*(caught?0:1)];fishMesh(c,caught?0:a+1.57,caught?[1,.45,.3,.3]:[.92,.22,.28,0],1);LB(nm,add(c,[0,.13,0]),caught?'mk':'sm')});
+ if(p.k!=null){seg(BOX,[1.6,2.4,0],[0,2.3,0],.03,[.6,.4,.2,0]);seg(BOX,[0,2.3,0],[0,H+.48,0],.006,[.9,.9,.9,0]);draw(BOX,M4.trs([0,H+.45,0],[.08,.05,.05]),[.85,.15,.15,0])}
+ GQ.push([BOX,M4.trs([0,H/2,0],[W,H,D]),[.25,.6,.95],1.5,.45,.18]);LB(p.k!=null?'🎣 Caught! Now find its blue slip 👇':'🐟 Tank 1: methods of separation',[0,H+.95,0]);mascot([-1.8,1.4,0])}
+};
+
+/* ---------- frame + overlay ---------- */
+const lbBox=$('#labels'),lbEl=[];let first=true;
+function frame(ms){requestAnimationFrame(frame);const w=cv.clientWidth,hh=cv.clientHeight;if(!w||document.hidden)return;const dpr=Math.min(devicePixelRatio||1,1.5),W=Math.round(w*dpr),H=Math.round(hh*dpr);
+ if(cv.width!=W||cv.height!=H){cv.width=W;cv.height=H}
+ T=ms/1000;pn=0;LBS.length=0;MP=null;(SCN[SC[0]]||SCN.map)(SC[1]||{},T);
+ if(MP&&performance.now()-happyT<900){const k=(performance.now()-happyT)/900;for(let i=0;i<30;i++){const a=i*.21,r=.15+k*.6;P(MP[0]+Math.cos(a)*r,MP[1]+Math.sin(a*1.3)*r*.8,MP[2]+Math.sin(a)*r*.4,1,.85-.4*(i%2),.3+.6*(i%3==0),.05*(1-k)+.01)}}
+ shells(GQ,0);shells(HQ,1);drawPts();
+ let k=0;for(const[tx,p,c,dd]of LBS){const x=VP[0]*p[0]+VP[4]*p[1]+VP[8]*p[2]+VP[12],y=VP[1]*p[0]+VP[5]*p[1]+VP[9]*p[2]+VP[13],q=VP[3]*p[0]+VP[7]*p[1]+VP[11]*p[2]+VP[15];if(q<=0)continue;
+  let e=lbEl[k];if(!e){e=lbEl[k]=document.createElement('div');lbBox.appendChild(e)}k++;if(e._t!==tx){e.textContent=tx;e._t=tx}const cl='lb '+c;if(e.className!==cl)e.className=cl;e.hidden=false;if(dd!=null)e.dataset.i=dd;else delete e.dataset.i;
+  e.style.left=Math.max(6,Math.min(94,(x/q*.5+.5)*100))+'%';e.style.top=Math.max(6,Math.min(94,(1-(y/q*.5+.5))*100))+'%'}
+ for(;k<lbEl.length;k++)lbEl[k].hidden=true;
+ if(first){first=false;setTimeout(()=>$('#load').classList.add('gone'),300)}}
+if(gl){initGL();let px=null;const v=$('#view');v.addEventListener('pointerdown',e=>{px=e.clientX});addEventListener('pointerup',()=>px=null);
+ v.addEventListener('pointermove',e=>{if(px!=null){yaw+=(e.clientX-px)*.008;px=e.clientX}});requestAnimationFrame(frame)}
+else{$('#nogl').hidden=false;$('#load').classList.add('gone')}
+function hud(s){$('#hud').textContent=s}
+function go(k,p,title){SC=[k,p||{}];yaw=0;if(title)hud(title)}
+
+/* ---------- UI, games and quizzes ---------- */
+let cur=null,TAP=null;
+const BOSS={id:'boss',ic:'🏆',col:'#ffb627',t:'Yatra Champion',s:'Boss round · 15 mixed questions · 3 hearts',tip:"Final journey! Every method from the whole trip. You have 3 hearts. 💪"};
+const EXZ={id:'ex',ic:'📝',col:'#2fbf71',t:'Exercise Zone',s:'Let us enhance our learning · Q1–Q10 + Learning further',tip:"Every textbook exercise question, with a model answer after each try. 📘"};
+const ALL=[...LV,EXZ,BOSS];
+const starsFor=id=>id=='ex'?Math.min(...Object.keys(EXS).map(k=>save.stars['ex_'+k]||0)):save.stars[id]||0;
+function drawHome(){let tot=0;const g=$('#grid');g.innerHTML='';
+ ALL.forEach((z,i)=>{const s=starsFor(z.id);tot+=s;const b=document.createElement('button');b.className='zone';b.style.setProperty('--c',z.col);
+  const stn=z.st!=null?`${STATIONS[z.st][1]} ${STATIONS[z.st][0]}`:z.id=='ex'?'📝 Exercises':'🏆 Final';
+  b.innerHTML=`<span class="ic">${z.ic}</span><span class="zt"><small>${i<LV.length?'Stop '+(i+1)+' · ':''}${stn}</small><b>${z.t}</b><small>${z.s}</small><span class="st">${'⭐'.repeat(s)}${'☆'.repeat(3-s)}</span></span>`;
+  b.onclick=()=>openZone(z);g.appendChild(b)});
+ $('#tot').textContent=`⭐ ${tot} / ${ALL.length*3}`}
+function show(home){$('#home').hidden=!home;$('#zone').hidden=home;document.body.classList.toggle('inzone',!home);scrollTo(0,0)}
+const HUB='🚂 Bharat ki Yatra · drag to look around';
+$('#back').onclick=()=>{TAP=null;go('map',{hub:1},HUB);drawHome();show(true)};
+function openZone(z){cur=z;TAP=null;beep(520,.08);$('#zt').textContent=z.ic+' '+z.t;$('#tip').innerHTML=`<span>👦👧</span> <b>Malli & Valli:</b> ${z.tip}`;show(false);
+ const T=$('#tabs');T.innerHTML='';let tabs;
+ if(z.id=='boss'){T.hidden=true;go('map',{hub:1},'🏆 Yatra Champion');bossIntro();return}
+ tabs=z.id=='ex'?[...Object.keys(EXS).map(k=>[k,'📝 '+EXS[k].t]),['far','🚀 Learning further']]:[['learn','📖 Learn'],['lab','🔬 3D Lab'],['game','🎮 Play'],['quiz','❓ Quiz']];
+ T.hidden=false;tabs.forEach(([k,l])=>{const b=document.createElement('button');b.textContent=l;b.dataset.k=k;b.onclick=()=>setTab(k);T.appendChild(b)});setTab(tabs[0][0])}
+function setTab(k){TAP=null;[...$('#tabs').children].forEach(b=>b.classList.toggle('on',b.dataset.k==k));if(EXS[k])return runEx(k);({learn,lab,game,quiz,far:further})[k]()}
+const panel=h=>{$('#panel').innerHTML=h};
+$('#labels').addEventListener('click',e=>{const el=e.target.closest('.lb.tap');if(el&&TAP)TAP(+el.dataset.i)});
+
+function learn(i=0,ln=0){const[tt,L,sc,pr]=cur.learn[i];if(ln==0)go(sc,pr,cur.t+' · '+tt);const last=ln>=L.length-1,end=i>=cur.learn.length-1;
+ panel(`<div class="card"><div class="seg">${cur.learn.map((_,j)=>`<i class="${j<i?'d':j==i?'n':''}"></i>`).join('')}</div><span class="tag">${cur.s} · part ${i+1} of ${cur.learn.length}</span><h3>${tt}</h3>${L.slice(0,ln+1).map((x,j)=>`<p class="ln${j==ln?' now':''}">${x}</p>`).join('')}<div class="nav"><button id="pv" ${i||ln?'':'disabled'}>◀ Back</button><span>Line ${ln+1} / ${L.length}</span><button id="nx" class="pri">${!last?'Next line ▶':end?'Open the 3D Lab 🔬':'Next part ⏩'}</button></div></div>`);
+ $('#pv').onclick=()=>ln?learn(i,ln-1):learn(i-1,0);$('#nx').onclick=()=>{beep(600,.06);!last?learn(i,ln+1):end?setTab('lab'):learn(i+1,0)}}
+function lab(){hud(cur.t+' · 3D Lab');
+ panel(`<div class="card"><h3>🔬 Try it in 3D</h3><div class="ctl">${cur.lab.map((b,j)=>`<button data-j="${j}">${b[0]}</button>`).join('')}</div><div class="out" id="labout"></div><div class="nav"><span>👆 Drag the 3D view to look around.</span><button id="nx" class="pri">Play the game 🎮</button></div></div>`);
+ const pick=j=>{const b=cur.lab[j];go(b[1],b[2]);$('#labout').innerHTML=b[3];document.querySelectorAll('.ctl button').forEach(x=>x.classList.toggle('on',+x.dataset.j==j))};
+ document.querySelectorAll('.ctl button').forEach(b=>b.onclick=()=>{beep(700,.06);pick(+b.dataset.j)});pick(0);$('#nx').onclick=()=>setTab('game')}
+function gameEnd(sc,n){TAP=null;panel(`<div class="card center"><div class="big">🎯</div><h3>Game complete!</h3><p class="mid">${sc} of ${n} right on the first try.</p><div class="ctl mid"><button id="ag">🔁 Play again</button><button id="nx" class="pri">Take the quiz ❓</button></div></div>`);win();if(sc==n)confetti();$('#ag').onclick=game;$('#nx').onclick=()=>setTab('quiz')}
+const bar=(i,n)=>`<div class="bar"><i style="width:${i/n*100}%"></i></div>`;
+const G={tf:gTF,sort:gSort,order:gOrder,tap:gTap,label3d:gLabel,fish:gFish,combo:gCombo};
+function game(){hud(cur.t+' · 🎮 Play');G[cur.game.type](cur.game,gameEnd)}
+function gCombo(g,done){let tot=0,n=0,k=0;const nx=()=>{if(k>=g.parts.length)return done(tot,n);const pt=g.parts[k++];if(pt.type=='sort')go('baskets',{});G[pt.type](pt,(s,m)=>{tot+=s;n+=m;nx()})};nx()}
+function gTF(g,done){const it=shuffle(g.items);let i=0,sc=0;go(...(cur.learn[1]||cur.learn[0]).slice(2,4));
+ const step=()=>{if(i>=it.length)return done(sc,it.length);const[s,v,why]=it[i];
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">✅ True or false? ❌</p><div class="item">${s}</div><div class="ans two"><button data-v="1">✅ True</button><button data-v="0">❌ False</button></div><div class="out" id="go" hidden></div><div class="nav"><span></span><button id="gnx" class="pri" hidden>Next ▶</button></div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{const ok=(b.dataset.v=='1')==v;ok?(sc++,good()):bad();b.classList.add(ok?'ok':'no');document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);
+   const o=$('#go');o.hidden=false;o.innerHTML=(ok?'🎉 <b>Yes!</b> ':'💡 <b>Not quite.</b> ')+`It is <b>${v?'true':'false'}</b>. ${why}`;const n=$('#gnx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+function gSort(g,done){const it=shuffle(g.items);let i=0,sc=0,first;
+ const step=()=>{if(i>=it.length)return done(sc,it.length);first=true;
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">${g.title||'🧺 Sort it! Where does this belong?'}</p><div class="item pop">${it[i][0]}</div><div class="ans cats">${g.cats.map((c,j)=>`<button data-j="${j}">${c}</button>`).join('')}</div><div class="out" id="go">Tap the right group.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(+b.dataset.j==it[i][1]){good();if(first)sc++;b.classList.add('ok');document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);$('#go').innerHTML='🎉 <b>Correct!</b>';setTimeout(()=>{i++;step()},650)}
+   else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML='🤔 Not this one. Think again!'}})};step()}
+function gOrder(g,done){const it=g.items,sh=shuffle(it.map((x,j)=>j));let i=0,sc=0,first=true;
+ const step=()=>{if(i>=it.length)return done(sc,it.length);
+  panel(`<div class="card">${bar(i,it.length)}<p class="lead">${g.title}</p><ol class="ord">${it.slice(0,i).map(x=>`<li class="okli">${x}</li>`).join('')}<li class="ask">Step ${i+1}: which comes next? ❓</li></ol><div class="ans list">${sh.filter(j=>j>=i).map(j=>`<button data-j="${j}">${it[j]}</button>`).join('')}</div><div class="out" id="go">Tap the next step.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(+b.dataset.j==i){good();if(first)sc++;first=true;document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);b.classList.add('ok');i++;setTimeout(step,420)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML='🤔 Not yet! What has to happen first?'}})};step()}
+function gTap(g,done){const kinds=shuffle(['s','s','s','s','s','s','h','h','h','h','g','g','g','g','g']),taps=kinds.map((k,j)=>{const inner=j<5,a=inner?j/5*6.283+.3:(j-5)/10*6.283,r=inner?.38:.85;return{k,p:[Math.cos(a)*r,.1,Math.sin(a)*r*.9]}});
+ const need=taps.filter(x=>x.k!='g').length;let got=0,miss=0;go('courtyard',{taps},cur.t+' · ✋ Pick out the stones and husk!');
+ const draw=m=>panel(`<div class="card">${bar(got,need)}<p class="lead">✋ Handpicking challenge! Tap every 🪨 stone and 🍂 husk in the 3D thali. Leave the 🌾 grains!</p><div class="out" id="go">${m||`Picked ${got} of ${need}.`}</div><div class="nav"><span>Oops taps: ${miss}</span><button id="gnx" class="pri" hidden>Finish ▶</button></div></div>`);draw();
+ TAP=i=>{const it=taps[i];if(!it||it.gone)return;if(it.k=='g'){bad();miss++;draw('🌾 That is a grain! We keep the grains for cooking.');return}it.gone=1;got++;good();draw(got>=need?'🎉 All the stones and husk are out. The grains are fit for cooking!':null);if(got>=need){TAP=null;const n=$('#gnx');n.hidden=false;n.onclick=()=>done(Math.max(0,need-miss),need)}}}
+function gLabel(g,done){const keys=Object.keys(g.marks),arr=keys.map(()=>null),words=shuffle(keys);let i=0,sc=0,first;go(g.scene,{markers:arr,mk:g.marks},cur.t+' · Label the 3D diagram');
+ const step=()=>{if(i>=keys.length)return done(sc,keys.length);first=true;
+  panel(`<div class="card">${bar(i,keys.length)}<p class="lead">🏷️ Fig. 9.11: Label the filtration set-up. What is at marker <b class="badge">${i+1}</b>?</p><div class="ans chips">${words.map(w=>`<button ${arr.includes(w)?'disabled':''}>${w}</button>`).join('')}</div><div class="out" id="go">Look for the ❓ with number ${i+1} in the 3D view.</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(b.textContent==keys[i]){good();if(first)sc++;arr[i]=keys[i];document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);b.classList.add('ok');i++;setTimeout(step,450)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML=`🤔 Not that one. Look again at marker ${i+1}.`}})};step()}
+function gFish(g,done){const pr=shuffle(g.pairs),names=pr.map(x=>x[0]),slips=shuffle(pr.map(x=>x[1])),dn=names.map(()=>0);let i=0,sc=0,first;
+ const step=()=>{if(i>=pr.length)return done(sc,pr.length);first=true;go('tank',{names,k:i,done:dn},'🐟 Wise Fish · Tank 1 → Tank 2');
+  panel(`<div class="card">${bar(i,pr.length)}<p class="lead">🎣 Wise Fish! You caught the red fish <b class="badge wide">${pr[i][0]}</b>. Now fish out its blue slip from Tank 2:</p><div class="ans chips slips">${slips.map(s=>`<button data-s="${s}">${s}</button>`).join('')}</div><div class="out" id="go">Which blue slip goes with ${pr[i][0]}?</div></div>`);
+  document.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(b.dataset.s==pr[i][1]){good();if(first)sc++;dn[i]=1;slips.splice(slips.indexOf(pr[i][1]),1);document.querySelectorAll('.ans button').forEach(x=>x.disabled=true);b.classList.add('ok');i++;setTimeout(step,500)}else{bad();first=false;b.classList.add('no');b.disabled=true;$('#go').innerHTML='🤔 That slip belongs to another fish. Try again!'}})};step()}
+function runQuiz(qs,hearts,done,fixed){let i=0,sc=0,hp=hearts;
+ const step=()=>{if(i>=qs.length||(hearts&&hp<=0))return done(sc,qs.length,hp);const q=qs[i];if(q.sc)go(q.sc[0],q.sc[1],'📝 Exercise Q'+q.n);const raw=q.o.map((o,j)=>[o,j==0||(q.ok||[]).includes(j)]),ops=q.fix?raw:shuffle(raw);
+  panel(`<div class="card">${bar(i,qs.length)}<div class="nav top"><span class="tag">${q.tag}</span><span>${hearts?'❤️'.repeat(hp)+'🖤'.repeat(hearts-hp)+' · ':''}Q ${i+1}/${qs.length} · ⭐ ${sc}</span></div><p class="q">${q.q}</p><div class="opts ${q.o.length==2?'two':''}">${ops.map((o,j)=>`<button data-j="${j}">${q.o.length==2?'':'ABCDE'[j]+'. '}${o[0]}</button>`).join('')}</div><div class="out ${q.sc?'model':''}" id="ex" hidden></div><div class="nav"><span></span><button id="nx" class="pri" hidden>Next ▶</button></div></div>`);
+  const B=[...document.querySelectorAll('.opts button')];
+  B.forEach((b,j)=>b.onclick=()=>{B.forEach((x,k)=>{x.disabled=true;if(ops[k][1])x.classList.add('ok')});if(ops[j][1]){sc++;good()}else{b.classList.add('no');hp--;bad()}
+   const e=$('#ex');e.hidden=false;e.innerHTML=(ops[j][1]?'🎉 <b>Correct!</b> ':'💡 <b>Not quite.</b> ')+(q.sc?'<br>📘 <b>Model answer:</b> ':'')+q.a;const n=$('#nx');n.hidden=false;n.focus();n.onclick=()=>{i++;step()}})};step()}
+const Q=x=>({q:x[0],o:x[1],a:x[2],tag:x[3]});
+function finish(id,sc,n,msg,again){const r=sc/n,st=r>=.9?3:r>=.7?2:r>=.5?1:0;if(st>(save.stars[id]||0)){save.stars[id]=st;persist()}
+ panel(`<div class="card center"><div class="big">${st==3?'🏆':st?'🌟':'🌱'}</div><h3>${msg}</h3><p class="mid">You scored <b>${sc} / ${n}</b></p><p class="stars">${'⭐'.repeat(st)}${'☆'.repeat(3-st)}</p><p class="mid">${st==3?'Brilliant! You are a separation expert! 🧪':st?'Good work! Read the Learn cards again to get 3 stars.':'Try the Learn cards and the 3D Lab, then play again.'}</p><div class="ctl mid"><button id="ag">🔁 Try again</button><button id="hm" class="pri">🗺️ Stations</button></div></div>`);
+ if(st>=2){win();confetti()}$('#ag').onclick=again;$('#hm').onclick=()=>$('#back').click()}
+function quiz(){go('map',{to:cur.st},cur.t+' · ❓ Quiz');runQuiz(shuffle(cur.quiz).map(Q),0,(sc,n)=>finish(cur.id,sc,n,cur.t+': quiz complete!',quiz))}
+function runEx(k){const E=EXS[k],items=E.items.map(x=>Object.assign({tag:'Exercise Q'+x.n},x));runQuiz(items,0,(sc,n)=>finish('ex_'+k,sc,n,E.t+': done!',()=>runEx(k)))}
+function further(){go('map',{hub:1},'🚀 Learning further');
+ panel(`<div class="card"><h3>🚀 Learning further</h3>${FURTHER.map(f=>`<p class="ln now">${f}</p>`).join('')}<h3>🧠 Think like a scientist</h3><p>A mixture has <b>iron nails, sand, black pepper, stones, common salt and water</b>. A mixture with more than two components needs a combination of methods. Put the steps in order:</p><div id="sci"></div></div>`);
+ const box=$('#sci'),it=SCIENTIST;let i=0;const sh=shuffle(it.map((x,j)=>j));
+ const step=()=>{box.innerHTML=`<ol class="ord">${it.slice(0,i).map(x=>`<li class="okli">${x}</li>`).join('')}${i<it.length?`<li class="ask">Step ${i+1}? ❓</li>`:''}</ol>${i<it.length?`<div class="ans list">${sh.filter(j=>j>=i).map(j=>`<button data-j="${j}">${it[j]}</button>`).join('')}</div>`:'<div class="out">🎉 Well done! Magnet → handpick → filter → evaporate. (Stones and pepper could also be handpicked first; the magnet step and filtering before evaporating are what matter.)</div>'}`;
+  box.querySelectorAll('.ans button').forEach(b=>b.onclick=()=>{if(+b.dataset.j==i){good();i++;step()}else{bad();b.classList.add('no');b.disabled=true}})};step()}
+function bossIntro(){panel(`<div class="card center"><div class="big">🏆</div><h3>Yatra Champion boss round</h3><p class="mid">15 questions from the whole trip, including exercise questions. You have ❤️❤️❤️. A wrong answer costs one heart.</p><div class="ctl mid"><button id="go" class="pri">Start ▶</button></div></div>`);
+ $('#go').onclick=()=>{const pool=[...LV.flatMap(z=>z.quiz.map(Q)),...EXS.mcq.items.map(e=>({q:e.q,o:e.o,a:e.a.replace(/<[^>]+>/g,''),tag:'Exercise Q'+e.n}))];runQuiz(shuffle(pool).slice(0,15),3,(sc,n,hp)=>finish('boss',sc,n,hp>0?'🏆 You are the Yatra Champion!':'💔 Out of hearts. Try again!',bossIntro))}}
+go('map',{hub:1},HUB);drawHome();
+
+</script>
+
+</body></html>
