@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="manifest" href="manifest.webmanifest"><meta name="theme-color" content="#060c18"><link rel="apple-touch-icon" href="icon-192.png"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Saurabh Eduverse Laboratory</title>
@@ -207,6 +208,10 @@ body.game .chg{bottom:auto;top:calc(var(--hdr,70px) + 104px);right:auto;left:12p
   .brand{font-size:19px}
 }
 @media(hover:hover) and (pointer:fine){.chip:hover,.tabs button:hover{border-color:var(--glow);color:var(--ink,#fff)}}
+
+.offline{background:linear-gradient(135deg,rgba(55,214,122,.12),rgba(80,170,255,.08));border:1px solid rgba(55,214,122,.35);border-radius:14px;padding:12px 14px;margin-bottom:14px}
+.offline h3{margin:0 0 4px}.offBtns{display:flex;gap:8px;flex-wrap:wrap;margin-top:8px}.offBtns button{height:38px;padding:0 14px;border-radius:10px;border:1px solid rgba(55,214,122,.6);background:rgba(55,214,122,.18);color:#eafff2;font-weight:600}
+.offBar{height:8px;border-radius:6px;background:rgba(255,255,255,.08);margin-top:10px;overflow:hidden}.offBar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#37d67a,#5fb4f0);transition:width .3s}
 </style>
 </head>
 <body>
@@ -239,6 +244,7 @@ body.game .chg{bottom:auto;top:calc(var(--hdr,70px) + 104px);right:auto;left:12p
       <div class="picker" id="picker" hidden><h3>Choose your character</h3><p>Two women and two men. You can change later.</p><div class="pk" id="pk"></div></div>
     </div>
     <div class="drawer" id="campusMenu"><button class="drawerClose" id="menuClose" aria-label="Close menu">✕</button>
+    <section class="offline" id="offlineBox" hidden><h3>Use without internet</h3><p class="note">Save the whole laboratory (about 100 MB) on this device once. After that it opens and works even with no internet — useful for school tablets.</p><div class="offBtns"><button id="saveOff" class="wide">⬇ Save for offline use</button><button id="installApp" class="wide" hidden>📲 Install as app</button></div><div class="offBar" id="offBar" hidden><i></i></div><p class="note" id="offMsg"></p></section>
     <section>
       <h3>Departments</h3>
       <div class="depts" id="depts"></div>
@@ -4006,6 +4012,18 @@ document.getElementById("bioClose").onclick=closeBio;
 addEventListener("message",e=>{if(e.data&&e.data.type==="eduverse-close-bio")closeBio()});
 addEventListener("hashchange",()=>{if(location.hash!=="#bio3d"&&!ov.hidden){ov.hidden=true;document.body.style.overflow=""}});
 if(location.hash==="#bio3d")openBio("bio/index.html#/");})();
+</script>
+
+<script>
+/* offline / install support (works on the published website, not inside previews) */
+(function(){if(!("serviceWorker" in navigator)||!/^https?:$/.test(location.protocol)||/claude|claudeusercontent/.test(location.hostname))return;
+  const box=document.getElementById("offlineBox"),msg=document.getElementById("offMsg"),bar=document.getElementById("offBar"),btn=document.getElementById("saveOff"),inst=document.getElementById("installApp");
+  navigator.serviceWorker.register("sw.js").then(()=>{box.hidden=false;if(localStorage.getItem("eduOffline")==="1")msg.textContent="✔ Saved on this device. The lab works without internet."}).catch(()=>{});
+  btn.onclick=async()=>{msg.textContent="Preparing…";bar.hidden=false;let files=[];try{files=await (await fetch("files.json",{cache:"no-store"})).json()}catch(e){msg.textContent="Connect to the internet to save the lab.";return}
+    const reg=await navigator.serviceWorker.ready;navigator.serviceWorker.addEventListener("message",e=>{if(e.data&&e.data.type==="saveProgress"){const p=Math.round(e.data.done/e.data.total*100);bar.firstElementChild.style.width=p+"%";msg.textContent=`Saving… ${p}% (${e.data.done} of ${e.data.total} files)`;if(e.data.done===e.data.total){msg.textContent="✔ Saved on this device. The lab now works without internet.";try{localStorage.setItem("eduOffline","1")}catch(_){}}}});
+    reg.active.postMessage({type:"saveAll",files})};
+  let deferred=null;addEventListener("beforeinstallprompt",e=>{e.preventDefault();deferred=e;inst.hidden=false});inst.onclick=async()=>{if(!deferred)return;deferred.prompt();await deferred.userChoice;deferred=null;inst.hidden=true};
+  addEventListener("online",()=>document.body.classList.remove("offline-now"));addEventListener("offline",()=>document.body.classList.add("offline-now"))})();
 </script>
 </body>
 </html>

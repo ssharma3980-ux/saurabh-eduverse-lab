@@ -1,0 +1,24 @@
+{
+ "name": "Saurabh Eduverse Laboratory",
+ "short_name": "Eduverse Lab",
+ "description": "3D virtual science and maths laboratory for CBSE Classes 9–12",
+ "start_url": "./",
+ "scope": "./",
+ "display": "standalone",
+ "orientation": "any",
+ "background_color": "#060c18",
+ "theme_color": "#060c18",
+ "icons": [
+  {
+   "src": "icon-192.png",
+   "sizes": "192x192",
+   "type": "image/png"
+  },
+  {
+   "src": "icon-512.png",
+   "sizes": "512x512",
+   "type": "image/png",
+   "purpose": "any maskable"
+  }
+ ]
+}
