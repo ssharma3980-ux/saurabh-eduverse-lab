@@ -1,6 +1,6 @@
 /* Saurabh Eduverse Laboratory — offline support.
    Everything the lab loads is kept in a cache, so it keeps working without internet. */
-const V='eduverse-v1';
+const V='eduverse-v2';
 const CORE=['./','./index.html','./manifest.webmanifest','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting()))});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(ks=>Promise.all(ks.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()))});
