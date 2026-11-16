@@ -1,0 +1,2029 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#faf9f5;color:#141413}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Festival Islands 3D</title>
+<meta name="description" content="Saurabh's Eduverse — 3D festival adventure for Class 1 EVS, Chapter 12 Let's Celebrate">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Baloo+2:wght@500;700;800&family=Nunito:wght@600;800&display=swap">
+<style>
+:root{
+  --ink:#241536; --night:#1A1238; --plum:#3B1F5E; --marigold:#FFB627; --marigold-d:#E0901A; --rani:#F2378B; --teal:#13A89E;
+  --cream:#FFF4E0; --paper:#FFFBF3; --muted:#7B6A8E; --good:#2BB673; --bad:#E5484D;
+  --display:'Baloo 2','Trebuchet MS','Arial Rounded MT Bold',system-ui,sans-serif;
+  --body:'Nunito','Segoe UI',system-ui,sans-serif;
+  color-scheme:dark;
+}
+[hidden]{display:none!important}
+html,body{height:100%;margin:0;overflow:hidden;background:var(--night);color:var(--cream);font-family:var(--body);-webkit-tap-highlight-color:transparent;user-select:none;-webkit-user-select:none;touch-action:none}
+button{font-family:var(--display);cursor:pointer;border:0}
+button:focus-visible{outline:3px solid var(--marigold);outline-offset:2px}
+.sky{position:fixed;inset:0;transition:background 1s ease;background:linear-gradient(180deg,#140d33 0%,#3b1f5e 55%,#b0476f 100%)}
+.sky::after{content:"";position:absolute;inset:0;background:radial-gradient(60% 40% at 50% 105%,rgba(255,182,39,.35),transparent 70%)}
+.sky-hub{background:linear-gradient(180deg,#120b30 0%,#35205f 50%,#9b4a7a 85%,#f08a5d 100%)}
+.sky-diwali{background:linear-gradient(180deg,#07081f 0%,#1d1647 50%,#5a2352 88%,#8a3b3b 100%)}
+.sky-xmas{background:linear-gradient(180deg,#0a1433 0%,#1c3566 55%,#5f86b8 100%)}
+.sky-guru{background:linear-gradient(180deg,#7fc6e8 0%,#bfe3ef 45%,#fde2b8 80%,#f7b267 100%)}
+.sky-guru::after,.sky-nat::after{background:radial-gradient(40% 30% at 80% 10%,rgba(255,255,220,.8),transparent 70%)}
+.sky-eid{background:linear-gradient(180deg,#04121f 0%,#0b3143 55%,#1f6b6b 100%)}
+.sky-nat{background:linear-gradient(180deg,#4fb3ff 0%,#9fdcff 50%,#e9f8ff 100%)}
+.sky-party{background:linear-gradient(180deg,#1b0747 0%,#4a148c 50%,#b5179e 100%)}
+.sky-final{background:linear-gradient(180deg,#05041a 0%,#1a1147 55%,#5b1f5c 90%,#a33c4d 100%)}
+#gl{position:fixed;inset:0;width:100%;height:100%;display:block;touch-action:none}
+#labels{position:fixed;inset:0;pointer-events:none;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;pointer-events:none;white-space:nowrap;will-change:transform}
+.lbl.isl{display:flex;align-items:center;gap:6px;background:rgba(26,18,56,.82);border:2px solid rgba(255,182,39,.8);padding:4px 10px 4px 6px;border-radius:999px;font-family:var(--display);font-size:clamp(11px,1.6vw,15px);box-shadow:0 6px 18px rgba(0,0,0,.35)}
+.lbl.isl em{font-style:normal;font-size:1.3em}
+.lbl.isl.locked{border-color:rgba(255,255,255,.25);color:#cbbfe0}
+.lbl.isl.done{border-color:var(--teal)}
+.st{color:var(--marigold);letter-spacing:1px}.st i{font-style:normal;color:rgba(255,255,255,.25)}
+.lbl.day{background:var(--paper);color:var(--ink);font-family:var(--display);padding:4px 12px;border-radius:12px;font-size:clamp(12px,1.8vw,16px);box-shadow:0 4px 0 rgba(0,0,0,.2);text-align:center;border:3px solid #ddd}
+.lbl.day small{display:block;font-size:.8em;color:var(--good)}
+.lbl.day.ok{border-color:var(--good)}
+.lbl.cal{background:var(--paper);color:var(--ink);font-family:var(--display);padding:2px 12px 4px;border-radius:12px;text-align:center;box-shadow:0 4px 0 rgba(0,0,0,.25);border:3px solid var(--marigold);line-height:1}
+.lbl.cal .d{display:block;font-size:clamp(20px,3.2vw,30px);font-weight:800;color:#C2410C}
+.lbl.cal .m{font-size:clamp(11px,1.6vw,14px)}
+.lbl.cal.sel{border-color:var(--rani);background:#FFE3F0;transform-origin:center}
+
+/* HUD */
+#hud{position:fixed;left:0;right:0;top:0;padding:calc(env(safe-area-inset-top,0px) + 10px) 12px 0;display:flex;align-items:center;gap:8px;pointer-events:none;z-index:5}
+#hud>*{pointer-events:auto}
+.hb{width:44px;height:44px;border-radius:14px;background:rgba(26,18,56,.78);color:var(--cream);font-size:20px;display:grid;place-items:center;border:2px solid rgba(255,244,224,.18);transition:transform .15s}
+.hb:active{transform:scale(.9)}
+.hb.off{opacity:.45;text-decoration:line-through}
+#hudTitle{flex:1;min-width:0;text-align:center;font-family:var(--display);line-height:1.05;text-shadow:0 2px 8px rgba(0,0,0,.5)}
+#hudTitle b{display:block;font-size:clamp(16px,2.6vw,22px)}
+#hudTitle small{font-size:12px;opacity:.8;font-family:var(--body)}
+.pill{height:44px;padding:0 12px;border-radius:14px;background:rgba(26,18,56,.78);border:2px solid rgba(255,182,39,.6);display:flex;align-items:center;gap:4px;font-family:var(--display);font-size:18px;color:var(--marigold)}
+
+/* task */
+#task{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);left:50%;transform:translateX(-50%);width:min(440px,calc(100% - 32px));background:var(--paper);color:var(--ink);border-radius:18px;padding:8px 14px 10px;z-index:4;box-shadow:0 8px 0 rgba(0,0,0,.18),0 12px 30px rgba(0,0,0,.3)}
+#task .row{display:flex;justify-content:space-between;align-items:center;gap:8px;font-family:var(--display);font-size:clamp(15px,2.2vw,18px);font-weight:700}
+#taskCount{color:var(--rani);font-variant-numeric:tabular-nums}
+.bar{height:10px;background:#EFE4D2;border-radius:9px;overflow:hidden;margin-top:6px}
+.bar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--marigold),var(--rani));border-radius:9px;transition:width .4s cubic-bezier(.3,1.6,.5,1)}
+.in{animation:rise .45s cubic-bezier(.2,1.4,.4,1) both}
+#task.in{animation:drop .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes rise{from{opacity:0;transform:translateY(30px) scale(.96)}}
+@keyframes drop{from{opacity:0;transform:translate(-50%,-20px)}}
+
+/* dialog */
+#dialog{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);transform:translateX(-50%);width:min(640px,calc(100% - 32px));z-index:6;display:flex;gap:10px;align-items:flex-end}
+#dialog.in{animation:rise2 .45s cubic-bezier(.2,1.4,.4,1) both}
+@keyframes rise2{from{opacity:0;transform:translate(-50%,30px)}}
+.ava{flex:0 0 auto;width:72px;height:72px;filter:drop-shadow(0 0 14px rgba(255,210,63,.7));animation:hover 2.2s ease-in-out infinite}
+@keyframes hover{50%{transform:translateY(-6px) rotate(-4deg)}}
+.bubble{flex:1;min-width:0;background:var(--paper);color:var(--ink);border-radius:22px 22px 22px 6px;padding:12px 16px 12px;box-shadow:0 8px 0 rgba(0,0,0,.18),0 16px 40px rgba(0,0,0,.35)}
+.bubble .top{display:flex;justify-content:space-between;align-items:center;gap:8px;min-height:22px}
+.who{font-family:var(--display);font-weight:800;color:var(--plum);font-size:15px}
+#dlgText{font-size:clamp(17px,2.5vw,21px);line-height:1.4;margin:4px 0 10px;font-weight:600;text-wrap:pretty}
+#dlgText b{color:#C2410C}
+.brow{display:flex;align-items:center;gap:8px}
+#dlgDots{flex:1;display:flex;gap:5px}
+#dlgDots i{width:8px;height:8px;border-radius:50%;background:#E5D8C3}
+#dlgDots i.on{background:var(--rani);width:20px;border-radius:5px}
+.go{background:var(--marigold);color:var(--ink);font-size:18px;font-weight:800;padding:10px 20px;border-radius:16px;box-shadow:0 5px 0 var(--marigold-d);transition:transform .1s}
+.go:active{transform:translateY(4px);box-shadow:0 1px 0 var(--marigold-d)}
+.go.alt{background:#EDE3F7;box-shadow:0 5px 0 #C9B8DE}
+.spk{width:42px;height:42px;border-radius:12px;background:#EDE3F7;font-size:18px}
+.chip{font-family:var(--display);font-size:12px;font-weight:700;padding:2px 10px;border-radius:999px;background:#EDE3F7;color:var(--plum);letter-spacing:.03em;text-transform:uppercase}
+.tag-exercise{background:#FFE1C2;color:#9A3412}.tag-fact{background:#D9F2EF;color:#0F6B64}.tag-poem{background:#FFE3F0;color:#A1185B}
+.tag-find{background:#E0ECFF;color:#1E40AF}.tag-to{background:#FFF1B8;color:#854D0E}.tag-summary{background:#E7F7DF;color:#2F6B1A}.tag-activity{background:#FFF1B8;color:#854D0E}
+
+/* quiz */
+#quiz{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 12px);transform:translateX(-50%);width:min(620px,calc(100% - 32px));background:var(--paper);color:var(--ink);border-radius:26px;padding:14px 16px 16px;z-index:6;box-shadow:0 10px 0 rgba(0,0,0,.18),0 20px 50px rgba(0,0,0,.4);max-height:70vh;overflow:auto}
+#quiz.in{animation:rise2 .45s cubic-bezier(.2,1.4,.4,1) both}
+.qtop{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:13px;color:var(--muted);font-weight:800}
+#qText{font-family:var(--display);font-size:clamp(20px,3vw,26px);line-height:1.2;margin:8px 0 12px;font-weight:700;text-wrap:balance}
+#qOpts{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}
+.opt{background:#F3ECFA;color:var(--ink);font-size:clamp(17px,2.4vw,20px);font-weight:700;padding:14px 12px;border-radius:18px;box-shadow:0 5px 0 #D5C6E6;transition:transform .1s,background .2s;text-align:center}
+.opt:hover{background:#EADFF7}
+.opt:active{transform:translateY(3px);box-shadow:0 2px 0 #D5C6E6}
+.opt.right{background:#C9F2DA;box-shadow:0 5px 0 #6FCF97;animation:yay .5s}
+.opt.wrong{background:#FFD9DA;box-shadow:0 5px 0 #F4A3A5;opacity:.7;animation:no .4s}
+@keyframes yay{40%{transform:scale(1.08)}}
+@keyframes no{20%,60%{transform:translateX(-7px)}40%,80%{transform:translateX(7px)}}
+#qHint{min-height:20px;margin-top:10px;font-weight:700;color:#9A3412;font-size:15px}
+
+/* toast, palette, hearts */
+#toast{position:fixed;top:calc(env(safe-area-inset-top,0px) + 140px);left:50%;transform:translateX(-50%);background:rgba(26,18,56,.92);color:var(--cream);padding:10px 18px;border-radius:16px;font-family:var(--display);font-size:17px;z-index:8;border:2px solid var(--marigold);max-width:calc(100% - 32px);text-align:center;white-space:normal}
+#toast.pop{animation:tpop .35s cubic-bezier(.2,1.6,.4,1)}
+@keyframes tpop{from{transform:translateX(-50%) scale(.6);opacity:0}}
+#palette{position:fixed;left:50%;bottom:calc(env(safe-area-inset-bottom,0px) + 18px);transform:translateX(-50%);display:flex;gap:10px;background:var(--paper);padding:10px 14px;border-radius:22px;z-index:5;box-shadow:0 8px 0 rgba(0,0,0,.18)}
+.sw{width:44px;height:44px;border-radius:50%;background:var(--c);border:4px solid #fff;box-shadow:0 3px 0 rgba(0,0,0,.2);transition:transform .15s}
+.sw.on{transform:scale(1.22) translateY(-4px);box-shadow:0 0 0 3px var(--ink)}
+#hearts{position:fixed;top:calc(env(safe-area-inset-top,0px) + 64px);right:16px;font-size:26px;z-index:5;letter-spacing:2px;filter:drop-shadow(0 2px 6px rgba(0,0,0,.4))}
+#hearts.hit{animation:no .5s}
+
+/* modal */
+.modal{position:fixed;inset:0;display:grid;place-items:center;background:rgba(10,6,28,.55);z-index:9;padding:16px}
+.card{background:var(--paper);color:var(--ink);border-radius:28px;padding:22px 20px;width:min(420px,100%);text-align:center;box-shadow:0 12px 0 rgba(0,0,0,.2),0 30px 80px rgba(0,0,0,.5);position:relative}
+#reward.in .card{animation:zoom .6s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes zoom{from{transform:scale(.5) rotate(-6deg);opacity:0}}
+.sticker{font-size:78px;width:120px;height:120px;margin:-70px auto 4px;display:grid;place-items:center;background:radial-gradient(circle at 35% 30%,#fff,#FFE9B8 60%,var(--marigold));border-radius:50%;border:6px solid #fff;box-shadow:0 10px 30px rgba(255,182,39,.6);animation:spin 1s cubic-bezier(.2,1.5,.4,1) both}
+@keyframes spin{from{transform:rotate(-200deg) scale(0)}}
+.card h2{font-family:var(--display);font-size:clamp(22px,4vw,28px);margin:6px 0 2px;line-height:1.1;text-wrap:balance}
+.card p{margin:4px 0 10px;font-size:16px}
+#rwStars{font-size:48px;letter-spacing:6px;margin:6px 0}
+#rwStars span{color:#E6DCCB;display:inline-block}
+#rwStars span.on{color:var(--marigold);animation:starIn .5s cubic-bezier(.2,1.8,.4,1) both;text-shadow:0 0 16px rgba(255,182,39,.8)}
+@keyframes starIn{from{transform:scale(0) rotate(-180deg)}}
+.btns{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:8px}
+#bookGrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:12px 0}
+.stk{background:#F3ECFA;border-radius:18px;padding:10px 6px;display:grid;gap:2px;justify-items:center;border:3px dashed #D5C6E6}
+.stk .e{font-size:38px;filter:grayscale(1) opacity(.35)}
+.stk.got{background:#FFF1D1;border:3px solid var(--marigold)}
+.stk.got .e{filter:none;animation:wig 2s ease-in-out infinite}
+@keyframes wig{50%{transform:rotate(8deg) scale(1.08)}}
+.stk b{font-size:12px;font-family:var(--display)}
+.stk span{font-size:12px;color:var(--marigold)}.stk span i{font-style:normal;color:#D5C6E6}
+
+/* title */
+#title{position:fixed;inset:0;z-index:7;display:grid;place-items:center;padding:16px;background:radial-gradient(70% 60% at 50% 45%,rgba(20,13,51,.25),rgba(20,13,51,.8));transition:opacity .6s}
+#title.out{opacity:0;pointer-events:none}
+.tbox{text-align:center;max-width:620px}
+.eyebrow{font-family:var(--body);font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:12px;color:var(--marigold)}
+.brand{font-family:var(--display);font-weight:800;font-size:15px;color:#FFD9EC;margin-top:6px;letter-spacing:.04em}
+.big{font-family:var(--display);font-weight:800;font-size:clamp(46px,10vw,96px);line-height:.9;margin:10px 0 6px;color:var(--cream);text-shadow:0 4px 0 var(--rani),0 10px 30px rgba(242,55,139,.5)}
+.big span{display:inline-block;animation:bounce 2.4s ease-in-out infinite}
+.big .k{color:var(--marigold);text-shadow:0 4px 0 #9A3412,0 10px 30px rgba(255,182,39,.6)}
+@keyframes bounce{50%{transform:translateY(-8px)}}
+.sub{font-size:clamp(16px,2.4vw,20px);margin:6px auto 18px;max-width:34ch;line-height:1.4}
+.play{font-size:clamp(22px,3.6vw,28px);padding:14px 38px;border-radius:22px;background:var(--marigold);color:var(--ink);font-weight:800;box-shadow:0 7px 0 var(--marigold-d),0 0 40px rgba(255,182,39,.55);animation:pulse 1.8s ease-in-out infinite}
+@keyframes pulse{50%{transform:scale(1.06)}}
+.fests{display:flex;justify-content:center;gap:10px;font-size:26px;margin-top:18px;flex-wrap:wrap}
+.fests span{animation:bounce 2s ease-in-out infinite}
+#teacher{position:fixed;left:16px;bottom:calc(env(safe-area-inset-bottom,0px) + 14px);z-index:5;background:rgba(26,18,56,.8);border:2px solid rgba(255,244,224,.2);padding:8px 12px;border-radius:14px;font-size:13px;font-weight:800;display:flex;gap:8px;align-items:center}
+#teacher input{width:20px;height:20px;accent-color:var(--marigold)}
+#loader{position:fixed;inset:0;z-index:20;background:radial-gradient(circle at 50% 45%,#3b1f5e,#140d33 70%);display:grid;place-items:center;transition:opacity .7s}
+#loader.out{opacity:0}
+.lbox{text-align:center;width:min(320px,80vw)}
+.ldiya{font-size:64px;animation:hover 1.6s ease-in-out infinite;filter:drop-shadow(0 0 22px rgba(255,159,28,.9))}
+.lbar{height:14px;border-radius:9px;background:rgba(255,255,255,.12);overflow:hidden;margin:14px 0 8px}
+.lbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--marigold),var(--rani));transition:width .15s}
+#loadMsg{font-family:var(--display);font-size:18px}
+#fade{position:fixed;inset:0;background:radial-gradient(circle,#3b1f5e,#0b0720);opacity:0;pointer-events:none;z-index:15;transition:opacity .45s}
+#fade.on{opacity:1;pointer-events:auto}
+@media (max-width:560px){
+  .ava{width:54px;height:54px}
+  #dialog{gap:6px}
+  .hb,.pill{width:40px;height:40px}.pill{width:auto;padding:0 8px;font-size:16px}
+  #hudTitle small{display:none}
+  #qOpts{grid-template-columns:1fr}
+  .opt{padding:12px}
+  .sw{width:38px;height:38px}
+  #palette{gap:7px;padding:8px 10px}
+  #teacher{font-size:12px}
+  .lbl.day{white-space:normal;width:max-content;max-width:84px;font-size:11px;padding:3px 6px;line-height:1.1}
+  .lbl.isl{font-size:10px;padding:2px 7px 2px 4px}
+}
+@media (prefers-reduced-motion:reduce){*{animation-duration:.01s!important;animation-iteration-count:1!important}}
+</style>
+
+<div id="sky" class="sky sky-hub"></div>
+<canvas id="gl" aria-label="3D festival world"></canvas>
+<div id="labels"></div>
+
+<header id="hud">
+  <button class="hb" id="btnHome" aria-label="Map">🏝️</button>
+  <div id="hudTitle"><b>Festival Islands</b><small>Let’s Celebrate · Class 1</small></div>
+  <div class="pill" aria-label="Stars">★ <span id="hudStars">0</span></div>
+  <button class="hb" id="btnBook" aria-label="Sticker book">📒</button>
+  <button class="hb" id="btnVoice" aria-label="Read aloud">🗣️</button>
+  <button class="hb" id="btnSound" aria-label="Sound">🔊</button>
+</header>
+
+<div id="task" hidden><div class="row"><span id="taskText"></span><span id="taskCount"></span></div><div class="bar"><i id="taskBar"></i></div></div>
+<div id="hearts" hidden></div>
+<div id="toast" hidden></div>
+<div id="palette" hidden></div>
+
+<div id="dialog" hidden>
+  <svg class="ava" viewBox="0 0 100 100" aria-hidden="true">
+    <defs><radialGradient id="jg" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#FFF6B0"/><stop offset=".6" stop-color="#FFD23F"/><stop offset="1" stop-color="#FFB627" stop-opacity="0"/></radialGradient></defs>
+    <circle cx="50" cy="66" r="34" fill="url(#jg)"/>
+    <ellipse cx="28" cy="40" rx="20" ry="10" fill="#CDEBFF" opacity=".75" transform="rotate(-30 28 40)"/>
+    <ellipse cx="72" cy="40" rx="20" ry="10" fill="#CDEBFF" opacity=".75" transform="rotate(30 72 40)"/>
+    <ellipse cx="50" cy="70" rx="17" ry="15" fill="#FFD23F"/>
+    <circle cx="50" cy="45" r="18" fill="#5B3FA8"/>
+    <path d="M42 29 Q36 14 30 12 M58 29 Q64 14 70 12" stroke="#3A2A6B" stroke-width="3" fill="none" stroke-linecap="round"/>
+    <circle cx="30" cy="12" r="4" fill="#FF6B9D"/><circle cx="70" cy="12" r="4" fill="#FF6B9D"/>
+    <circle cx="43" cy="43" r="6" fill="#fff"/><circle cx="57" cy="43" r="6" fill="#fff"/>
+    <circle cx="44" cy="44" r="3" fill="#1E1420"/><circle cx="58" cy="44" r="3" fill="#1E1420"/>
+    <path d="M43 52 Q50 58 57 52" stroke="#fff" stroke-width="2.5" fill="none" stroke-linecap="round"/>
+  </svg>
+  <div class="bubble">
+    <div class="top"><span class="who">Jugnu</span><span id="dlgTag" class="chip" hidden></span></div>
+    <div id="dlgText"></div>
+    <div class="brow"><div id="dlgDots"></div><button class="spk" id="dlgSpeak" aria-label="Read this aloud">🔈</button><button class="go" id="dlgNext">Next ➜</button></div>
+  </div>
+</div>
+
+<div id="quiz" hidden>
+  <div class="qtop"><span id="qNum"></span><span id="qTag" class="chip"></span></div>
+  <div class="bar"><i id="qBar"></i></div>
+  <div id="qText"></div>
+  <div id="qOpts"></div>
+  <div id="qHint"></div>
+</div>
+
+<div id="reward" class="modal" hidden>
+  <div class="card">
+    <div class="sticker" id="rwSticker">🪔</div>
+    <h2 id="rwTitle">Island complete!</h2>
+    <div id="rwStars"></div>
+    <p id="rwText"></p>
+    <div class="btns"><button class="go alt" id="rwAgain">↻ Play again</button><button class="go alt" id="rwMap">🏝️ Map</button><button class="go" id="rwNext">Next island ➜</button></div>
+  </div>
+</div>
+
+<div id="book" class="modal" hidden>
+  <div class="card">
+    <h2>📒 My Festival Sticker Book</h2>
+    <p id="bookCount"></p>
+    <div id="bookGrid"></div>
+    <button class="go" id="bookClose">Close</button>
+  </div>
+</div>
+
+<label id="teacher" hidden><input type="checkbox" id="chkAll"> 👩‍🏫 Teacher: open all islands</label>
+
+<div id="title">
+  <div class="tbox">
+    <div class="eyebrow">Class 1 · EVS · Nature Window · Chapter 12</div>
+    <div class="brand">Saurabh’s Eduverse presents</div>
+    <div class="big"><span>Festival</span><br><span class="k" style="animation-delay:.3s">Islands 3D</span></div>
+    <p class="sub">Fly with Jugnu the firefly across 7 floating islands and <b>celebrate</b> India’s festivals!</p>
+    <button class="play" id="btnPlay">▶ Let’s Celebrate!</button>
+    <div class="fests"><span>🪔</span><span style="animation-delay:.2s">🎄</span><span style="animation-delay:.4s">🥁</span><span style="animation-delay:.6s">🌙</span><span style="animation-delay:.8s">🇮🇳</span><span style="animation-delay:1s">🎂</span><span style="animation-delay:1.2s">🏆</span></div>
+  </div>
+</div>
+
+<div id="loader"><div class="lbox"><div class="ldiya">🪔</div><div class="lbar"><i id="loadBar"></i></div><div id="loadMsg">Lighting the diyas…</div></div></div>
+<div id="fade"></div>
+<script>
+(function(){"use strict";
+/* ===== Mini3D: tiny toon-shaded WebGL engine (no dependencies) ===== */
+const M4 = {
+  ident() { const m = new Float32Array(16); m[0] = m[5] = m[10] = m[15] = 1; return m; },
+  mul(a, b, o) {
+    o = o || new Float32Array(16);
+    for (let c = 0; c < 4; c++) for (let r = 0; r < 4; r++) {
+      o[c * 4 + r] = a[r] * b[c * 4] + a[4 + r] * b[c * 4 + 1] + a[8 + r] * b[c * 4 + 2] + a[12 + r] * b[c * 4 + 3];
+    }
+    return o;
+  },
+  persp(fov, asp, n, f) {
+    const t = 1 / Math.tan(fov / 2), m = new Float32Array(16);
+    m[0] = t / asp; m[5] = t; m[10] = (f + n) / (n - f); m[11] = -1; m[14] = 2 * f * n / (n - f); return m;
+  },
+  lookAt(e, c, u) {
+    let z = V.norm(V.sub(e, c)), x = V.norm(V.cross(u, z)), y = V.cross(z, x);
+    const m = new Float32Array(16);
+    m[0] = x[0]; m[4] = x[1]; m[8] = x[2];
+    m[1] = y[0]; m[5] = y[1]; m[9] = y[2];
+    m[2] = z[0]; m[6] = z[1]; m[10] = z[2];
+    m[12] = -V.dot(x, e); m[13] = -V.dot(y, e); m[14] = -V.dot(z, e); m[15] = 1; return m;
+  },
+  trs(p, r, s, o) {
+    // R = Ry * Rx * Rz
+    const cx = Math.cos(r[0]), sx = Math.sin(r[0]), cy = Math.cos(r[1]), sy = Math.sin(r[1]), cz = Math.cos(r[2]), sz = Math.sin(r[2]);
+    const m00 = cy * cz + sy * sx * sz, m01 = -cy * sz + sy * sx * cz, m02 = sy * cx;
+    const m10 = cx * sz, m11 = cx * cz, m12 = -sx;
+    const m20 = -sy * cz + cy * sx * sz, m21 = sy * sz + cy * sx * cz, m22 = cy * cx;
+    o = o || new Float32Array(16);
+    o[0] = m00 * s[0]; o[1] = m10 * s[0]; o[2] = m20 * s[0]; o[3] = 0;
+    o[4] = m01 * s[1]; o[5] = m11 * s[1]; o[6] = m21 * s[1]; o[7] = 0;
+    o[8] = m02 * s[2]; o[9] = m12 * s[2]; o[10] = m22 * s[2]; o[11] = 0;
+    o[12] = p[0]; o[13] = p[1]; o[14] = p[2]; o[15] = 1; return o;
+  },
+  normalMat(m, o) {
+    // inverse-transpose of upper 3x3, stored in mat4
+    const a = m[0], b = m[1], c = m[2], d = m[4], e = m[5], f = m[6], g = m[8], h = m[9], i = m[10];
+    const A = e * i - f * h, B = -(d * i - f * g), C = d * h - e * g;
+    let det = a * A + b * B + c * C; if (Math.abs(det) < 1e-9) det = 1e-9; const k = 1 / det;
+    o = o || new Float32Array(16);
+    o[0] = A * k; o[1] = B * k; o[2] = C * k; o[3] = 0;
+    o[4] = -(b * i - c * h) * k; o[5] = (a * i - c * g) * k; o[6] = -(a * h - b * g) * k; o[7] = 0;
+    o[8] = (b * f - c * e) * k; o[9] = -(a * f - c * d) * k; o[10] = (a * e - b * d) * k; o[11] = 0;
+    o[12] = o[13] = o[14] = 0; o[15] = 1; return o;
+  }
+};
+const V = {
+  sub: (a, b) => [a[0] - b[0], a[1] - b[1], a[2] - b[2]],
+  add: (a, b) => [a[0] + b[0], a[1] + b[1], a[2] + b[2]],
+  scale: (a, s) => [a[0] * s, a[1] * s, a[2] * s],
+  dot: (a, b) => a[0] * b[0] + a[1] * b[1] + a[2] * b[2],
+  cross: (a, b) => [a[1] * b[2] - a[2] * b[1], a[2] * b[0] - a[0] * b[2], a[0] * b[1] - a[1] * b[0]],
+  len: a => Math.hypot(a[0], a[1], a[2]),
+  norm: a => { const l = Math.hypot(a[0], a[1], a[2]) || 1; return [a[0] / l, a[1] / l, a[2] / l]; },
+  lerp: (a, b, t) => [a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t, a[2] + (b[2] - a[2]) * t]
+};
+const hex = h => { h = h.replace('#', ''); return [parseInt(h.slice(0, 2), 16) / 255, parseInt(h.slice(2, 4), 16) / 255, parseInt(h.slice(4, 6), 16) / 255]; };
+
+/* ---------- Geometry builders ---------- */
+function geoLathe(prof, segs, smooth, phi, phase) {
+  segs = segs || 24; phi = phi || Math.PI * 2; phase = phase || 0;
+  const P = [], N = [], I = [];
+  const ring = (r, y, nr, ny) => {
+    const base = P.length / 3;
+    for (let j = 0; j <= segs; j++) {
+      const a = phase + j / segs * phi, c = Math.cos(a), s = Math.sin(a);
+      P.push(r * c, y, r * s); N.push(nr * c, ny, nr * s);
+    }
+    return base;
+  };
+  const quad = (b0, b1) => { for (let j = 0; j < segs; j++) I.push(b0 + j, b1 + j, b0 + j + 1, b0 + j + 1, b1 + j, b1 + j + 1); };
+  if (smooth) {
+    const bases = [];
+    for (let i = 0; i < prof.length; i++) {
+      const p0 = prof[Math.max(0, i - 1)], p1 = prof[Math.min(prof.length - 1, i + 1)];
+      let tx = p1[0] - p0[0], ty = p1[1] - p0[1]; const l = Math.hypot(tx, ty) || 1;
+      bases.push(ring(prof[i][0], prof[i][1], ty / l, -tx / l));
+    }
+    for (let i = 0; i < bases.length - 1; i++) quad(bases[i], bases[i + 1]);
+  } else {
+    for (let i = 0; i < prof.length - 1; i++) {
+      const a = prof[i], b = prof[i + 1]; let tx = b[0] - a[0], ty = b[1] - a[1]; const l = Math.hypot(tx, ty) || 1;
+      const b0 = ring(a[0], a[1], ty / l, -tx / l), b1 = ring(b[0], b[1], ty / l, -tx / l); quad(b0, b1);
+    }
+  }
+  return { P: new Float32Array(P), N: new Float32Array(N), I: new Uint16Array(I) };
+}
+function geoSphere(lat, lon) {
+  lat = lat || 14; const pr = [];
+  for (let i = 0; i <= lat; i++) { const t = -Math.PI / 2 + i / lat * Math.PI; pr.push([Math.cos(t) * (i === 0 || i === lat ? 0 : 1), Math.sin(t)]); }
+  return geoLathe(pr, lon || 22, true);
+}
+function geoBox() {
+  const P = [], N = [], I = [];
+  const f = (n, u, v) => {
+    const b = P.length / 3;
+    for (const [su, sv] of [[-1, -1], [1, -1], [1, 1], [-1, 1]]) {
+      P.push((n[0] + u[0] * su + v[0] * sv) * .5, (n[1] + u[1] * su + v[1] * sv) * .5, (n[2] + u[2] * su + v[2] * sv) * .5); N.push(...n);
+    }
+    I.push(b, b + 1, b + 2, b, b + 2, b + 3);
+  };
+  f([1, 0, 0], [0, 0, 1], [0, 1, 0]); f([-1, 0, 0], [0, 0, 1], [0, 1, 0]); f([0, 1, 0], [1, 0, 0], [0, 0, 1]);
+  f([0, -1, 0], [1, 0, 0], [0, 0, 1]); f([0, 0, 1], [1, 0, 0], [0, 1, 0]); f([0, 0, -1], [1, 0, 0], [0, 1, 0]);
+  return { P: new Float32Array(P), N: new Float32Array(N), I: new Uint16Array(I) };
+}
+function geoTorus(R, r, sa, sb, arc, start) {
+  arc = arc || Math.PI * 2; start = start || 0; sa = sa || 24; sb = sb || 10;
+  const P = [], N = [], I = [];
+  for (let i = 0; i <= sa; i++) {
+    const u = start + i / sa * arc, cu = Math.cos(u), su = Math.sin(u);
+    for (let j = 0; j <= sb; j++) {
+      const v = j / sb * Math.PI * 2, cv = Math.cos(v), sv = Math.sin(v);
+      P.push((R + r * cv) * cu, (R + r * cv) * su, r * sv); N.push(cv * cu, cv * su, sv);
+    }
+  }
+  for (let i = 0; i < sa; i++) for (let j = 0; j < sb; j++) {
+    const a = i * (sb + 1) + j, b = a + sb + 1; I.push(a, b, a + 1, a + 1, b, b + 1);
+  }
+  return { P: new Float32Array(P), N: new Float32Array(N), I: new Uint16Array(I) };
+}
+function geoPlane(nx, ny) {
+  nx = nx || 1; ny = ny || 1; const P = [], N = [], I = [];
+  for (let j = 0; j <= ny; j++) for (let i = 0; i <= nx; i++) { P.push(i / nx - .5, j / ny - .5, 0); N.push(0, 0, 1); }
+  for (let j = 0; j < ny; j++) for (let i = 0; i < nx; i++) { const a = j * (nx + 1) + i, b = a + nx + 1; I.push(a, a + 1, b, a + 1, b + 1, b); }
+  return { P: new Float32Array(P), N: new Float32Array(N), I: new Uint16Array(I) };
+}
+
+function geoStar(pts, inner, depth) {
+  pts = pts || 5; inner = inner || .45; depth = depth || .35;
+  const P = [], N = [], I = [];
+  const ring = []; for (let i = 0; i < pts * 2; i++) { const a = Math.PI / 2 + i / (pts * 2) * Math.PI * 2, r = i % 2 ? inner : 1; ring.push([Math.cos(a) * r, Math.sin(a) * r]); }
+  const tri = (a, b, c) => { const n = V.norm(V.cross(V.sub(b, a), V.sub(c, a))); const k = P.length / 3; P.push(...a, ...b, ...c); N.push(...n, ...n, ...n); I.push(k, k + 1, k + 2); };
+  const F = [0, 0, depth], B = [0, 0, -depth];
+  for (let i = 0; i < ring.length; i++) {
+    const p = ring[i], q = ring[(i + 1) % ring.length], a = [p[0], p[1], 0], b = [q[0], q[1], 0];
+    tri(F, a, b); tri(B, b, a);
+  }
+  return { P: new Float32Array(P), N: new Float32Array(N), I: new Uint16Array(I) };
+}
+
+/* ---------- Scene graph ---------- */
+class Node {
+  constructor(geo, color, opts) {
+    this.p = [0, 0, 0]; this.r = [0, 0, 0]; this.s = [1, 1, 1];
+    this.children = []; this.parent = null; this.geo = geo || null;
+    this.color = color ? (typeof color === 'string' ? hex(color) : color.slice()) : [1, 1, 1];
+    this.emis = 0; this.opacity = 1; this.wave = 0; this.visible = true;
+    this.world = M4.ident(); this.nm = M4.ident(); this.local = M4.ident();
+    if (opts) Object.assign(this, opts);
+  }
+  add(...ns) { for (const n of ns) { if (!n) continue; n.parent = this; this.children.push(n); } return this; }
+  remove(n) { const i = this.children.indexOf(n); if (i >= 0) this.children.splice(i, 1); n.parent = null; }
+  at(x, y, z) { this.p = [x, y, z]; return this; }
+  sc(x, y, z) { this.s = [x, y === undefined ? x : y, z === undefined ? x : z]; return this; }
+  rot(x, y, z) { this.r = [x || 0, y || 0, z || 0]; return this; }
+  wpos() { return [this.world[12], this.world[13], this.world[14]]; }
+  traverse(fn) { fn(this); for (const c of this.children) c.traverse(fn); }
+}
+
+/* ---------- Renderer ---------- */
+class Renderer {
+  constructor(canvas) {
+    this.canvas = canvas;
+    const opt = { antialias: true, alpha: true, premultipliedAlpha: true, powerPreference: 'high-performance' };
+    const gl = this.gl = canvas.getContext('webgl2', opt) || canvas.getContext('webgl', opt);
+    if (!gl) throw new Error('WebGL not available');
+    this.geoCache = new Map();
+    this.prog = this.mkProg(`
+attribute vec3 aP; attribute vec3 aN;
+uniform mat4 uVP, uM, uNM; uniform float uWave, uTime;
+varying vec3 vN; varying vec3 vW;
+void main(){
+  vec3 p = aP;
+  if (uWave > 0.0) { float k = p.x + 0.5; p.z += sin(p.x*5.0 - uTime*6.0) * uWave * k; p.y += sin(p.x*3.0 - uTime*4.0) * uWave * 0.25 * k; }
+  vec4 w = uM * vec4(p, 1.0); vW = w.xyz; vN = mat3(uNM) * aN; gl_Position = uVP * w;
+}`, `
+precision mediump float;
+uniform vec3 uColor, uLight, uLightCol, uCam, uFog, uAmbTop, uAmbBot, uRim;
+uniform float uEmis, uOpacity, uFogN, uFogF;
+varying vec3 vN; varying vec3 vW;
+void main(){
+  vec3 n = normalize(vN); vec3 v = normalize(uCam - vW);
+  if (dot(n, v) < 0.0) n = -n;
+  vec3 L = normalize(uLight);
+  float d = dot(n, L);
+  float band = smoothstep(-0.05, 0.05, d) * 0.55 + smoothstep(0.42, 0.5, d) * 0.45;
+  vec3 amb = mix(uAmbBot, uAmbTop, n.y * 0.5 + 0.5);
+  vec3 col = uColor * (amb + band * uLightCol);
+  float rim = pow(1.0 - max(dot(n, v), 0.0), 3.0);
+  col += rim * uRim * 0.55;
+  vec3 h = normalize(L + v);
+  col += step(0.965, dot(n, h)) * 0.22 * uLightCol;
+  float e = clamp(uEmis, 0.0, 1.0);
+  col = mix(col, uColor * 1.15, e) + uColor * max(uEmis - 1.0, 0.0) * 0.6;
+  float f = smoothstep(uFogN, uFogF, length(uCam - vW)) * (1.0 - e * 0.7);
+  col = mix(col, uFog, f);
+  gl_FragColor = vec4(col * uOpacity, uOpacity);
+}`);
+    this.pprog = this.mkProg(`
+attribute vec3 aP; attribute vec4 aC; attribute float aS;
+uniform mat4 uVP; uniform float uScale; varying vec4 vC;
+void main(){ vec4 c = uVP * vec4(aP, 1.0); gl_Position = c; gl_PointSize = clamp(aS * uScale / max(c.w, 0.1), 0.0, 256.0); vC = aC; }`, `
+precision mediump float; varying vec4 vC;
+void main(){ vec2 q = gl_PointCoord - 0.5; float d = length(q) * 2.0; float a = 1.0 - smoothstep(0.0, 1.0, d); a = a * a; float core = 1.0 - smoothstep(0.0, 0.25, d);
+  gl_FragColor = vec4((vC.rgb * a + vec3(core * 0.6)) * vC.a, 0.0); }`);
+    this.loc = this.locs(this.prog, ['aP', 'aN'], ['uVP', 'uM', 'uNM', 'uWave', 'uTime', 'uColor', 'uLight', 'uLightCol', 'uCam', 'uFog', 'uAmbTop', 'uAmbBot', 'uRim', 'uEmis', 'uOpacity', 'uFogN', 'uFogF']);
+    this.ploc = this.locs(this.pprog, ['aP', 'aC', 'aS'], ['uVP', 'uScale']);
+    this.pbuf = gl.createBuffer();
+    this.env = {
+      light: [0.5, 1, 0.6], lightCol: [1, 0.95, 0.85], ambTop: [0.45, 0.45, 0.6], ambBot: [0.2, 0.18, 0.3],
+      rim: [0.9, 0.6, 1.0], fog: [0.1, 0.08, 0.25], fogN: 18, fogF: 60
+    };
+    this.tmp = new Float32Array(16);
+  }
+  mkProg(vs, fs) {
+    const gl = this.gl, sh = (t, s) => { const o = gl.createShader(t); gl.shaderSource(o, s); gl.compileShader(o); if (!gl.getShaderParameter(o, gl.COMPILE_STATUS)) throw new Error(gl.getShaderInfoLog(o)); return o; };
+    const p = gl.createProgram(); gl.attachShader(p, sh(gl.VERTEX_SHADER, vs)); gl.attachShader(p, sh(gl.FRAGMENT_SHADER, fs)); gl.linkProgram(p);
+    if (!gl.getProgramParameter(p, gl.LINK_STATUS)) throw new Error(gl.getProgramInfoLog(p)); return p;
+  }
+  locs(p, attrs, unis) {
+    const gl = this.gl, o = {};
+    for (const a of attrs) o[a] = gl.getAttribLocation(p, a);
+    for (const u of unis) o[u] = gl.getUniformLocation(p, u);
+    return o;
+  }
+  upload(g) {
+    if (g._gl) return g._gl; const gl = this.gl;
+    const pb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, pb); gl.bufferData(gl.ARRAY_BUFFER, g.P, gl.STATIC_DRAW);
+    const nb = gl.createBuffer(); gl.bindBuffer(gl.ARRAY_BUFFER, nb); gl.bufferData(gl.ARRAY_BUFFER, g.N, gl.STATIC_DRAW);
+    const ib = gl.createBuffer(); gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, ib); gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, g.I, gl.STATIC_DRAW);
+    g._gl = { pb, nb, ib, n: g.I.length }; return g._gl;
+  }
+  resize() {
+    const dpr = Math.min(window.devicePixelRatio || 1, 2), c = this.canvas;
+    const w = Math.max(1, Math.round(c.clientWidth * dpr)), h = Math.max(1, Math.round(c.clientHeight * dpr));
+    if (c.width !== w || c.height !== h) { c.width = w; c.height = h; }
+    this.dpr = dpr;
+  }
+  updateWorld(n, parentM) {
+    M4.trs(n.p, n.r, n.s, n.local);
+    if (parentM) M4.mul(parentM, n.local, n.world); else n.world.set(n.local);
+    for (const c of n.children) this.updateWorld(c, n.world);
+  }
+  render(root, cam, time, particles) {
+    const gl = this.gl; this.resize();
+    const W = this.canvas.width, H = this.canvas.height;
+    gl.viewport(0, 0, W, H); gl.clearColor(0, 0, 0, 0); gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+    const proj = M4.persp(cam.fov, W / H, 0.1, 200), view = M4.lookAt(cam.pos, cam.target, [0, 1, 0]);
+    const vp = M4.mul(proj, view); this.vp = vp; this.W = W; this.H = H;
+    this.updateWorld(root, null);
+    const opaque = [], trans = [];
+    const collect = n => { if (!n.visible) return; if (n.geo && n.opacity > 0.001) (n.opacity < 0.999 ? trans : opaque).push(n); for (const c of n.children) collect(c); };
+    collect(root);
+    const L = this.loc, E = this.env;
+    gl.useProgram(this.prog); gl.enable(gl.DEPTH_TEST); gl.disable(gl.CULL_FACE);
+    gl.uniformMatrix4fv(L.uVP, false, vp); gl.uniform1f(L.uTime, time);
+    gl.uniform3fv(L.uLight, E.light); gl.uniform3fv(L.uLightCol, E.lightCol); gl.uniform3fv(L.uCam, cam.pos);
+    gl.uniform3fv(L.uFog, E.fog); gl.uniform3fv(L.uAmbTop, E.ambTop); gl.uniform3fv(L.uAmbBot, E.ambBot); gl.uniform3fv(L.uRim, E.rim);
+    gl.uniform1f(L.uFogN, E.fogN); gl.uniform1f(L.uFogF, E.fogF);
+    let bound = null;
+    const draw = n => {
+      const g = this.upload(n.geo);
+      if (bound !== g) {
+        gl.bindBuffer(gl.ARRAY_BUFFER, g.pb); gl.enableVertexAttribArray(L.aP); gl.vertexAttribPointer(L.aP, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ARRAY_BUFFER, g.nb); gl.enableVertexAttribArray(L.aN); gl.vertexAttribPointer(L.aN, 3, gl.FLOAT, false, 0, 0);
+        gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, g.ib); bound = g;
+      }
+      gl.uniformMatrix4fv(L.uM, false, n.world); gl.uniformMatrix4fv(L.uNM, false, M4.normalMat(n.world, this.tmp));
+      gl.uniform3fv(L.uColor, n.color); gl.uniform1f(L.uEmis, n.emis); gl.uniform1f(L.uOpacity, n.opacity); gl.uniform1f(L.uWave, n.wave);
+      gl.drawElements(gl.TRIANGLES, g.n, gl.UNSIGNED_SHORT, 0);
+    };
+    gl.disable(gl.BLEND); gl.depthMask(true);
+    opaque.sort((a, b) => (a.geo._gl ? 1 : 0) - (b.geo._gl ? 1 : 0));
+    for (const n of opaque) draw(n);
+    if (trans.length) {
+      gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.ONE, gl.ONE_MINUS_SRC_ALPHA, gl.ONE, gl.ONE_MINUS_SRC_ALPHA); gl.depthMask(false);
+      const cp = cam.pos; trans.sort((a, b) => V.len(V.sub(b.wpos(), cp)) - V.len(V.sub(a.wpos(), cp)));
+      for (const n of trans) draw(n);
+      gl.depthMask(true);
+    }
+    gl.disableVertexAttribArray(L.aN);
+    if (particles && particles.count) this.drawParticles(particles, vp, H);
+  }
+  drawParticles(ps, vp, H) {
+    const gl = this.gl, L = this.ploc;
+    gl.useProgram(this.pprog); gl.enable(gl.BLEND); gl.blendFuncSeparate(gl.ONE, gl.ONE, gl.ZERO, gl.ONE); gl.depthMask(false);
+    gl.uniformMatrix4fv(L.uVP, false, vp); gl.uniform1f(L.uScale, H * 0.9);
+    gl.bindBuffer(gl.ARRAY_BUFFER, this.pbuf); gl.bufferData(gl.ARRAY_BUFFER, ps.buf.subarray(0, ps.count * 8), gl.DYNAMIC_DRAW);
+    gl.enableVertexAttribArray(L.aP); gl.vertexAttribPointer(L.aP, 3, gl.FLOAT, false, 32, 0);
+    gl.enableVertexAttribArray(L.aC); gl.vertexAttribPointer(L.aC, 4, gl.FLOAT, false, 32, 12);
+    gl.enableVertexAttribArray(L.aS); gl.vertexAttribPointer(L.aS, 1, gl.FLOAT, false, 32, 28);
+    gl.drawArrays(gl.POINTS, 0, ps.count);
+    gl.disableVertexAttribArray(L.aC); gl.disableVertexAttribArray(L.aS);
+    gl.depthMask(true); gl.disable(gl.BLEND);
+  }
+  project(p) {
+    const m = this.vp; if (!m) return null;
+    const x = m[0] * p[0] + m[4] * p[1] + m[8] * p[2] + m[12], y = m[1] * p[0] + m[5] * p[1] + m[9] * p[2] + m[13], w = m[3] * p[0] + m[7] * p[1] + m[11] * p[2] + m[15];
+    if (w <= 0.05) return null;
+    const cw = this.canvas.clientWidth, ch = this.canvas.clientHeight;
+    return { x: (x / w * 0.5 + 0.5) * cw, y: (1 - (y / w * 0.5 + 0.5)) * ch, w };
+  }
+}
+
+/* ---------- Particles ---------- */
+class Particles {
+  constructor(max) {
+    this.max = max; this.buf = new Float32Array(max * 8); this.list = []; this.count = 0; this.glows = [];
+  }
+  spawn(o) { if (this.list.length < this.max) this.list.push(Object.assign({ v: [0, 0, 0], g: 0, drag: 0, life: 1, age: 0, size: .3, c: [1, 1, 1], tw: 0, shrink: 1 }, o)); }
+  burst(pos, n, colors, speed, life, size, g) {
+    for (let i = 0; i < n; i++) {
+      const u = Math.random() * 2 - 1, a = Math.random() * Math.PI * 2, s = Math.sqrt(1 - u * u), sp = speed * (0.6 + Math.random() * 0.5);
+      this.spawn({ p: pos.slice(), v: [s * Math.cos(a) * sp, u * sp, s * Math.sin(a) * sp], g: g === undefined ? -3 : g, drag: 1.2, life: life * (0.7 + Math.random() * 0.6), size: size * (0.7 + Math.random() * 0.6), c: colors[i % colors.length], tw: Math.random() < .4 ? 1 : 0 });
+    }
+  }
+  update(dt, time) {
+    let k = 0; const B = this.buf;
+    for (let i = this.list.length - 1; i >= 0; i--) {
+      const q = this.list[i]; q.age += dt;
+      if (q.age >= q.life) { this.list[i] = this.list[this.list.length - 1]; this.list.pop(); continue; }
+      if (q.upd) q.upd(q, dt);
+      const dr = Math.max(0, 1 - q.drag * dt);
+      q.v[0] *= dr; q.v[1] = q.v[1] * dr + q.g * dt; q.v[2] *= dr;
+      q.p[0] += q.v[0] * dt; q.p[1] += q.v[1] * dt; q.p[2] += q.v[2] * dt;
+    }
+    const put = (p, c, a, s) => {
+      if (k >= this.max) return; const o = k * 8;
+      B[o] = p[0]; B[o + 1] = p[1]; B[o + 2] = p[2]; B[o + 3] = c[0]; B[o + 4] = c[1]; B[o + 5] = c[2]; B[o + 6] = a; B[o + 7] = s; k++;
+    };
+    for (const q of this.list) {
+      const t = q.age / q.life; let a = t < 0.1 ? t / 0.1 : 1 - (t - 0.1) / 0.9;
+      if (q.tw) a *= 0.55 + 0.45 * Math.sin(time * 30 + q.p[0] * 10);
+      if (q.fixedA) a = q.fixedA(q, time);
+      put(q.p, q.c, Math.max(0, a), q.size * (q.shrink ? (1 - t * 0.5) : 1));
+    }
+    for (const g of this.glows) {
+      if (g.node && !isVisible(g.node)) continue;
+      const p = g.node ? [g.node.world[12] + (g.off ? g.off[0] : 0), g.node.world[13] + (g.off ? g.off[1] : 0), g.node.world[14] + (g.off ? g.off[2] : 0)] : g.p;
+      const a = (g.a === undefined ? 1 : g.a) * (g.pulse ? 0.75 + 0.25 * Math.sin(time * g.pulse + (g.ph || 0)) : 1);
+      if (a > 0.01) put(p, g.c, a, g.size);
+    }
+    this.count = k;
+  }
+  clear() { this.list.length = 0; this.glows.length = 0; this.count = 0; }
+}
+function isVisible(n) { while (n) { if (!n.visible) return false; n = n.parent; } return true; }
+
+/* ---------- Tweens ---------- */
+const Ease = {
+  lin: t => t, outCubic: t => 1 - Math.pow(1 - t, 3), inOut: t => t < .5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2,
+  outBack: t => { const c1 = 1.70158, c3 = c1 + 1; return 1 + c3 * Math.pow(t - 1, 3) + c1 * Math.pow(t - 1, 2); },
+  outElastic: t => t === 0 ? 0 : t === 1 ? 1 : Math.pow(2, -10 * t) * Math.sin((t * 10 - 0.75) * (2 * Math.PI / 3)) + 1,
+  outBounce: t => { const n1 = 7.5625, d1 = 2.75; if (t < 1 / d1) return n1 * t * t; if (t < 2 / d1) return n1 * (t -= 1.5 / d1) * t + .75; if (t < 2.5 / d1) return n1 * (t -= 2.25 / d1) * t + .9375; return n1 * (t -= 2.625 / d1) * t + .984375; }
+};
+
+/* ===== Shared geometry + 3D model builders ===== */
+const G = {};
+function initGeos() {
+  G.sphere = geoSphere(14, 22);
+  G.ball = geoSphere(8, 12);
+  G.box = geoBox();
+  G.cyl = geoLathe([[0, -.5], [1, -.5], [1, .5], [0, .5]], 20, false);
+  G.cyl8 = geoLathe([[0, -.5], [1, -.5], [1, .5], [0, .5]], 8, false);
+  G.cone = geoLathe([[0, -.5], [1, -.5], [0, .5]], 20, false);
+  G.pyr = geoLathe([[0, 0], [1, 0], [0, 1]], 4, false, Math.PI * 2, Math.PI / 4);
+  G.plane = geoPlane(1, 1);
+  G.flag = geoPlane(14, 3);
+  G.torus = geoTorus(1, .25, 28, 10);
+  G.ring = geoTorus(1, .08, 32, 6);
+  G.smile = geoTorus(1, .22, 12, 6, Math.PI * 0.8, Math.PI * 1.1);
+  G.crescent = geoTorus(1, .32, 24, 10, Math.PI * 1.25, Math.PI * 0.15);
+  G.onion = geoLathe([[0, 0], [.8, 0], [.98, .25], [.95, .5], [.7, .85], [.35, 1.12], [.12, 1.35], [.03, 1.55], [0, 1.6]], 22, true);
+  G.diya = geoLathe([[0, 0], [.14, .005], [.26, .06], [.33, .15], [.34, .18], [.3, .18], [.22, .11], [0, .1]], 20, true);
+  G.pot = geoLathe([[0, 0], [.45, .02], [.6, .2], [.62, .45], [.55, .62], [.5, .66], [.56, .7], [.5, .72], [0, .6]], 22, true);
+  G.lantern = geoLathe([[0, 0], [.22, 0], [.4, .25], [.46, .6], [.4, .95], [.28, 1.1], [0, 1.1]], 12, true);
+  G.rock = geoLathe([[1, 0], [.82, -.55], [.5, -1.1], [.22, -1.7], [0, -2.1]], 9, false);
+  G.top = geoLathe([[0, .12], [.97, .12], [1.02, 0], [1, -.08]], 30, true);
+  G.star = geoStar(5, .45, .3);
+  G.gem = geoLathe([[0, -1], [1, 0], [0, 1]], 5, false);
+  G.bowl = geoLathe([[0, 0], [.3, .02], [.5, .25], [.52, .3], [.48, .3], [.3, .08], [0, .06]], 18, true);
+  G.skirt = geoLathe([[0, 1], [.34, 1], [.46, .45], [.62, 0], [0, 0]], 18, true);
+  G.kurta = geoLathe([[0, 1], [.33, 1], [.4, .6], [.46, 0], [0, 0]], 18, true);
+  G.shirt = geoLathe([[0, 1], [.35, 1], [.38, .5], [.36, 0], [0, 0]], 18, true);
+  G.wing = geoSphere(6, 12);
+}
+const mk = (g, c, o) => new Node(G[g], c, o);
+const grp = () => new Node();
+
+/* ---------- Island ---------- */
+function makeIsland(r, top, side, seed) {
+  const n = grp();
+  const t = mk('top', top).sc(r, 1, r);
+  const rock = mk('rock', side).sc(r, r * .55, r).rot(0, seed || 0, 0);
+  const rock2 = mk('rock', shade(side, .75)).sc(r * .6, r * .5, r * .6).at(r * .15, -r * .45, -r * .1).rot(0, 1, 0);
+  n.add(t, rock, rock2); n.top = t; return n;
+}
+function shade(c, k) { const a = typeof c === 'string' ? hex(c) : c; return [a[0] * k, a[1] * k, a[2] * k]; }
+
+/* ---------- Characters ---------- */
+const SKINS = ['#F2C39B', '#E0A77C', '#C98B5E', '#A8704A'];
+function makePerson(o) {
+  o = Object.assign({ skin: SKINS[1], shirt: '#E84A5F', pants: '#3D5A99', hair: '#2A1B14', kind: 'boy', hat: null, beard: null, s: 1, sit: false }, o);
+  const root = grp(), body = grp(); root.add(body);
+  const skin = o.skin;
+  // legs
+  if (!o.sit) {
+    for (const x of [-.13, .13]) {
+      const leg = mk('cyl', o.kind === 'girl' || o.kind === 'lady' ? skin : o.pants).sc(.085, .42, .085).at(x, .23, 0);
+      const shoe = mk('sphere', '#3A2A22').sc(.11, .07, .15).at(x, .04, .04);
+      body.add(leg, shoe);
+    }
+  } else {
+    const lap = mk('sphere', o.pants).sc(.36, .14, .3).at(0, .28, .12); body.add(lap);
+  }
+  const torsoG = o.kind === 'girl' ? 'skirt' : (o.kind === 'lady' || o.kind === 'kurta') ? 'kurta' : 'shirt';
+  const torso = mk(torsoG, o.shirt).sc(1, .62, .85).at(0, .42, 0);
+  if (o.kind === 'lady') { torso.s = [1.1, .72, .95]; torso.p = [0, .3, 0]; const sash = mk('cyl', o.sash || '#F7B32B').sc(.06, .72, .06).at(.12, .72, .2).rot(0, 0, .55); body.add(sash); }
+  if (o.sit) torso.p[1] = .3;
+  body.add(torso);
+  const neckY = o.sit ? .95 : 1.05;
+  // head
+  const head = grp().at(0, neckY + .3, 0); body.add(head);
+  head.add(mk('sphere', skin).sc(.33, .31, .31));
+  for (const x of [-.11, .11]) {
+    head.add(mk('ball', '#1E1420').sc(.045, .06, .03).at(x, .03, .28));
+    head.add(mk('ball', '#FFFFFF', { emis: 1 }).sc(.015).at(x + .015, .05, .305));
+    head.add(mk('ball', '#FF8FA3').sc(.05, .03, .02).at(x * 1.55, -.07, .25));
+  }
+  head.add(mk('smile', '#7A2E2E').sc(.07).at(0, -.05, .29));
+  head.add(mk('ball', shade(skin, .92)).sc(.035, .035, .03).at(0, -.01, .31));
+  for (const x of [-.32, .32]) head.add(mk('ball', skin).sc(.06, .08, .05).at(x, 0, 0));
+  // hair
+  if (o.hair && o.hat !== 'turban') {
+    head.add(mk('sphere', o.hair).sc(.35, .25, .34).at(0, .1, -.03).rot(-.25, 0, 0));
+    if (o.kind === 'girl') { for (const x of [-.3, .3]) head.add(mk('sphere', o.hair).sc(.1, .13, .1).at(x, -.02, -.12)); head.add(mk('ball', '#FF5D8F').sc(.06).at(.28, .13, 0)); }
+    if (o.kind === 'lady') head.add(mk('sphere', o.hair).sc(.16).at(0, .05, -.33));
+  }
+  if (o.kind === 'lady') head.add(mk('ball', '#D7263D', { emis: .6 }).sc(.025).at(0, .12, .3));
+  // beard
+  if (o.beard) { head.add(mk('sphere', o.beard).sc(.29, .23, .22).at(0, -.17, .12)); head.add(mk('sphere', o.beard).sc(.12, .04, .05).at(0, -.07, .29)); }
+  // hats
+  if (o.hat === 'santa') {
+    head.add(mk('cone', '#D62828').sc(.3, .45, .3).at(0, .38, -.02).rot(-.25, 0, .15));
+    head.add(mk('torus', '#FFFFFF').sc(.3, .3, .3).rot(Math.PI / 2, 0, 0).at(0, .18, 0));
+    head.add(mk('ball', '#FFFFFF').sc(.08).at(.1, .6, -.1));
+  } else if (o.hat === 'turban') {
+    const tc = o.turban || '#F77F00';
+    head.add(mk('sphere', tc).sc(.37, .26, .37).at(0, .14, -.02));
+    head.add(mk('sphere', tc).sc(.3, .18, .3).at(0, .28, -.02).rot(0, 0, .2));
+    head.add(mk('cone', shade(tc, .85)).sc(.14, .12, .06).at(0, .2, .33).rot(Math.PI, 0, 0));
+  } else if (o.hat === 'topi') {
+    head.add(mk('cyl', '#FFFFFF').sc(.3, .12, .3).at(0, .22, 0));
+  } else if (o.hat === 'party') {
+    head.add(mk('cone', o.hatColor || '#4CC9F0').sc(.16, .38, .16).at(.05, .45, 0).rot(0, 0, -.2));
+    head.add(mk('ball', '#FFD166').sc(.06).at(.12, .65, 0));
+  } else if (o.hat === 'cap') {
+    head.add(mk('sphere', '#6A994E').sc(.34, .14, .34).at(0, .2, 0));
+  } else if (o.hat === 'veil') {
+    head.add(mk('sphere', o.veil || '#D7263D').sc(.4, .36, .38).at(0, .08, -.06));
+  }
+  // arms (pivot at shoulder)
+  const arms = [];
+  for (const sd of [-1, 1]) {
+    const piv = grp().at(sd * .3, neckY - .08, 0);
+    const arm = mk('cyl', o.kind === 'lady' ? skin : o.shirt).sc(.07, .42, .07).at(0, -.2, 0);
+    const hand = mk('ball', skin).sc(.08).at(0, -.43, 0);
+    piv.add(arm, hand); piv.r = [0, 0, sd * .25]; body.add(piv); arms.push(piv);
+  }
+  root.s = [o.s, o.s, o.s];
+  root.body = body; root.head = head; root.armL = arms[0]; root.armR = arms[1];
+  return root;
+}
+
+/* ---------- Jugnu the firefly mascot ---------- */
+function makeJugnu() {
+  const n = grp();
+  const body = mk('sphere', '#FFD23F', { emis: 1.2 }).sc(.22, .2, .3).at(0, 0, -.12);
+  const head = mk('sphere', '#5B3FA8').sc(.2);
+  n.add(body, head);
+  for (const x of [-.08, .08]) {
+    n.add(mk('ball', '#FFFFFF', { emis: 1 }).sc(.06).at(x, .04, .16));
+    n.add(mk('ball', '#1E1420').sc(.032).at(x, .04, .21));
+    const ant = mk('cyl', '#3A2A6B').sc(.012, .2, .012).at(x * 1.3, .24, .02).rot(-.3, 0, x * 3);
+    const tip = mk('ball', '#FF6B9D', { emis: .8 }).sc(.04).at(x * 2.1, .34, .06);
+    n.add(ant, tip);
+  }
+  n.add(mk('smile', '#FFFFFF', { emis: 1 }).sc(.05).at(0, -.05, .19));
+  const wings = [];
+  for (const sd of [-1, 1]) {
+    const piv = grp().at(sd * .08, .12, -.1);
+    piv.add(mk('wing', '#CDEBFF', { opacity: .55, emis: .4 }).sc(.28, .03, .14).at(sd * .26, 0, 0));
+    n.add(piv); wings.push(piv);
+  }
+  n.wings = wings; n.bodyGlow = body;
+  return n;
+}
+
+/* ---------- Props ---------- */
+function makeDiya(lit) {
+  const n = grp();
+  n.add(mk('diya', '#C8553D').sc(1));
+  n.add(mk('torus', '#F2A541').sc(.3, .3, .3).rot(Math.PI / 2, 0, 0).at(0, .16, 0).sc(.31, .31, .2));
+  const oil = mk('cyl', '#7A3E1D').sc(.24, .01, .24).at(0, .13, 0); n.add(oil);
+  const flame = grp().at(0, .17, 0);
+  const f1 = mk('sphere', '#FF9F1C', { emis: 1.6 }).sc(.07, .15, .07).at(0, .12, 0);
+  const f2 = mk('sphere', '#FFF3B0', { emis: 2 }).sc(.035, .08, .035).at(0, .09, .01);
+  flame.add(f1, f2); flame.visible = !!lit; n.add(flame); n.flame = flame;
+  return n;
+}
+function makeHouse(w, d, h, wall, roof) {
+  const n = grp();
+  n.add(mk('box', wall).sc(w, h, d).at(0, h / 2, 0));
+  n.add(mk('pyr', roof).sc(w * .78, h * .65, d * .78).at(0, h, 0));
+  n.add(mk('box', '#6B3E26').sc(w * .22, h * .5, .05).at(0, h * .25, d / 2 + .01));
+  const wins = [];
+  for (const x of [-w * .3, w * .3]) { const wi = mk('box', '#FFE8A3', { emis: .2 }).sc(w * .16, h * .2, .05).at(x, h * .62, d / 2 + .01); n.add(wi); wins.push(wi); }
+  n.wins = wins; return n;
+}
+function makeToran(w, y, z, count) {
+  const n = grp(); const cols = ['#FF9F1C', '#FFD166', '#F94144'];
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1), x = -w / 2 + w * t, sag = Math.sin(t * Math.PI) * .25;
+    n.add(mk('ball', cols[i % 3]).sc(.09).at(x, y - sag, z));
+    if (i % 3 === 1) n.add(mk('sphere', '#3A8D3F').sc(.05, .14, .02).at(x, y - sag - .15, z));
+  }
+  return n;
+}
+function makeRangoli(r) {
+  const n = grp(); const cols = ['#F72585', '#FFD166', '#06D6A0', '#4CC9F0', '#FF9F1C'];
+  for (let i = 0; i < 4; i++) n.add(mk('torus', cols[i]).sc(r * (1 - i * .22), r * (1 - i * .22), .04).rot(Math.PI / 2, 0, 0).at(0, .02, 0));
+  for (let i = 0; i < 8; i++) { const a = i / 8 * Math.PI * 2; n.add(mk('sphere', cols[(i + 1) % 5]).sc(.12, .03, .25).at(Math.cos(a) * r * .55, .03, Math.sin(a) * r * .55).rot(0, -a + Math.PI / 2, 0)); }
+  n.add(mk('ball', '#FFFFFF').sc(.12, .04, .12).at(0, .03, 0));
+  return n;
+}
+function makeXmasTree(s) {
+  const n = grp();
+  n.add(mk('cyl', '#6B3E26').sc(.18, .6, .18).at(0, .3, 0));
+  const tiers = [[1.1, 1.1, .95], [.85, 1, 1.65], [.58, .9, 2.3]];
+  for (const [r, h, y] of tiers) n.add(mk('cone', '#1B7A4A').sc(r, h, r).at(0, y, 0));
+  for (const [r, h, y] of tiers) n.add(mk('cone', '#EAF6FF').sc(r * .9, h * .16, r * .9).at(0, y - h * .47, 0));
+  n.sc(s || 1); return n;
+}
+function makeStar(c) {
+  const n = grp();
+  const a = mk('star', c || '#FFD23F', { emis: .9 }).sc(.32);
+  n.add(a); return n;
+}
+function makeGift(c, rib) {
+  const n = grp(); rib = rib || '#FFD166';
+  n.add(mk('box', c).sc(.5, .42, .5).at(0, .21, 0));
+  n.add(mk('box', rib).sc(.52, .43, .09).at(0, .21, 0));
+  n.add(mk('box', rib).sc(.09, .43, .52).at(0, .21, 0));
+  for (const sd of [-1, 1]) n.add(mk('torus', rib).sc(.1, .1, .1).at(sd * .08, .47, 0).rot(0, 0, sd * .6));
+  n.body = n.children[0]; return n;
+}
+function makeBalloon(c, len) {
+  const n = grp(); len = len || 1.2;
+  const b = mk('sphere', c).sc(.32, .4, .32).at(0, len, 0);
+  n.add(b, mk('cone', c).sc(.06, .08, .06).at(0, len - .42, 0).rot(Math.PI, 0, 0), mk('cyl', '#EEEEEE').sc(.008, len - .4, .008).at(0, (len - .4) / 2, 0));
+  n.body = b; return n;
+}
+function makeCake() {
+  const n = grp();
+  const t1 = mk('cyl', '#F6C28B').sc(.55, .32, .55).at(0, .16, 0);
+  const i1 = mk('torus', '#FFFFFF').sc(.55, .55, .25).rot(Math.PI / 2, 0, 0).at(0, .32, 0);
+  const t2 = mk('cyl', '#F6C28B').sc(.38, .28, .38).at(0, .46, 0);
+  const i2 = mk('torus', '#FFFFFF').sc(.38, .38, .22).rot(Math.PI / 2, 0, 0).at(0, .6, 0);
+  n.add(t1, i1, t2, i2);
+  const flames = [];
+  for (let i = 0; i < 5; i++) {
+    const a = i / 5 * Math.PI * 2; const x = Math.cos(a) * .22, z = Math.sin(a) * .22;
+    n.add(mk('cyl', ['#4CC9F0', '#F72585', '#FFD166'][i % 3]).sc(.025, .2, .025).at(x, .7, z));
+    const f = mk('sphere', '#FF9F1C', { emis: 1.6 }).sc(.035, .07, .035).at(x, .84, z); n.add(f); flames.push(f);
+  }
+  n.flames = flames; n.paint = [t1, t2]; return n;
+}
+function makeGurudwara(s) {
+  const n = grp();
+  n.add(mk('box', '#F8F4EC').sc(3, 1.6, 2).at(0, .8, 0));
+  n.add(mk('box', '#E9DFC9').sc(3.2, .15, 2.2).at(0, 1.65, 0));
+  n.add(mk('box', '#F8F4EC').sc(1.6, .7, 1.4).at(0, 2.05, 0));
+  const dome = mk('onion', '#F4B400', { emis: .15 }).sc(.75, .8, .75).at(0, 2.4, 0); n.add(dome);
+  n.add(mk('cyl', '#F4B400').sc(.03, .35, .03).at(0, 3.8, 0));
+  for (const x of [-1.35, 1.35]) for (const z of [-.85, .85]) {
+    n.add(mk('cyl', '#F8F4EC').sc(.12, .35, .12).at(x, 1.9, z));
+    n.add(mk('onion', '#F4B400').sc(.18, .22, .18).at(x, 2.07, z));
+  }
+  for (const x of [-.9, 0, .9]) n.add(mk('box', '#3C4A6B').sc(.45, .8, .05).at(x, .55, 1.01), mk('sphere', '#3C4A6B').sc(.225, .22, .025).at(x, .95, 1.01));
+  n.add(mk('box', '#E9DFC9').sc(3.4, .12, 2.6).at(0, .06, 0));
+  // Nishan Sahib pole with saffron flag
+  const pole = mk('cyl', '#C0C0C0').sc(.04, 3.4, .04).at(2.1, 1.7, -.4); n.add(pole);
+  const fl = mk('flag', '#FF8C1A', { wave: .12 }).sc(.9, .5, 1).at(2.55, 3.1, -.4); n.add(fl);
+  n.sc(s || 1); return n;
+}
+function makeMosque(s) {
+  const n = grp();
+  n.add(mk('box', '#F3E9D2').sc(3, 1.5, 2).at(0, .75, 0));
+  n.add(mk('box', '#E3D4B1').sc(3.2, .14, 2.2).at(0, 1.55, 0));
+  n.add(mk('cyl', '#F3E9D2').sc(.8, .25, .8).at(0, 1.7, 0));
+  n.add(mk('onion', '#2A9D8F', { emis: .1 }).sc(.85, .95, .85).at(0, 1.8, 0));
+  const moon = mk('crescent', '#FFD166', { emis: 1 }).sc(.14).at(0, 3.55, 0); n.add(moon);
+  n.add(mk('cyl', '#FFD166').sc(.025, .25, .025).at(0, 3.35, 0));
+  for (const x of [-1.9, 1.9]) {
+    n.add(mk('cyl8', '#F3E9D2').sc(.22, 3.2, .22).at(x, 1.6, 0));
+    n.add(mk('cyl8', '#E3D4B1').sc(.32, .12, .32).at(x, 2.6, 0));
+    n.add(mk('onion', '#2A9D8F').sc(.25, .35, .25).at(x, 3.2, 0));
+  }
+  for (const x of [-.8, 0, .8]) n.add(mk('box', '#2F4858').sc(.42, .75, .05).at(x, .5, 1.01), mk('sphere', '#2F4858').sc(.21, .25, .025).at(x, .88, 1.01));
+  n.sc(s || 1); return n;
+}
+function makeChurch(s) {
+  const n = makeHouse(1.6, 1.4, 1.5, '#F1E3D3', '#8E3B46');
+  const tower = grp().at(0, 0, .5);
+  tower.add(mk('box', '#F1E3D3').sc(.6, 2.6, .6).at(0, 1.3, 0), mk('pyr', '#8E3B46').sc(.5, .9, .5).at(0, 2.6, 0));
+  tower.add(mk('box', '#FFD166').sc(.05, .4, .05).at(0, 3.7, 0), mk('box', '#FFD166').sc(.26, .05, .05).at(0, 3.75, 0));
+  tower.add(mk('sphere', '#FFE8A3', { emis: .7 }).sc(.14, .18, .02).at(0, 1.9, .31));
+  n.add(tower); n.sc(s || 1); return n;
+}
+function makeFlag(scale) {
+  const n = grp();
+  const cols = ['#FF9933', '#FFFFFF', '#138808'];
+  cols.forEach((c, i) => n.add(mk('flag', c, { wave: .1 }).sc(1.2, .27, 1).at(.6, .27 - i * .27, 0)));
+  n.add(mk('ring', '#000080').sc(.1, .1, .5).at(.62, 0, .02));
+  n.sc(scale || 1); return n;
+}
+function makeFlagPole(h) {
+  const n = grp();
+  n.add(mk('cyl', '#D9D9D9').sc(.05, h, .05).at(0, h / 2, 0));
+  n.add(mk('ball', '#FFD166').sc(.08).at(0, h + .04, 0));
+  const flag = makeFlag(1).at(.05, .45, 0); n.add(flag); n.flag = flag;
+  return n;
+}
+function makeLantern(c) {
+  const n = grp();
+  const b = mk('lantern', c || '#FF7A1A', { emis: .9, opacity: .92 }).sc(.5);
+  n.add(b, mk('cyl', '#7A3E1D').sc(.12, .03, .12).at(0, 0, 0));
+  n.body = b; return n;
+}
+function makeCloud(s) {
+  const n = grp();
+  [[0, 0, 0, 1], [.9, -.1, .1, .75], [-.9, -.12, 0, .7], [.4, .35, -.1, .7], [-.4, .3, .1, .6]].forEach(([x, y, z, r]) => n.add(mk('sphere', '#FFFFFF').sc(r, r * .8, r).at(x, y, z)));
+  n.sc(s); return n;
+}
+function makeTable(w, d, cloth) {
+  const n = grp();
+  const top = mk('box', cloth || '#FFFFFF').sc(w, .1, d).at(0, .75, 0);
+  const skirt = mk('box', cloth || '#FFFFFF').sc(w + .04, .35, d + .04).at(0, .58, 0);
+  n.add(top, skirt);
+  for (const x of [-w / 2 + .1, w / 2 - .1]) for (const z of [-d / 2 + .1, d / 2 - .1]) n.add(mk('cyl', '#8B5E3C').sc(.05, .45, .05).at(x, .22, z));
+  n.cloth = [top, skirt]; return n;
+}
+function makePlate(food) {
+  const n = grp();
+  n.add(mk('cyl', '#C9D1D9').sc(.28, .03, .28).at(0, .02, 0));
+  const f = grp(); f.visible = !!food;
+  f.add(mk('cyl', '#E9B872').sc(.13, .02, .13).at(-.08, .05, 0), mk('bowl', '#D9D9D9').sc(.2).at(.1, .03, .02), mk('cyl', '#E07A1F').sc(.08, .02, .08).at(.1, .07, .02));
+  n.add(f); n.food = f; return n;
+}
+function makeCalendar(day, month, color) {
+  const n = grp();
+  n.add(mk('box', '#FFFFFF').sc(.9, .9, .25).at(0, 0, 0));
+  n.add(mk('box', color).sc(.92, .28, .27).at(0, .33, 0));
+  for (const x of [-.25, .25]) n.add(mk('torus', '#555555').sc(.06, .06, .06).at(x, .48, 0).rot(0, Math.PI / 2, 0));
+  n.day = day; n.month = month; return n;
+}
+function makeSpectacles() {
+  const n = grp();
+  for (const x of [-.2, .2]) n.add(mk('ring', '#333333').sc(.15, .15, .4).at(x, 0, 0));
+  n.add(mk('cyl', '#333333').sc(.012, .1, .012).rot(0, 0, Math.PI / 2).at(0, .02, 0));
+  return n;
+}
+function makeGarland(r, cols) {
+  const n = grp(); cols = cols || ['#FF9F1C', '#FFD166'];
+  for (let i = 0; i < 14; i++) { const a = i / 14 * Math.PI * 2; n.add(mk('ball', cols[i % cols.length]).sc(.07).at(Math.cos(a) * r, Math.sin(a) * r * 1.2, 0)); }
+  return n;
+}
+function makeTank() {
+  const n = grp();
+  n.add(mk('box', '#5B6B4E').sc(1.1, .35, .6).at(0, .3, 0));
+  for (const z of [-.33, .33]) n.add(mk('box', '#333333').sc(1.2, .25, .12).at(0, .14, z));
+  n.add(mk('sphere', '#6B7B5E').sc(.32, .2, .3).at(-.05, .55, 0), mk('cyl', '#5B6B4E').sc(.05, .7, .05).rot(0, 0, Math.PI / 2).at(.45, .58, 0));
+  return n;
+}
+function makeFort() {
+  const n = grp();
+  n.add(mk('box', '#B5523B').sc(1.6, .8, .6).at(0, .4, 0));
+  for (const x of [-.7, .7]) { n.add(mk('cyl8', '#B5523B').sc(.2, 1.1, .2).at(x, .55, 0)); n.add(mk('onion', '#E9DFC9').sc(.18, .2, .18).at(x, 1.1, 0)); }
+  n.add(mk('box', '#E9DFC9').sc(.5, .3, .4).at(0, .95, 0), mk('onion', '#E9DFC9').sc(.2, .22, .2).at(0, 1.1, 0));
+  n.add(mk('box', '#5A2A1E').sc(.3, .45, .05).at(0, .23, .31));
+  return n;
+}
+function makeStage(w, c) {
+  const n = grp();
+  n.add(mk('cyl', c || '#9D4EDD').sc(w, .2, w * .7).at(0, .1, 0));
+  for (const x of [-w * .8, w * .8]) n.add(mk('cyl', '#FFD166').sc(.06, 2, .06).at(x, 1, -w * .4));
+  n.add(mk('box', '#F72585').sc(w * 1.7, .12, .1).at(0, 2, -w * .4));
+  return n;
+}
+function makeBunting(w, y, z, cols) {
+  const n = grp(); const count = 11;
+  for (let i = 0; i < count; i++) {
+    const t = i / (count - 1), x = -w / 2 + w * t, sag = Math.sin(t * Math.PI) * .35;
+    n.add(mk('pyr', cols[i % cols.length]).sc(.18, .35, .04).rot(Math.PI, 0, 0).at(x, y - sag + .05, z));
+  }
+  return n;
+}
+
+/* ===== App core: loop, camera, input, labels, audio, UI, save ===== */
+const $ = s => document.querySelector(s);
+const wait = ms => new Promise(r => setTimeout(r, ms));
+const rnd = (a, b) => a + Math.random() * (b - a);
+const CANCEL = { cancelled: true };
+
+const App = {
+  time: 0, run: 0, tweens: [], updaters: [], picks: [], labels: [], skyTap: null,
+  cam: { pos: [0, 5, 10], target: [0, 1, 0], fov: 0.9 },
+  view: { target: [0, 1, 0], dist: 10, yaw: 0, pitch: .3, yawMin: -Infinity, yawMax: Infinity, auto: 0, dYaw: 0, dPitch: 0 },
+  init() {
+    initGeos();
+    this.canvas = $('#gl');
+    this.R = new Renderer(this.canvas);
+    this.P = new Particles(3500);
+    this.root = new Node();
+    this.bindInput();
+    let last = performance.now();
+    const loop = now => {
+      const dt = Math.min(0.05, (now - last) / 1000); last = now; this.time += dt;
+      try { this.frame(dt); } catch (e) { console.error(e); }
+      requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  },
+  frame(dt) {
+    const t = this.time;
+    for (let i = this.tweens.length - 1; i >= 0; i--) {
+      const w = this.tweens[i]; w.t += dt; if (w.t < 0) continue;
+      const k = Math.min(1, w.t / w.dur); w.fn(w.ease(k));
+      if (k >= 1) { this.tweens.splice(i, 1); w.res(); }
+    }
+    for (const u of this.updaters.slice()) u(dt, t);
+    // camera
+    const v = this.view;
+    if (!this.dragging) v.yaw += v.auto * dt;
+    v.yaw = Math.max(v.yawMin, Math.min(v.yawMax, v.yaw));
+    const sway = Math.sin(t * .35) * .03, cp = Math.cos(v.pitch + sway * .3);
+    const asp = this.canvas.clientWidth / Math.max(1, this.canvas.clientHeight);
+    let vf = v.fov || .85; if (!v.fov && asp < 1.3) vf = Math.min(1.25, .85 + (1.3 - asp) * .6);
+    const mul = v.fov ? 1 : Math.min(1.55, Math.max(1, .62 * Math.tan(.63) / (asp * Math.tan(vf / 2))));
+    const D = v.dist * mul, tgt = [v.target[0], v.target[1] - (asp < 1 ? D * .03 : 0), v.target[2]];
+    this.cam.target = tgt;
+    this.cam.pos = [tgt[0] + Math.sin(v.yaw + sway) * cp * D, tgt[1] + Math.sin(v.pitch) * D, tgt[2] + Math.cos(v.yaw + sway) * cp * D];
+    this.cam.fov = vf;
+    this.P.update(dt, t);
+    this.R.render(this.root, this.cam, t, this.P);
+    for (const l of this.labels) {
+      if (!isVisible(l.node)) { l.el.style.display = 'none'; continue; }
+      const w = l.node.world, p = this.R.project([w[12] + l.off[0], w[13] + l.off[1], w[14] + l.off[2]]);
+      if (!p) { l.el.style.display = 'none'; continue; }
+      l.el.style.display = ''; l.el.style.transform = `translate(${p.x}px,${p.y}px) translate(-50%,-100%)`;
+    }
+  },
+  tween(dur, fn, ease, delay) {
+    return new Promise(res => this.tweens.push({ t: -(delay || 0), dur: Math.max(.001, dur), fn, ease: ease || Ease.outCubic, res }));
+  },
+  every(fn) { this.updaters.push(fn); return fn; },
+  pick(node, r, fn, off) { const p = { node, r, fn, off: off || [0, 0, 0], on: true }; this.picks.push(p); return p; },
+  label(node, off, html, cls) {
+    const el = document.createElement('div'); el.className = 'lbl ' + (cls || ''); el.innerHTML = html; $('#labels').appendChild(el);
+    const l = { node, off, el }; this.labels.push(l); return l;
+  },
+  clearScene() {
+    this.run++; this.root = new Node(); this.P.clear(); this.tweens = []; this.updaters = []; this.picks = []; this.skyTap = null;
+    for (const l of this.labels) l.el.remove(); this.labels = [];
+    this.view.dYaw = 0;
+  },
+  setView(o) { Object.assign(this.view, { yawMin: -Infinity, yawMax: Infinity, auto: 0, fov: 0 }, o); },
+  async flyView(o, dur) {
+    const v = this.view, s = { t: v.target.slice(), d: v.dist, y: v.yaw, p: v.pitch };
+    await this.tween(dur || 1.2, k => {
+      if (o.target) v.target = V.lerp(s.t, o.target, k);
+      if (o.dist !== undefined) v.dist = s.d + (o.dist - s.d) * k;
+      if (o.yaw !== undefined) v.yaw = s.y + (o.yaw - s.y) * k;
+      if (o.pitch !== undefined) v.pitch = s.p + (o.pitch - s.p) * k;
+    }, Ease.inOut);
+  },
+  bindInput() {
+    const c = this.canvas; let down = null;
+    c.addEventListener('pointerdown', e => { down = { x: e.clientX, y: e.clientY, t: performance.now(), moved: 0 }; Sound.unlock(); try { c.setPointerCapture(e.pointerId); } catch (_) { } });
+    c.addEventListener('pointermove', e => {
+      if (!down) return; const dx = e.clientX - down.x, dy = e.clientY - down.y;
+      down.moved = Math.max(down.moved, Math.hypot(dx, dy));
+      if (down.moved > 10) {
+        this.dragging = true;
+        this.view.yaw -= (e.movementX || 0) * .006;
+        this.view.pitch = Math.max(.08, Math.min(.9, this.view.pitch + (e.movementY || 0) * .003));
+      }
+    });
+    const up = e => {
+      if (!down) return; const d = down; down = null; this.dragging = false;
+      if (d.moved < 12 && performance.now() - d.t < 700) this.tap(e.clientX, e.clientY);
+    };
+    c.addEventListener('pointerup', up); c.addEventListener('pointercancel', () => { down = null; this.dragging = false; });
+    c.addEventListener('wheel', e => { this.view.dist = Math.max(5, Math.min(30, this.view.dist * (1 + Math.sign(e.deltaY) * .08))); e.preventDefault(); }, { passive: false });
+    addEventListener('resize', () => this.R.resize());
+  },
+  tap(x, y) {
+    const rect = this.canvas.getBoundingClientRect(); x -= rect.left; y -= rect.top;
+    const f = (rect.height * .5) / Math.tan(this.cam.fov / 2);
+    let best = null, bestScore = 1e9;
+    for (const p of this.picks) {
+      if (!p.on || !isVisible(p.node)) continue;
+      const w = p.node.world, q = this.R.project([w[12] + p.off[0], w[13] + p.off[1], w[14] + p.off[2]]);
+      if (!q) continue;
+      const sr = Math.max(p.r * f / q.w, 26), d = Math.hypot(q.x - x, q.y - y);
+      if (d <= sr) { const score = d / sr + q.w * .02; if (score < bestScore) { bestScore = score; best = p; } }
+    }
+    if (best) { best.fn(best); return; }
+    if (this.skyTap) this.skyTap(x, y);
+  },
+  guard(run) { if (run !== this.run) throw CANCEL; }
+};
+
+/* ---------- Sound (WebAudio, generated) ---------- */
+const Sound = {
+  ctx: null, on: true,
+  unlock() { if (!this.ctx) { try { this.ctx = new (window.AudioContext || window.webkitAudioContext)(); } catch (e) { this.ctx = null; } } if (this.ctx && this.ctx.state === 'suspended') this.ctx.resume(); },
+  tone(f, dur, type, vol, f2, delay) {
+    if (!this.on || !this.ctx) return; const c = this.ctx, t = c.currentTime + (delay || 0);
+    const o = c.createOscillator(), g = c.createGain(); o.type = type || 'sine'; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(f2, t + dur);
+    g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(vol || .2, t + .015); g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+    o.connect(g).connect(c.destination); o.start(t); o.stop(t + dur + .05);
+  },
+  noise(dur, vol, freq, delay, sweep) {
+    if (!this.on || !this.ctx) return; const c = this.ctx, t = c.currentTime + (delay || 0);
+    const len = Math.floor(c.sampleRate * dur), b = c.createBuffer(1, len, c.sampleRate), d = b.getChannelData(0);
+    for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+    const s = c.createBufferSource(); s.buffer = b; const fl = c.createBiquadFilter(); fl.type = 'bandpass'; fl.frequency.setValueAtTime(freq || 1200, t);
+    if (sweep) fl.frequency.exponentialRampToValueAtTime(sweep, t + dur);
+    const g = c.createGain(); g.gain.value = vol || .3; s.connect(fl).connect(g).connect(c.destination); s.start(t);
+  },
+  tap() { this.tone(660, .08, 'triangle', .12, 880); },
+  pop() { this.tone(420, .12, 'sine', .25, 1200); this.noise(.06, .12, 3000); },
+  ignite() { this.noise(.25, .18, 900, 0, 3000); this.tone(520, .3, 'sine', .12, 780, .05); },
+  chime() { [1047, 1319, 1568].forEach((f, i) => this.tone(f, .5, 'sine', .1, 0, i * .06)); },
+  correct() { [523, 659, 784, 1047].forEach((f, i) => this.tone(f, .22, 'triangle', .16, 0, i * .08)); },
+  wrong() { this.tone(300, .25, 'sine', .15, 200); },
+  whoosh() { this.noise(.7, .22, 400, 0, 3500); },
+  bang() { this.noise(.6, .45, 700, 0, 120); this.tone(90, .4, 'sine', .3, 40); },
+  crackle() { for (let i = 0; i < 8; i++) this.noise(.04, .12, 4000, .1 + i * .05); },
+  win() { [523, 659, 784, 659, 784, 1047].forEach((f, i) => this.tone(f, .3, 'triangle', .16, 0, i * .12)); [262, 330, 392].forEach(f => this.tone(f, 1.2, 'sine', .07, 0, .6)); },
+  step() { this.tone(180, .08, 'sine', .15, 90); },
+  drum() { this.tone(110, .25, 'sine', .35, 55); this.noise(.08, .15, 300); }
+};
+
+/* ---------- Voice ---------- */
+const Voice = {
+  on: true, v: null,
+  pick() { try { const vs = speechSynthesis.getVoices(); this.v = vs.find(v => /en[-_]IN/i.test(v.lang)) || vs.find(v => /^en/i.test(v.lang)) || null; } catch (e) { } },
+  say(text) {
+    if (!this.on || !('speechSynthesis' in window)) return;
+    try {
+      speechSynthesis.cancel(); const u = new SpeechSynthesisUtterance(text.replace(/<[^>]+>/g, '').replace(/[^\w\s,.!?'’\-:]/g, ''));
+      if (!this.v) this.pick(); if (this.v) u.voice = this.v; u.rate = .92; u.pitch = 1.15; speechSynthesis.speak(u);
+    } catch (e) { }
+  },
+  stop() { try { speechSynthesis.cancel(); } catch (e) { } }
+};
+if ('speechSynthesis' in window) { try { speechSynthesis.onvoiceschanged = () => Voice.pick(); } catch (e) { } }
+
+/* ---------- Save ---------- */
+const Save = {
+  d: { stars: [0, 0, 0, 0, 0, 0, 0], all: false, voice: true, sound: true },
+  load() { try { const s = JSON.parse(localStorage.getItem('eduverse-festival-islands') || 'null'); if (s && Array.isArray(s.stars)) Object.assign(this.d, s); } catch (e) { } },
+  save() { try { localStorage.setItem('eduverse-festival-islands', JSON.stringify(this.d)); } catch (e) { } },
+  unlocked(i) { return this.d.all || i === 0 || this.d.stars[i - 1] > 0; },
+  total() { return this.d.stars.reduce((a, b) => a + b, 0); }
+};
+
+/* ---------- UI helpers ---------- */
+const UI = {
+  show(id, on) { const el = $(id); if (el) el.hidden = !on; },
+  hideAll() { ['#dialog', '#quiz', '#task', '#reward', '#palette', '#hearts', '#toast'].forEach(i => this.show(i, false)); Voice.stop(); },
+  async fade(on) { const f = $('#fade'); f.classList.toggle('on', on); await wait(450); },
+  toast(msg, ms) {
+    const t = $('#toast'); t.innerHTML = msg; t.hidden = false; t.classList.remove('pop'); void t.offsetWidth; t.classList.add('pop');
+    clearTimeout(this._tt); this._tt = setTimeout(() => { t.hidden = true; }, ms || 1800);
+  },
+  talk(lines, run) {
+    return new Promise((res, rej) => {
+      const d = $('#dialog'), txt = $('#dlgText'), tag = $('#dlgTag'), nx = $('#dlgNext'), dots = $('#dlgDots');
+      let i = 0;
+      const showLine = () => {
+        const L = typeof lines[i] === 'string' ? { t: lines[i] } : lines[i];
+        txt.innerHTML = L.t; tag.textContent = L.tag || ''; tag.hidden = !L.tag;
+        tag.className = 'chip ' + (L.tag ? 'tag-' + L.tag.split(' ')[0].toLowerCase() : '');
+        nx.textContent = i < lines.length - 1 ? 'Next ➜' : (L.btn || "Let's go! ➜");
+        dots.innerHTML = lines.map((_, k) => `<i class="${k === i ? 'on' : ''}"></i>`).join('');
+        d.classList.remove('in'); void d.offsetWidth; d.classList.add('in');
+        Voice.say(L.t);
+      };
+      d.hidden = false; showLine();
+      nx.onclick = () => {
+        Sound.tap(); if (run !== App.run) { d.hidden = true; return; }
+        i++; if (i < lines.length) showLine(); else { d.hidden = true; nx.onclick = null; Voice.stop(); res(); }
+      };
+      $('#dlgSpeak').onclick = () => { const was = Voice.on; Voice.on = true; Voice.say(txt.innerHTML); Voice.on = was; };
+    });
+  },
+  task(text, total) {
+    const t = $('#task'); t.hidden = false; $('#taskText').innerHTML = text; this.taskTotal = total; this.progress(0);
+    t.classList.remove('in'); void t.offsetWidth; t.classList.add('in');
+  },
+  progress(n) {
+    const tot = this.taskTotal || 1; $('#taskBar').style.width = (n / tot * 100) + '%'; $('#taskCount').textContent = tot > 1 ? `${n}/${tot}` : '';
+  },
+  quiz(qs, run, opts) {
+    opts = opts || {};
+    return new Promise(res => {
+      const Q = $('#quiz'); Q.hidden = false; let i = 0, mistakes = 0, correct = 0, hearts = opts.hearts || 0;
+      const render = () => {
+        if (run !== App.run) { Q.hidden = true; return; }
+        const q = qs[i];
+        $('#qNum').textContent = `Question ${i + 1} of ${qs.length}`;
+        const tg = $('#qTag'); tg.textContent = q.tag; tg.className = 'chip tag-' + q.tag.split(' ')[0].toLowerCase();
+        $('#qText').innerHTML = q.q; $('#qHint').textContent = ''; $('#qBar').style.width = (i / qs.length * 100) + '%';
+        const box = $('#qOpts'); box.innerHTML = '';
+        const order = q.o.map((_, k) => k).sort(() => Math.random() - .5);
+        let tried = false, locked = false;
+        order.forEach(k => {
+          const b = document.createElement('button'); b.className = 'opt'; b.innerHTML = q.o[k];
+          b.onclick = async () => {
+            if (locked || b.disabled) return;
+            if (k === q.a) {
+              locked = true; b.classList.add('right'); Sound.correct(); correct++;
+              if (opts.onCorrect) opts.onCorrect(i); else celebrateSmall();
+              await wait(900); i++;
+              if (i < qs.length) render(); else { Q.hidden = true; res({ mistakes, correct, hearts }); }
+            } else {
+              b.classList.add('wrong'); b.disabled = true; Sound.wrong(); mistakes++;
+              if (opts.hearts) {
+                locked = true; hearts--; if (opts.onWrong) opts.onWrong(hearts);
+                [...box.children].forEach(x => { if (x.dataset.k == q.a) x.classList.add('right'); });
+                $('#qHint').textContent = '✨ The right answer is shown in green.';
+                await wait(1600);
+                if (hearts <= 0) { Q.hidden = true; res({ mistakes, correct, hearts, failed: true }); return; }
+                i++; if (i < qs.length) render(); else { Q.hidden = true; res({ mistakes, correct, hearts }); }
+              } else {
+                $('#qHint').textContent = '💡 ' + (q.h || 'Good try! Think again and pick another answer.');
+                if (!tried) Voice.say(q.h || 'Good try! Pick another answer.'); tried = true;
+              }
+            }
+          };
+          b.dataset.k = k; box.appendChild(b);
+        });
+        Q.classList.remove('in'); void Q.offsetWidth; Q.classList.add('in');
+        Voice.say(q.q);
+      };
+      render();
+    });
+  }
+};
+
+/* ---------- FX helpers ---------- */
+const COL = { red: hex('#FF3B3B'), yellow: hex('#FFD23F'), green: hex('#3BE37A'), orange: hex('#FF9F1C'), pink: hex('#FF4FA3'), blue: hex('#4CC9F0'), white: [1, 1, 1], gold: hex('#FFC94D'), saffron: hex('#FF9933'), iG: hex('#138808'), violet: hex('#B983FF') };
+function sparkle(pos, n, cols, sp) { App.P.burst(pos, n || 24, cols || [COL.gold, COL.white, COL.orange], sp || 3, .8, .18, -1.5); }
+function confetti(pos, cols, n) {
+  cols = cols || [COL.red, COL.yellow, COL.green, COL.blue, COL.pink, COL.violet];
+  for (let i = 0; i < (n || 90); i++) App.P.spawn({ p: [pos[0] + rnd(-.5, .5), pos[1], pos[2] + rnd(-.5, .5)], v: [rnd(-3, 3), rnd(4, 9), rnd(-3, 3)], g: -7, drag: 1.3, life: rnd(1.4, 2.4), size: rnd(.12, .22), c: cols[i % cols.length], tw: 1 });
+}
+function celebrateSmall() {
+  const t = App.view.target; sparkle([t[0] + rnd(-1, 1), t[1] + 1.5, t[2] + rnd(-1, 1)], 40, [COL.gold, COL.pink, COL.white], 4);
+}
+function firework(from, to, cols, big) {
+  Sound.whoosh();
+  const p = from.slice(), rocket = { p };
+  const dur = .9 + Math.random() * .3;
+  return App.tween(dur, k => {
+    rocket.p = V.lerp(from, to, Ease.outCubic(k));
+    App.P.spawn({ p: rocket.p.slice(), v: [rnd(-.3, .3), -1, rnd(-.3, .3)], g: -1, life: .5, size: .16, c: COL.gold });
+  }, Ease.lin).then(() => {
+    Sound.bang(); setTimeout(() => Sound.crackle(), 250);
+    const n = big ? 220 : 140, sp = big ? 7 : 5.5;
+    App.P.burst(to, n, cols, sp, 1.6, .26, -1.8);
+    App.P.burst(to, 30, [COL.white], sp * .35, .6, .5, 0);
+    App.P.glows.push({ p: to, c: cols[0], size: 6, a: .6 });
+    const g = App.P.glows[App.P.glows.length - 1];
+    App.tween(.8, k => { g.a = .6 * (1 - k); }).then(() => { const i = App.P.glows.indexOf(g); if (i >= 0) App.P.glows.splice(i, 1); });
+  });
+}
+function popIn(n, dur, delay) {
+  const s = n.s.slice(); n.s = [0.001, 0.001, 0.001]; n.visible = true;
+  return App.tween(dur || .6, k => { n.s = [s[0] * k, s[1] * k, s[2] * k]; }, Ease.outBack, delay);
+}
+function flyArc(n, from, to, h, dur) {
+  return App.tween(dur || .8, k => { const p = V.lerp(from, to, k); p[1] += Math.sin(k * Math.PI) * h; n.p = p; }, Ease.inOut);
+}
+function bob(n, amp, sp, ph) { const y = n.p[1]; App.every((dt, t) => { n.p[1] = y + Math.sin(t * sp + (ph || 0)) * amp; }); }
+function shake(n) { const x = n.p[0]; return App.tween(.45, k => { n.p[0] = x + Math.sin(k * Math.PI * 8) * .12 * (1 - k); }, Ease.lin); }
+function addStarsSky(count, rad) {
+  for (let i = 0; i < count; i++) {
+    const a = Math.random() * Math.PI * 2, e = rnd(.15, 1.3), r = rad || 60;
+    App.P.glows.push({ p: [Math.cos(a) * Math.cos(e) * r, Math.sin(e) * r * .7 + 4, Math.sin(a) * Math.cos(e) * r], c: Math.random() < .2 ? COL.gold : [.85, .9, 1], size: rnd(.4, 1.1), pulse: rnd(1, 4), ph: rnd(0, 6), a: rnd(.4, 1) });
+  }
+}
+function addJugnu(pos) {
+  const j = makeJugnu(); j.at(...pos); App.root.add(j);
+  const base = pos.slice();
+  App.P.glows.push({ node: j.bodyGlow, c: COL.yellow, size: 2.2, pulse: 5 });
+  App.every((dt, t) => {
+    j.p = [base[0] + Math.sin(t * .8) * .5, base[1] + Math.sin(t * 2.1) * .25, base[2] + Math.cos(t * .7) * .3];
+    j.r[1] = Math.sin(t * .8) * .4; j.r[2] = Math.sin(t * 2.1) * .08;
+    j.wings[0].r[2] = Math.sin(t * 40) * .6; j.wings[1].r[2] = -Math.sin(t * 40) * .6;
+    if (Math.random() < dt * 6) App.P.spawn({ p: j.bodyGlow.wpos(), v: [rnd(-.2, .2), rnd(-.3, .1), rnd(-.2, .2)], g: 0, life: 1.2, size: .1, c: COL.yellow, tw: 1 });
+  });
+  j.base = base; return j;
+}
+function idlePerson(p, sp, ph) {
+  const y = p.body.p[1]; ph = ph || rnd(0, 6);
+  App.every((dt, t) => { p.body.p[1] = y + Math.abs(Math.sin(t * (sp || 2) + ph)) * .03; p.head.r[2] = Math.sin(t * 1.3 + ph) * .06; });
+}
+function wave(p, arm, sp) { arm = arm || p.armR; const base = arm.r[2]; App.every((dt, t) => { arm.r[2] = base + (arm === p.armR ? 1 : -1) * (2.2 + Math.sin(t * (sp || 6)) * .35); }); }
+function setEnv(o) { Object.assign(App.R.env, o); }
+function setSky(cls) { const s = $('#sky'); s.className = 'sky ' + cls; }
+
+/* ===== Levels: Class 1 EVS "Let's Celebrate" (Nature Window-1, Ch 12) ===== */
+const GREY = '#BFC3CC';
+
+function baseScene(o) {
+  setSky(o.sky); setEnv(o.env);
+  const isl = makeIsland(o.r || 6.5, o.top, o.side, 0.4); App.root.add(isl);
+  App.setView(Object.assign({ target: [0, 1.3, 0], dist: 11.5, yaw: 0, pitch: .32, yawMin: -.6, yawMax: .6 }, o.view || {}));
+  if (o.stars) addStarsSky(o.stars);
+  for (let i = 0; i < (o.clouds || 0); i++) {
+    const c = makeCloud(rnd(.8, 1.4)).at(rnd(-14, 14), rnd(-4, -1.5), rnd(-12, 4)); c.children.forEach(k => k.opacity = .85); App.root.add(c);
+    const sp = rnd(.2, .4), x0 = c.p[0]; App.every((dt, t) => { c.p[0] = x0 + Math.sin(t * .05 * sp + x0) * 3; });
+  }
+  return isl;
+}
+function place(n, x, y, z, ry) { n.at(x, y, z); if (ry) n.r[1] = ry; App.root.add(n); return n; }
+
+/* ---------------- Level 1: Diwali ---------------- */
+async function playDiwali(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-diwali', top: '#3F7D4E', side: '#6B4E71', stars: 160,
+    env: { light: [-.4, .8, .6], lightCol: [.8, .7, .9], ambTop: [.42, .36, .6], ambBot: [.28, .14, .2], rim: [1, .55, .3], fog: hex('#1a1033'), fogN: 22, fogF: 70 }
+  });
+  const house = place(makeHouse(3.4, 2, 2.1, '#F2D0A4', '#B23A48'), 0, 0, -2.2);
+  place(makeToran(2.6, 1.95, -1.15, 17), 0, 0, 0);
+  const wall = place(mk('box', '#C97B63').sc(5.4, .5, .35), 0, .25, .8);
+  place(makeRangoli(1.1), 0, 0, 3);
+  const mom = place(makePerson({ kind: 'lady', shirt: '#2A9D8F', sash: '#F7B32B', skin: SKINS[1] }), -3.4, 0, 1.2, .35);
+  const boy = place(makePerson({ kind: 'kurta', shirt: '#3A86FF', pants: '#F1FAEE', skin: SKINS[2] }), 3.4, 0, 1.2, -.35);
+  idlePerson(mom); idlePerson(boy);
+  for (const x of [-1.9, 1.9]) { const l = place(makeLantern('#FF4FA3'), x, 2.1, -1.05); bob(l, .06, 1.5, x); App.P.glows.push({ node: l.body, c: COL.pink, size: 2.2, pulse: 2, off: [0, .3, 0] }); place(mk('cyl', '#555').sc(.01, .3, .01), x, 2.75, -1.05); }
+  for (let i = 0; i < 14; i++) App.P.glows.push({ p: [-1.7 + i * .26, 2.18 + Math.sin(i / 13 * Math.PI) * -.05, -1.1], c: [COL.yellow, COL.red, COL.green, COL.blue][i % 4], size: .5, pulse: 4, ph: i });
+  const jug = addJugnu([-2.6, 3.4, 2]);
+  // diyas
+  const spots = [[-2.2, .5, .8], [-1.1, .5, .8], [0, .5, .8], [1.1, .5, .8], [2.2, .5, .8], [-1.3, 0, 3.4], [1.3, 0, 3.4], [0, 0, 4.3]];
+  const diyas = spots.map(s => place(makeDiya(false), ...s));
+  await G_(App.flyView({ dist: 10.5, pitch: .3 }, 1.4));
+  await G_(UI.talk([
+    { t: 'Namaste! I am <b>Jugnu</b> the firefly. ✨ Festivals are <b>happy occasions</b>. We celebrate them with our <b>family and friends</b>.', tag: 'In-text' },
+    { t: 'Welcome to Diwali Island! <b>Diwali is the festival of lights.</b> 🪔', tag: 'In-text' },
+    { t: 'On Diwali, people light <b>candles and diyas</b>. They pray to <b>Goddess Lakshmi</b> and <b>decorate their houses</b>.', tag: 'In-text', btn: 'Light the diyas! 🪔' }
+  ], run));
+  let lit = 0;
+  UI.task('Tap each diya to light it! 🪔', diyas.length);
+  await G_(new Promise(res => {
+    diyas.forEach(d => {
+      const g = { node: d.flame.children[0], c: COL.orange, size: 1.4, pulse: 9, ph: rnd(0, 6), a: 0 };
+      App.P.glows.push(g);
+      const hint = { node: d, c: [1, .9, .6], size: .9, pulse: 4, off: [0, .25, 0], a: .5 };
+      App.P.glows.push(hint);
+      const pk = App.pick(d, .45, () => {
+        pk.on = false; hint.a = 0; d.flame.visible = true; popIn(d.flame, .5); g.a = 1; Sound.ignite();
+        sparkle(V.add(d.wpos(), [0, .4, 0]), 26); lit++; UI.progress(lit);
+        house.wins.forEach(w => w.emis = .2 + lit * .1);
+        App.every((dt, t) => { d.flame.s[1] = 1 + Math.sin(t * 13 + d.p[0] * 3) * .12; d.flame.r[2] = Math.sin(t * 7 + d.p[0]) * .08; });
+        if (lit === diyas.length) setTimeout(res, 700);
+      }, [0, .2, 0]);
+    });
+  }));
+  UI.show('#task', false);
+  Sound.chime(); confetti([0, 1, 1], [COL.orange, COL.gold, COL.yellow], 60);
+  await G_(UI.talk([
+    { t: 'Wow! Your house is glowing! ✨', tag: '' },
+    { t: 'Did you know? On Diwali, <b>Lord Rama returned to Ayodhya</b> after <b>14 years</b> of exile.', tag: 'Fact Snippet' },
+    { t: 'Look up at the sky! 🎆 Fireworks shoot up high — <b>red, yellow and green</b>! Bang! Pop! Whizz!', tag: 'Poem', btn: 'Launch fireworks! 🎆' }
+  ], run));
+  let fw = 0; const sets = [[COL.red, COL.gold], [COL.yellow, COL.white], [COL.green, COL.yellow], [COL.red, COL.green], [COL.yellow, COL.red, COL.green]];
+  UI.task('Tap the sky to launch fireworks! 🎆', 5);
+  await G_(new Promise(res => {
+    App.skyTap = x => {
+      const w = App.canvas.clientWidth, tx = (x / w - .5) * 12;
+      firework([tx * .3, .6, 0], [tx, rnd(6.5, 9), rnd(-4, -1)], sets[fw % sets.length], fw >= 4);
+      fw++; if (fw <= 5) UI.progress(Math.min(fw, 5));
+      if (fw === 5) setTimeout(res, 1800);
+    };
+  }));
+  UI.show('#task', false);
+  const r = await G_(UI.quiz(QUIZ.diwali, run));
+  return r;
+}
+
+/* ---------------- Level 2: Christmas ---------------- */
+async function playChristmas(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-xmas', top: '#F4F8FF', side: '#5C6B8A', stars: 120,
+    env: { light: [.5, .9, .5], lightCol: [.75, .8, 1], ambTop: [.5, .55, .75], ambBot: [.3, .3, .45], rim: [.6, .8, 1], fog: hex('#1d2b52'), fogN: 22, fogF: 70 }
+  });
+  place(makeChurch(.85), -3.6, 0, -2.6, .35);
+  for (const [x, z, s] of [[4.2, -2.8, .6], [-4.8, .6, .5], [5.2, 0, .45]]) place(makeXmasTree(s), x, 0, z);
+  for (let i = 0; i < 6; i++) place(mk('sphere', '#FFFFFF').sc(rnd(.3, .6), rnd(.15, .3), rnd(.3, .6)), rnd(-5, 5), 0.05, rnd(1.5, 4.5));
+  const tree = place(makeXmasTree(1.25), .8, 0, -.8);
+  const girl = place(makePerson({ kind: 'girl', shirt: '#4CC9F0', skin: SKINS[0], hair: '#3B2416' }), -2.4, 0, 1.6, .3);
+  const boy = place(makePerson({ kind: 'boy', shirt: '#F77F00', pants: '#264653', skin: SKINS[2] }), -1.3, 0, 2.3, .2);
+  idlePerson(girl); idlePerson(boy);
+  addJugnu([-3, 3.3, 1.8]);
+  // snow
+  App.every((dt) => { for (let i = 0; i < 2; i++) if (Math.random() < dt * 30) App.P.spawn({ p: [rnd(-10, 10), 9, rnd(-8, 5)], v: [0, -rnd(.6, 1.1), 0], g: 0, life: 10, size: rnd(.08, .16), c: [1, 1, 1], shrink: 0, upd: (q, d) => { q.p[0] += Math.sin(q.age * 2 + q.p[2]) * d * .3; } }); });
+  await G_(App.flyView({ dist: 10.5 }, 1.2));
+  await G_(UI.talk([
+    { t: 'Brrr! Welcome to Christmas Island! ❄️ <b>Christmas</b> is celebrated on <b>25th December</b> every year.', tag: 'In-text' },
+    { t: 'On this day, <b>Jesus Christ was born</b>. People go to <b>church</b> to pray.', tag: 'In-text' },
+    { t: 'People decorate their homes and also the <b>Christmas tree</b>. Let’s decorate this one!', tag: 'In-text', btn: 'Decorate! 🎄' }
+  ], run));
+  const slots = [[.72, .8, -.8], [.72, .82, 0], [.72, .8, .8], [1.38, .66, -.7], [1.38, .68, .1], [1.38, .66, .85], [2.02, .47, -.35], [2.02, .47, .45]];
+  const bcols = ['#E63946', '#FFD23F', '#4CC9F0', '#F72585', '#FF9F1C', '#B983FF', '#E63946', '#3BE37A'];
+  let done = 0;
+  UI.task('Tap the glowing spots to hang baubles! 🔴', 9);
+  await G_(new Promise(res => {
+    const finishStar = () => {
+      const slot = mk('sphere', '#FFFFFF', { opacity: .45, emis: .8 }).sc(.2).at(0, 2.95, 0); tree.add(slot);
+      App.every((dt, t) => { slot.s = [.2 + Math.sin(t * 5) * .03, .2 + Math.sin(t * 5) * .03, .2]; });
+      const pk = App.pick(slot, .35, () => {
+        pk.on = false; slot.visible = false;
+        const st = makeStar('#FFD23F'); st.at(0, 3.0, 0); tree.add(st); popIn(st, .8); App.every((dt, t) => { st.r[1] = t * 1.5; });
+        App.P.glows.push({ node: st, c: COL.gold, size: 3.5, pulse: 3 });
+        for (let i = 0; i < 26; i++) { const h = rnd(.5, 2.6), rr = Math.max(.15, 1.1 * (1 - (h - .4) / 2.4)) * 1.25, a = rnd(-1.4, 1.4); App.P.glows.push({ node: tree, off: [Math.sin(a) * rr, h * 1.25, Math.cos(a) * rr], c: [COL.yellow, COL.red, COL.blue, COL.green][i % 4], size: .5, pulse: 5, ph: i }); }
+        Sound.chime(); sparkle(st.wpos(), 50); done++; UI.progress(done); setTimeout(res, 900);
+      });
+    };
+    slots.forEach(([y, r, a], i) => {
+      const pos = [Math.sin(a) * r, y, Math.cos(a) * r];
+      const slot = mk('sphere', '#FFFFFF', { opacity: .45, emis: .8 }).sc(.13).at(...pos); tree.add(slot);
+      App.every((dt, t) => { const k = .13 + Math.sin(t * 4 + i) * .025; slot.s = [k, k, k]; });
+      const pk = App.pick(slot, .25, () => {
+        pk.on = false; slot.visible = false;
+        const b = mk('sphere', bcols[i], { emis: .25 }).sc(.14).at(...pos); tree.add(b); popIn(b, .5);
+        b.add(mk('ball', '#FFFFFF', { emis: 1 }).sc(.3).at(-.35, .35, .6));
+        Sound.pop(); sparkle(b.wpos(), 18, [hex(bcols[i]), COL.white]); done++; UI.progress(done);
+        if (done === slots.length) { UI.toast('⭐ Now tap the top to add the star!'); finishStar(); }
+      });
+    });
+  }));
+  UI.show('#task', false);
+  await G_(UI.talk([{ t: 'It is believed that <b>Santa Claus brings gifts for children</b> on this day. Look — here he comes! 🎅', tag: 'In-text', btn: 'Hello Santa!' }], run));
+  const santa = place(makePerson({ kind: 'kurta', shirt: '#D62828', pants: '#D62828', skin: SKINS[0], hat: 'santa', beard: '#FFFFFF', s: 1.25 }), 8, 0, 1.4, -.5);
+  const sack = mk('sphere', '#8B5E3C').sc(.55, .6, .5); const sackN = grp().add(sack); sackN.at(8.8, .55, 1.6); App.root.add(sackN);
+  await G_(App.tween(2.2, k => { santa.p[0] = 8 - 5 * k; sackN.p[0] = 8.8 - 5 * k; santa.body.p[1] = Math.abs(Math.sin(k * 18)) * .08; }, Ease.outCubic));
+  wave(santa); idlePerson(santa, 1.5);
+  const gcols = [['#E63946', '#FFD166'], ['#4CC9F0', '#FFFFFF'], ['#3BE37A', '#E63946'], ['#B983FF', '#FFD166']];
+  const gspots = [[-.4, 0, 1.2], [1.6, 0, 1.1], [-2.3, 0, 2.6], [-.9, 0, 3.2]];
+  let gifts = 0;
+  UI.task('Tap Santa’s sack to share the gifts! 🎁', 4);
+  App.P.glows.push({ node: sack, c: COL.gold, size: 1.6, pulse: 4, a: .5 });
+  await G_(new Promise(res => {
+    const pk = App.pick(sackN, .7, () => {
+      if (gifts >= 4) return;
+      const gc = gcols[gifts], g = makeGift(gc[0], gc[1]); g.sc(.9); App.root.add(g);
+      Sound.pop(); App.tween(.2, k => { sack.s = [.55 + Math.sin(k * Math.PI) * .1, .6 - Math.sin(k * Math.PI) * .08, .5]; });
+      const to = gspots[gifts]; flyArc(g, V.add(sackN.p, [0, .6, 0]), to, 2.2, .9).then(() => { sparkle(V.add(to, [0, .5, 0]), 20); Sound.tap(); });
+      gifts++; UI.progress(gifts);
+      if (gifts === 4) { pk.on = false; setTimeout(() => { wave(girl); wave(boy, boy.armL); confetti([0, 1.5, 1.5]); Sound.win(); res(); }, 1100); }
+    }, [0, 0, 0]);
+  }));
+  UI.show('#task', false);
+  await G_(wait(900));
+  return await G_(UI.quiz(QUIZ.christmas, run));
+}
+
+/* ---------------- Level 3: Gurupurab ---------------- */
+async function playGurupurab(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-guru', top: '#5E9A3A', side: '#8D6E63', clouds: 8, view: { pitch: .42, dist: 11.5 },
+    env: { light: [.5, 1, .45], lightCol: [.82, .76, .66], ambTop: [.5, .5, .6], ambBot: [.36, .3, .28], rim: [1, .85, .6], fog: hex('#F7D9A8'), fogN: 28, fogF: 80 }
+  });
+  place(makeGurudwara(.95), 0, 0, -3.3);
+  place(mk('box', '#E9DFC9').sc(1.2, .04, 2.2), 0, .02, -1.2);
+  place(mk('box', '#B23A48').sc(5.4, .04, 1.1), -.6, .03, 1.3);
+  const sitters = [];
+  const looks = [{ hat: 'turban', turban: '#F77F00', beard: '#2A1B14', shirt: '#FFFFFF' }, { kind: 'lady', hat: 'veil', veil: '#F72585', shirt: '#F72585' }, { hat: 'turban', turban: '#1D4ED8', shirt: '#FFD166' }, { kind: 'girl', hat: 'veil', veil: '#06D6A0', shirt: '#06D6A0' }, { hat: 'turban', turban: '#FFD23F', beard: '#EEEEEE', shirt: '#9CC3E6', skin: SKINS[0] }];
+  looks.forEach((o, i) => {
+    const p = place(makePerson(Object.assign({ sit: true, skin: SKINS[i % 4], pants: '#F1FAEE', kind: 'kurta' }, o)), -2.6 + i * 1.02, 0, 1.05);
+    idlePerson(p, 1.2); const plate = place(makePlate(false), -2.6 + i * 1.02, .05, 1.65); p.plate = plate; sitters.push(p);
+  });
+  const sev = place(makePerson({ kind: 'kurta', hat: 'turban', turban: '#FF8C1A', shirt: '#F1FAEE', pants: '#F1FAEE', beard: '#2A1B14', skin: SKINS[2] }), 3.4, 0, 1.3, -.6);
+  idlePerson(sev);
+  const pot = place(mk('pot', '#A8A8A8').sc(1.1), 4.3, 0, .1);
+  place(mk('cyl', '#E07A1F').sc(.58, .02, .58), 4.3, .72, .1);
+  addJugnu([-3.8, 3.6, 1.6]);
+  await G_(App.flyView({ dist: 11 }, 1.2));
+  await G_(UI.talk([
+    { t: 'Sat Sri Akal! This is Gurupurab Island. ☀️ On <b>Gurupurab</b>, people go to the <b>gurudwara</b>.', tag: 'In-text' },
+    { t: 'They pray to the <b>Guru Granth Sahib</b>.', tag: 'In-text' },
+    { t: 'People also eat <b>langar</b> — a meal everyone shares, sitting together. Let’s help serve it!', tag: 'In-text', btn: 'Serve langar! 🍛' }
+  ], run));
+  let served = 0;
+  UI.task('Tap each person to serve langar! 🍛', sitters.length);
+  await G_(new Promise(res => {
+    sitters.forEach(p => {
+      const hint = { node: p.plate, c: COL.gold, size: 1, pulse: 4, a: .6 }; App.P.glows.push(hint);
+      const pk = App.pick(p, .6, () => {
+        pk.on = false; hint.a = 0; Sound.tap();
+        const food = mk('cyl', '#E9B872').sc(.13, .03, .13); const fn = grp().add(food); App.root.add(fn);
+        const to = V.add(p.plate.p, [0, .1, 0]);
+        flyArc(fn, [4.3, 1, .1], to, 1.6, .7).then(() => {
+          App.root.remove(fn); p.plate.food.visible = true; popIn(p.plate.food, .4); Sound.pop(); sparkle(V.add(to, [0, .3, 0]), 16);
+          const b = p.armL.r[2], c = p.armR.r[2]; App.tween(.8, k => { const s = Math.sin(k * Math.PI); p.armL.r[2] = b - s * 2; p.armR.r[2] = c + s * 2; });
+          served++; UI.progress(served); if (served === sitters.length) setTimeout(res, 900);
+        });
+      }, [0, .6, 0]);
+    });
+  }));
+  UI.show('#task', false);
+  await G_(UI.talk([{ t: 'Everyone has langar now! 😊 On Gurupurab, people also <b>take out processions</b>. Tap the drum to start one!', tag: 'In-text', btn: 'OK!' }], run));
+  const drum = grp(); drum.add(mk('cyl', '#C0392B').sc(.35, .5, .35), mk('torus', '#FFD166').sc(.36, .36, .3).rot(Math.PI / 2, 0, 0).at(0, .25, 0), mk('torus', '#FFD166').sc(.36, .36, .3).rot(Math.PI / 2, 0, 0).at(0, -.25, 0));
+  place(drum, -4.6, .45, 2.6);
+  App.P.glows.push({ node: drum, c: COL.gold, size: 1.8, pulse: 4, a: .6 });
+  UI.task('Tap the drum! 🥁', 1);
+  await G_(new Promise(res => { const pk = App.pick(drum, .5, () => { pk.on = false; Sound.drum(); UI.progress(1); res(); }); }));
+  UI.show('#task', false);
+  const marchers = [];
+  const tcols = ['#FF8C1A', '#1D4ED8', '#FFD23F', '#F77F00', '#FFFFFF'];
+  for (let i = 0; i < 5; i++) {
+    const m = makePerson({ kind: 'kurta', hat: 'turban', turban: tcols[i], shirt: i % 2 ? '#FFFFFF' : '#FFE8A3', pants: '#FFFFFF', beard: i % 2 ? '#2A1B14' : null, skin: SKINS[i % 4], s: .9 });
+    if (i === 0) { const pole = mk('cyl', '#C0C0C0').sc(.03, 2.2, .03).at(.35, 1.1, 0); const fl = mk('flag', '#FF8C1A', { wave: .12 }).sc(.6, .35, 1).at(.66, 2, 0); m.add(pole, fl); }
+    App.root.add(m); marchers.push(m);
+  }
+  const R = 5.2, dur = 7;
+  let beat = 0;
+  await G_(App.tween(dur, k => {
+    marchers.forEach((m, i) => {
+      const a = Math.PI - (k * Math.PI * 1.05) + i * .28;
+      const aa = Math.min(Math.PI, Math.max(0, a));
+      m.p = [Math.cos(aa) * R, Math.abs(Math.sin(k * 40 + i)) * .07, Math.sin(aa) * R * .65 + .9];
+      m.r[1] = -Math.PI / 2 + (Math.PI / 2 - aa) * .6 + .4;
+      m.armL.r[0] = Math.sin(k * 40 + i) * .5; m.armR.r[0] = -Math.sin(k * 40 + i) * .5;
+    });
+    if (Math.random() < .35) App.P.spawn({ p: [rnd(-5, 5), 6, rnd(-1, 4)], v: [rnd(-.3, .3), -1.2, 0], g: 0, life: 5, size: .16, c: [COL.orange, COL.gold, COL.pink][Math.floor(rnd(0, 3))], shrink: 0 });
+    const b = Math.floor(k * 14); if (b !== beat) { beat = b; Sound.drum(); }
+  }, Ease.lin));
+  confetti([0, 1, 1.5], [COL.orange, COL.gold, COL.white]);
+  await G_(wait(500));
+  return await G_(UI.quiz(QUIZ.gurupurab, run));
+}
+
+/* ---------------- Level 4: Eid ---------------- */
+async function playEid(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-eid', top: '#3F6E4A', side: '#4A5568', stars: 170,
+    env: { light: [-.5, .8, .6], lightCol: [.6, .7, .95], ambTop: [.3, .36, .5], ambBot: [.18, .22, .28], rim: [.5, 1, .9], fog: hex('#0d2b3a'), fogN: 24, fogF: 75 }
+  });
+  place(makeMosque(.95), 0, 0, -3.4);
+  const moon = place(mk('crescent', '#FFE7A0', { emis: 1.2 }).sc(1.6), -7, 9.5, -12, 0); moon.r[2] = .4;
+  App.P.glows.push({ node: moon, c: [1, .9, .6], size: 9, a: .35, off: [0, 0, 0] });
+  for (const x of [-1.2, 1.2]) { const l = place(makeLantern('#2A9D8F'), x, 1.35, -2.3); bob(l, .05, 1.3, x); App.P.glows.push({ node: l.body, c: COL.gold, size: 1.8, pulse: 2, off: [0, .25, 0] }); }
+  const f1 = place(makePerson({ kind: 'kurta', hat: 'topi', shirt: '#FFFFFF', pants: '#FFFFFF', skin: SKINS[1] }), -3.75, 0, 1, 1.1);
+  const f2 = place(makePerson({ kind: 'kurta', hat: 'topi', shirt: '#E9ECEF', pants: '#FFFFFF', skin: SKINS[2] }), -3.05, 0, 1, -1.1);
+  for (const f of [f1, f2]) { f.armL.r = [-1.3, 0, -.5]; f.armR.r = [-1.3, 0, .5]; }
+  App.every((dt, t) => { const s = Math.sin(t * 1.5) * .05; f1.r[2] = s; f2.r[2] = -s; });
+  // stove + pot
+  const stove = grp(); for (const [x, z] of [[-.45, 0], [.45, 0], [0, -.45]]) stove.add(mk('box', '#8D4B3A').sc(.3, .35, .3).at(x, .17, z));
+  place(stove, .5, 0, 1.2);
+  const fire = []; for (let i = 0; i < 3; i++) { const f = mk('sphere', ['#FF6B1A', '#FFB01A', '#FF3B1A'][i], { emis: 1.5 }).sc(.12, .2, .12).at(.5 + (i - 1) * .15, .22, 1.2); App.root.add(f); fire.push(f); }
+  App.every((dt, t) => fire.forEach((f, i) => { f.s[1] = .2 + Math.sin(t * 15 + i * 2) * .06; }));
+  App.P.glows.push({ node: fire[1], c: COL.orange, size: 2.5, pulse: 12 });
+  const pot = place(mk('pot', '#9CA3AF').sc(.85), .5, .35, 1.2);
+  const fill = place(mk('cyl', '#F2C14E').sc(.45, .02, .45), .5, .55, 1.2); fill.visible = false;
+  const spoon = grp().at(.5, .6, 1.2); spoon.add(mk('cyl', '#8B5E3C').sc(.03, .9, .03).at(.15, .35, 0).rot(0, 0, -.35)); App.root.add(spoon);
+  const needy = [];
+  [[3.2, 1.7, -.4], [4.3, .8, -.7], [4.9, -.5, -.9]].forEach(([x, z, ry], i) => { const p = place(makePerson({ kind: 'kurta', shirt: ['#8D8173', '#9C8F7A', '#7A7266'][i], pants: '#6B6358', skin: SKINS[(i + 1) % 4], hair: '#444' }), x, 0, z, ry); idlePerson(p, 1); needy.push(p); });
+  const basket = place(mk('bowl', '#A0522D').sc(1.1), 2.2, 0, 2.4);
+  for (let i = 0; i < 3; i++) place(mk('box', ['#2A9D8F', '#E9C46A', '#E76F51'][i]).sc(.22), 2.05 + i * .15, .25, 2.4);
+  addJugnu([-2.2, 3.5, 2.4]);
+  await G_(App.flyView({ dist: 11 }, 1.2));
+  await G_(UI.talk([
+    { t: 'Eid Mubarak! 🌙 <b>Eid</b> is celebrated after a holy month of fasting called <b>Ramzan</b>.', tag: 'In-text' },
+    { t: 'On Eid, men <b>pray together in mosques</b>. Friends hug and greet each other.', tag: 'In-text' },
+    { t: 'A sweet dish called <b>sewain</b> is cooked. Let’s cook it together!', tag: 'In-text', btn: 'Cook sewain! 🥣' }
+  ], run));
+  let stir = 0;
+  UI.task('Tap the pot to stir the sewain! 🥄', 6);
+  App.P.glows.push({ node: pot, c: COL.gold, size: 1.4, pulse: 4, a: .5, off: [0, .6, 0] });
+  await G_(new Promise(res => {
+    const pk = App.pick(pot, .6, () => {
+      if (stir >= 6) return;
+      stir++; UI.progress(stir); Sound.tap();
+      App.tween(.6, k => { spoon.r[1] = spoon.r[1] + .25; }, Ease.lin);
+      for (let i = 0; i < 6; i++) App.P.spawn({ p: [.5 + rnd(-.2, .2), .9, 1.2 + rnd(-.2, .2)], v: [rnd(-.1, .1), rnd(.6, 1), 0], g: .2, life: 1.6, size: rnd(.25, .4), c: [.9, .9, .95], tw: 0 });
+      fill.visible = true; fill.p[1] = .5 + stir * .03; fill.s[0] = fill.s[2] = .4 + stir * .02;
+      if (stir === 6) { pk.on = false; Sound.chime(); sparkle([.5, 1.2, 1.2], 40, [COL.gold, COL.yellow]); UI.toast('😋 Yummy sewain is ready!'); setTimeout(res, 1100); }
+    }, [0, .4, 0]);
+  }));
+  UI.show('#task', false);
+  await G_(UI.talk([{ t: 'On Eid, <b>alms are distributed to the poor and needy</b>. Alms means gifts we share with people who need help. 💝', tag: 'In-text', btn: 'Let’s share! 💝' }], run));
+  let given = 0;
+  UI.task('Tap each person to share a gift! 💝', needy.length);
+  await G_(new Promise(res => {
+    needy.forEach(p => {
+      const hint = { node: p.head, c: COL.gold, size: 1.2, pulse: 4, a: .5, off: [0, .55, 0] }; App.P.glows.push(hint);
+      const pk = App.pick(p, .6, () => {
+        pk.on = false; hint.a = 0; Sound.tap();
+        const bag = makeGift(['#2A9D8F', '#E9C46A', '#E76F51'][given % 3], '#FFFFFF'); bag.sc(.55); App.root.add(bag);
+        const to = V.add(p.p, [0, 1.3, .35]);
+        flyArc(bag, [2.2, .6, 2.4], to, 1.5, .8).then(() => {
+          Sound.pop(); sparkle(to, 22, [COL.gold, COL.pink]);
+          App.root.remove(bag); p.add(bag); bag.p = [0, .75, .35]; bag.s = [.45, .45, .45];
+          p.armL.r = [-1.1, 0, -.3]; p.armR.r = [-1.1, 0, .3];
+          given++; UI.progress(given); if (given === needy.length) setTimeout(res, 800);
+        });
+      }, [0, .7, 0]);
+    });
+  }));
+  UI.show('#task', false);
+  firework([0, .5, -2], [-2, 8, -5], [COL.green, COL.gold]); setTimeout(() => firework([0, .5, -2], [2.5, 8.5, -5], [COL.gold, COL.white]), 500);
+  await G_(wait(1200));
+  return await G_(UI.quiz(QUIZ.eid, run));
+}
+
+/* ---------------- Level 5: National Days ---------------- */
+async function playNational(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-nat', top: '#5FA33A', side: '#8D6E63', clouds: 10, r: 7,
+    env: { light: [.4, 1, .55], lightCol: [.8, .8, .76], ambTop: [.52, .58, .7], ambBot: [.36, .34, .3], rim: [.8, .9, 1], fog: hex('#CFEFFF'), fogN: 30, fogF: 85 },
+    view: { dist: 13.5, pitch: .24, target: [0, 2.2, 0] }
+  });
+  const days = [
+    { name: 'Republic Day', date: '26th January', d: '26', m: 'January', col: '#FF9933', x: -3.6, fact: '<b>Republic Day</b> is on <b>26th January</b>. It is the day <b>India became a republic</b>.' },
+    { name: 'Independence Day', date: '15th August', d: '15', m: 'August', col: '#1D4ED8', x: 0, fact: '<b>Independence Day</b> is on <b>15th August</b>. On this day, our country became <b>free of the British rule</b>.' },
+    { name: 'Gandhi Jayanti', date: '2nd October', d: '2', m: 'October', col: '#138808', x: 3.6, fact: '<b>Gandhi Jayanti</b> is celebrated on <b>2nd October</b>.' }
+  ];
+  const tank = place(makeTank(), -3.6, 0, .1, .4); tank.sc(.75);
+  const sold = place(makePerson({ kind: 'boy', shirt: '#556B2F', pants: '#556B2F', hat: 'cap', skin: SKINS[2], s: .85 }), -5, 0, .6, .5); idlePerson(sold);
+  place(makeFort(), 0, 0, -.3).sc(.8);
+  const stand = place(mk('box', '#8B5E3C').sc(.9, .9, .5), 3.6, .45, -.1);
+  const pic = place(mk('box', '#F1FAEE').sc(.8, .7, .05), 3.6, 1.3, .1);
+  place(makeSpectacles().sc(.9), 3.6, 1.35, .15); place(makeGarland(.38).sc(1, .9, 1), 3.6, 1.3, .16);
+  days.forEach(D => {
+    const pod = grp(); pod.add(mk('cyl', '#FFFFFF').sc(.9, .5, .9).at(0, .25, 0), mk('torus', D.col).sc(.9, .9, .3).rot(Math.PI / 2, 0, 0).at(0, .5, 0));
+    const pole = makeFlagPole(3.4); pole.at(0, .5, 0); pole.flag.visible = false; pod.add(pole);
+    place(pod, D.x, 0, -2); D.pod = pod; D.pole = pole;
+    D.lbl = App.label(pod, [0, 4.6, 0], `<b>${D.name}</b>`, 'day');
+  });
+  const order = [1, 2, 0];
+  const cals = order.map((di, i) => {
+    const D = days[di], c = makeCalendar(D.d, D.m, D.col); place(c, -2.8 + i * 2.8, 1.4, 2.4); c.D = D; c.baseY = 1.4;
+    c.lbl = App.label(c, [0, .75, 0], `<span class="d">${D.d}</span><span class="m">${D.m}</span>`, 'cal');
+    App.every((dt, t) => { if (!c.done) c.p[1] = c.baseY + (c.sel ? .35 : 0) + Math.sin(t * 2 + i) * .08; c.r[1] = Math.sin(t * .9 + i) * .25; });
+    return c;
+  });
+  addJugnu([-5.2, 3.8, 2]);
+  await G_(App.flyView({ dist: 13 }, 1.2));
+  await G_(UI.talk([
+    { t: 'Jai Hind! 🇮🇳 Some days are special for the <b>whole country</b>. These are called <b>National days</b>.', tag: 'In-text' },
+    { t: 'In India, we celebrate <b>three</b> National days!', tag: 'In-text' },
+    ...days.map(D => ({ t: D.fact, tag: 'In-text' })),
+    { t: 'Now match each <b>date</b> to its <b>National day</b> and hoist the flag!', tag: 'Activity', btn: 'Start matching! 🇮🇳' }
+  ], run));
+  let sel = null, matched = 0;
+  UI.task('Tap a date 📅, then tap its National day! ', 3);
+  await G_(new Promise(res => {
+    cals.forEach(c => {
+      c.pk = App.pick(c, .6, () => { if (c.done) return; Sound.tap(); cals.forEach(o => { o.sel = false; o.lbl.el.classList.remove('sel'); }); c.sel = true; c.lbl.el.classList.add('sel'); sel = c; });
+    });
+    days.forEach(D => {
+      App.pick(D.pod, 1.1, () => {
+        if (D.done) return;
+        if (!sel) { UI.toast('📅 First tap a date!'); Sound.wrong(); return; }
+        if (sel.D !== D) { Sound.wrong(); shake(D.pod); UI.toast('🤔 Not this one. Read the date again!'); return; }
+        const c = sel; sel = null; c.sel = false; c.done = true; D.done = true; c.lbl.el.classList.remove('sel'); c.lbl.el.hidden = true;
+        c.pk.on = false;
+        flyArc(c, c.p.slice(), [D.x, .75, -1.05], 1.2, .8).then(() => { c.s = [.6, .6, .6]; c.r = [0, 0, 0]; });
+        D.lbl.el.classList.add('ok'); D.lbl.el.innerHTML = `<b>${D.name}</b><small>${D.date}</small>`;
+        const f = D.pole.flag; f.visible = true; f.p[1] = .45;
+        Sound.chime();
+        App.tween(2.2, k => { f.p[1] = .45 + k * 2.55; }, Ease.inOut).then(() => {
+          confetti([D.x, 3.9, -2], [COL.saffron, COL.white, COL.iG], 70); Sound.correct();
+          matched++; UI.progress(matched); if (matched === 3) setTimeout(res, 900);
+        });
+      }, [0, 1, 0]);
+    });
+  }));
+  UI.show('#task', false);
+  await G_(UI.talk([
+    { t: 'All three flags are flying high! 🇮🇳🇮🇳🇮🇳', tag: '' },
+    { t: 'The book asks: <i>Why do we celebrate Gandhi Jayanti?</i> Because <b>2nd October is the birthday of Mahatma Gandhi</b>, the Father of our Nation. 🙏', tag: 'Find Out' }
+  ], run));
+  return await G_(UI.quiz(QUIZ.national, run));
+}
+
+/* ---------------- Level 6: Special Days ---------------- */
+async function playSpecial(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-party', top: '#C9A27A', side: '#7B5E57', stars: 90,
+    env: { light: [.3, 1, .7], lightCol: [.85, .78, .8], ambTop: [.5, .42, .58], ambBot: [.32, .24, .32], rim: [1, .5, .9], fog: hex('#3a1d5c'), fogN: 26, fogF: 75 }
+  });
+  for (const x of [-4.6, 4.6]) place(mk('cyl', '#FFD166').sc(.06, 3.2, .06), x, 1.6, -2.4);
+  place(makeBunting(9.2, 3.1, -2.4, ['#F72585', '#FFD166', '#4CC9F0', '#06D6A0']), 0, 0, 0);
+  place(mk('cyl', '#7B2CBF').sc(3.2, .02, 2.4), 0, .13, 0); place(mk('torus', '#FFD166').sc(3.1, 2.3, .2).rot(Math.PI / 2, 0, 0), 0, .14, 0);
+  const table = place(makeTable(2.6, 1.3, GREY), 0, 0, 0);
+  const cake = place(makeCake(), 0, .8, 0);
+  cake.paint.forEach(n => n.color = hex(GREY));
+  App.P.glows.push(...cake.flames.map(f => ({ node: f, c: COL.orange, size: .9, pulse: 10 })));
+  const stool = place(mk('cyl', '#8B5E3C').sc(.5, .5, .5), -2.8, .25, .3);
+  const gifts = [[-2.9, .5, .4, .9], [-2.7, .92, .25, .7], [-2.95, 1.25, .3, .5]].map(([x, y, z, s]) => { const g = place(makeGift(GREY, '#FFFFFF'), x, y, z); g.sc(s); g.r[1] = rnd(-.4, .4); return g; });
+  const balloons = [[-4, 0, -1.2], [3.6, 0, -.6], [4.3, 0, 1.3]].map(([x, y, z], i) => { const b = place(makeBalloon(GREY, 2.2), x, y, z); bob(b, .12, 1.2, i); return b; });
+  const chinnu = place(makePerson({ kind: 'boy', shirt: '#FFD166', pants: '#3D5A99', hat: 'party', hatColor: '#F72585', skin: SKINS[1] }), 0, 0, -1.2);
+  const dad = place(makePerson({ kind: 'kurta', shirt: '#6A4C93', pants: '#F1FAEE', skin: SKINS[1], s: 1.2 }), -1.7, 0, -1.4, .2);
+  const mom = place(makePerson({ kind: 'lady', shirt: '#E76F51', sash: '#FFD166', skin: SKINS[1], s: 1.15 }), 1.7, 0, -1.4, -.2);
+  const fr1 = place(makePerson({ kind: 'girl', shirt: '#06D6A0', hat: 'party', hatColor: '#4CC9F0', skin: SKINS[0], hair: '#6B3E26' }), 2.6, 0, 1.2, -.4);
+  const fr2 = place(makePerson({ kind: 'boy', shirt: '#4CC9F0', pants: '#264653', hat: 'party', hatColor: '#FFD166', skin: SKINS[3] }), -1.6, 0, 1.9, .3);
+  const people = [chinnu, dad, mom, fr1, fr2]; people.forEach(p => idlePerson(p));
+  // wedding stage
+  const stage = place(makeStage(1.4, '#9D4EDD'), 4.3, 0, -3.8, -.4);
+  const groom = makePerson({ kind: 'kurta', shirt: '#F4D35E', pants: '#FFF3D6', hat: 'turban', turban: '#E63946', skin: SKINS[1] });
+  const bride = makePerson({ kind: 'lady', shirt: '#D7263D', sash: '#FFD166', hat: 'veil', veil: '#D7263D', skin: SKINS[1] });
+  groom.at(-.4, .2, 0); bride.at(.4, .2, 0);
+  for (const p of [groom, bride]) { const g = makeGarland(.22, ['#FF9F1C', '#FFFFFF', '#F72585']); g.at(0, .95, .22).sc(1, .8, 1); p.body.add(g); }
+  const couple = grp().add(groom, bride); stage.add(couple); couple.visible = false;
+  addJugnu([-3.6, 3.4, 2.2]);
+  await G_(App.flyView({ dist: 11 }, 1.2));
+  await G_(UI.talk([
+    { t: 'We celebrate some <b>special days</b> like <b>birthdays</b> and <b>weddings</b> with our family and friends. 🎉', tag: 'In-text' },
+    { t: 'This is <b>Chinnu’s birthday party</b>! But oh no… it has no colours! 😮', tag: 'To Do' },
+    { t: 'Pick a colour below, then tap the cake, cloth, gifts and balloons to colour them!', tag: 'To Do', btn: 'Start colouring! 🖍️' }
+  ], run));
+  const pal = ['#F72585', '#FF9F1C', '#FFD23F', '#3BE37A', '#4CC9F0', '#9D4EDD'];
+  let cur = pal[0];
+  const pb = $('#palette'); pb.innerHTML = pal.map((c, i) => `<button class="sw${i ? '' : ' on'}" style="--c:${c}" data-c="${c}" aria-label="colour ${i + 1}"></button>`).join(''); pb.hidden = false;
+  pb.querySelectorAll('.sw').forEach(b => b.onclick = () => { Sound.tap(); pb.querySelectorAll('.sw').forEach(x => x.classList.remove('on')); b.classList.add('on'); cur = b.dataset.c; });
+  const targets = [
+    { node: cake, parts: cake.paint, r: .7, off: [0, .4, 0] },
+    { node: table, parts: table.cloth, r: 1.1, off: [0, .7, .5] },
+    ...gifts.map(g => ({ node: g, parts: [g.body], r: .35, off: [0, .2, 0] })),
+    ...balloons.map(b => ({ node: b.body, parts: [b.body, b.children[1]], r: .45, off: [0, 0, 0] }))
+  ];
+  let painted = 0;
+  UI.task('Colour Chinnu’s party! 🖍️', targets.length);
+  await G_(new Promise(res => {
+    targets.forEach(tg => {
+      App.pick(tg.node, tg.r, () => {
+        const c = hex(cur), from = tg.parts.map(p => p.color.slice());
+        App.tween(.4, k => tg.parts.forEach((p, i) => p.color = V.lerp(from[i], c, k)));
+        const w = tg.node.world; App.P.burst([w[12] + tg.off[0], w[13] + tg.off[1], w[14] + tg.off[2]], 26, [c, COL.white], 2.5, .7, .2, -2);
+        Sound.pop();
+        if (!tg.done) { tg.done = true; painted++; UI.progress(painted); if (painted === targets.length) setTimeout(res, 700); }
+      }, tg.off);
+    });
+  }));
+  UI.show('#task', false); UI.show('#palette', false);
+  Sound.chime(); UI.toast('🌈 Beautiful colours!');
+  await G_(UI.talk([{ t: 'What a colourful party! Now help Chinnu <b>blow out the candles</b>. 🎂', tag: '', btn: 'OK!' }], run));
+  UI.task('Tap the cake to blow the candles! 🎂', 1);
+  await G_(new Promise(res => {
+    const pk = App.pick(cake, .8, () => {
+      pk.on = false; Sound.whoosh();
+      cake.flames.forEach(f => { f.visible = false; for (let i = 0; i < 5; i++) App.P.spawn({ p: f.wpos(), v: [rnd(-.2, .2), rnd(.5, 1), rnd(-.2, .2)], g: .3, life: 1.4, size: .2, c: [.7, .7, .75] }); });
+      App.P.glows = App.P.glows.filter(g => !cake.flames.includes(g.node));
+      UI.progress(1); setTimeout(() => { confetti([0, 2, 0]); Sound.win(); res(); }, 600);
+    }, [0, .6, 0]);
+  }));
+  UI.show('#task', false);
+  // dance!
+  people.forEach((p, i) => App.every((dt, t) => { p.body.r[1] = Math.sin(t * 3 + i) * .5; p.armL.r[2] = -1.2 - Math.sin(t * 6 + i) * .9; p.armR.r[2] = 1.2 + Math.sin(t * 6 + i + 1) * .9; }));
+  const notes = App.every((dt, t) => { if (Math.random() < dt * 4) App.P.spawn({ p: [rnd(-3, 3), 2.2, rnd(-1.5, 2)], v: [rnd(-.3, .3), 1, 0], g: 0, life: 2, size: .3, c: [COL.pink, COL.blue, COL.gold][Math.floor(rnd(0, 3))], tw: 1 }); });
+  let tick = 0; const mus = App.every((dt) => { tick += dt; if (tick > .3) { tick = 0; Sound.tone([523, 587, 659, 784, 880][Math.floor(rnd(0, 5))], .2, 'triangle', .06); } });
+  await G_(UI.talk([
+    { t: 'Happy Birthday, Chinnu! 🎉 At parties, <b>we sing and dance</b>! 🎶💃', tag: 'In-text' },
+    { t: '<b>Weddings</b> are special days too! Look at the stage! 💐', tag: 'In-text', btn: 'Show me!' }
+  ], run));
+  App.updaters.splice(App.updaters.indexOf(mus), 1);
+  couple.visible = true; popIn(couple, .8); Sound.chime();
+  await G_(App.flyView({ target: [2.2, 1.3, -1.8], dist: 9, yaw: -.25 }, 1.2));
+  App.P.glows.push({ node: couple, c: COL.gold, size: 2.5, pulse: 3, a: .5, off: [0, 1.2, 0] });
+  UI.task('Tap the bride and groom to shower flowers! 🌸', 1);
+  await G_(new Promise(res => {
+    const pk = App.pick(couple, .9, () => {
+      pk.on = false; UI.progress(1); Sound.win();
+      const w = stage.wpos();
+      for (let i = 0; i < 120; i++) App.P.spawn({ p: [w[0] + rnd(-1.5, 1.5), 4.5 + rnd(0, 2), w[2] + rnd(-1, 1.5)], v: [rnd(-.3, .3), -rnd(.8, 1.4), 0], g: 0, life: 5, size: .15, c: [COL.orange, COL.pink, COL.gold, COL.white][i % 4], shrink: 0 });
+      wave(groom); wave(bride, bride.armL); setTimeout(res, 1600);
+    }, [0, 1, 0]);
+  }));
+  UI.show('#task', false);
+  await G_(App.flyView({ target: [0, 1.3, 0], dist: 11, yaw: 0 }, 1));
+  return await G_(UI.quiz(QUIZ.special, run));
+}
+
+/* ---------------- Level 7: Grand Finale ---------------- */
+async function playFinale(run) {
+  const G_ = p => p.then(r => { App.guard(run); return r; });
+  baseScene({
+    sky: 'sky-final', top: '#4E7D5B', side: '#5A4A7A', stars: 200, r: 5,
+    env: { light: [-.3, .9, .6], lightCol: [.6, .55, .9], ambTop: [.4, .35, .62], ambBot: [.26, .16, .26], rim: [1, .6, .4], fog: hex('#140c2e'), fogN: 26, fogF: 80 },
+    view: { dist: 12, pitch: .22, target: [0, 2.2, 0] }
+  });
+  const minis = [miniDiwali, miniXmas, miniGuru, miniEid, miniNat, miniSpecial];
+  minis.forEach((f, i) => { const a = i / 6 * Math.PI * 2 + .3, n = grp().add(f()); n.sc(.75); place(n, Math.cos(a) * 3, 0, Math.sin(a) * 3 - .3); });
+  addJugnu([-3, 4.2, 2.5]);
+  const lanterns = [];
+  await G_(App.flyView({ dist: 11.5 }, 1.2));
+  await G_(UI.talk([
+    { t: 'You visited every island! 🏝️ Now the <b>Grand Festival Finale</b>!', tag: '' },
+    { t: 'Answer 10 questions. Each right answer sends a <b>sky lantern</b> and fireworks up! You have <b>3 hearts</b> ❤️❤️❤️.', tag: 'Revision', btn: 'I’m ready! 🏆' }
+  ], run));
+  const hearts = $('#hearts'); hearts.hidden = false; hearts.innerHTML = '❤️❤️❤️';
+  const res = await G_(UI.quiz(QUIZ.finale, run, {
+    hearts: 3,
+    onCorrect: i => {
+      const l = makeLantern(['#FF7A1A', '#FF4FA3', '#FFD23F', '#3BE37A'][i % 4]); const x = rnd(-3, 3), z = rnd(-1, 2); l.at(x, .5, z); App.root.add(l);
+      const g = { node: l.body, c: COL.orange, size: 2.4, pulse: 3, off: [0, .3, 0] }; App.P.glows.push(g); lanterns.push(l);
+      App.every((dt, t) => { l.p[1] += dt * .9; l.p[0] += Math.sin(t + x) * dt * .2; if (l.p[1] > 16) l.visible = false; });
+      firework([x, .5, z], [x * 1.3, rnd(7, 9.5), rnd(-4, -2)], [[COL.red, COL.gold], [COL.green, COL.yellow], [COL.pink, COL.blue], [COL.violet, COL.white]][i % 4]);
+    },
+    onWrong: h => { hearts.innerHTML = '❤️'.repeat(Math.max(0, h)) + '🤍'.repeat(3 - Math.max(0, h)); hearts.classList.remove('hit'); void hearts.offsetWidth; hearts.classList.add('hit'); }
+  }));
+  hearts.hidden = true;
+  if (res.failed) {
+    await G_(UI.talk([{ t: 'Oh! The hearts ran out. No problem — every festival hero practises! Let’s try the finale again. 💪', tag: '', btn: 'Try again 🔁' }], run));
+    return { retry: true };
+  }
+  for (let i = 0; i < 6; i++) setTimeout(() => { if (run === App.run) firework([rnd(-2, 2), .5, 0], [rnd(-6, 6), rnd(7, 10), rnd(-6, -2)], [[COL.red, COL.gold], [COL.green, COL.yellow], [COL.pink, COL.blue]][i % 3], true); }, i * 450);
+  await G_(wait(2600));
+  return { mistakes: 3 - res.hearts, correct: res.correct };
+}
+
+/* ---------- Mini landmarks (hub + finale) ---------- */
+function miniDiwali() { const n = grp(); n.add(makeHouse(1.4, 1, 1.1, '#F2D0A4', '#B23A48').at(0, 0, -.3)); [-.5, 0, .5].forEach(x => { const d = makeDiya(true); d.at(x, 0, .6).sc(.9); n.add(d); App.P.glows.push({ node: d.flame, c: COL.orange, size: 1.1, pulse: 8, off: [0, .12, 0] }); }); return n; }
+function miniXmas() { const n = grp(); const t = makeXmasTree(.6); n.add(t); const s = makeStar(); s.at(0, 1.8, 0).sc(.8); n.add(s); App.P.glows.push({ node: s, c: COL.gold, size: 2, pulse: 3 }); for (let i = 0; i < 8; i++) App.P.glows.push({ node: t, off: [Math.sin(i * 1.7) * (.6 - i * .05), .5 + i * .16, Math.cos(i * 1.7) * (.6 - i * .05)], c: [COL.red, COL.yellow, COL.blue][i % 3], size: .45, pulse: 5, ph: i }); return n; }
+function miniGuru() { return makeGurudwara(.34); }
+function miniEid() { const n = makeMosque(.32); return n; }
+function miniNat() { const n = grp(); const p = makeFlagPole(2.3); p.flag.p[1] = 1.9; n.add(p, mk('cyl', '#FFFFFF').sc(.5, .2, .5).at(0, .1, 0)); return n; }
+function miniSpecial() { const n = grp(); const c = makeCake(); c.sc(.9); n.add(c); c.flames.forEach(f => App.P.glows.push({ node: f, c: COL.orange, size: .7, pulse: 10 })); [['#F72585', -.8], ['#4CC9F0', .8]].forEach(([col, x]) => { const b = makeBalloon(col, 1.6); b.at(x, 0, -.2); n.add(b); }); return n; }
+function miniFinale() { const n = grp(); [[-.5, .9, 0, '#FF7A1A'], [.4, 1.3, .1, '#FF4FA3'], [0, 1.9, -.2, '#FFD23F']].forEach(([x, y, z, c], i) => { const l = makeLantern(c); l.at(x, y, z).sc(.9); n.add(l); App.P.glows.push({ node: l.body, c: hex(c), size: 1.5, pulse: 3, off: [0, .3, 0] }); }); const s = makeStar('#FFC94D'); s.at(0, .6, 0).sc(1.2); n.add(s); return n; }
+
+/* ===== Questions — every item tagged by its textbook source ===== */
+const QUIZ = {
+  diwali: [
+    { tag: 'Exercise A · Q1', q: 'Which festival is called the <b>festival of lights</b>?', o: ['🌙 Eid', '🪔 Diwali', '🎄 Christmas'], a: 1, h: 'Think of the festival when we light diyas!' },
+    { tag: 'In-text', q: 'What do people light on Diwali?', o: ['🪔 Candles and diyas', '🪁 Kites', '⛄ Snowmen'], a: 0, h: 'They glow with little flames.' },
+    { tag: 'In-text', q: 'On Diwali, people pray to…', o: ['🌸 Goddess Lakshmi', '🎅 Santa Claus', '🌝 The Moon'], a: 0, h: 'Jugnu told you her name at the start.' },
+    { tag: 'Fact Snippet', q: 'Lord Rama returned to Ayodhya after how many years?', o: ['4 years', '14 years', '40 years'], a: 1, h: 'It is more than ten years.' },
+    { tag: 'Poem', q: 'What colours were the fireworks in the Diwali poem?', o: ['⚫ Black and grey', '🔵 Only blue', '🔴🟡🟢 Red, yellow and green'], a: 2, h: 'Remember the colours you launched in the sky!' }
+  ],
+  christmas: [
+    { tag: 'Exercise A · Q2', q: 'Which festival is celebrated on <b>25th December</b> every year?', o: ['🌙 Eid', '🪔 Diwali', '🎄 Christmas'], a: 2, h: 'It is the festival with a decorated tree.' },
+    { tag: 'In-text', q: 'Christmas is the day when ___ was born.', o: ['✨ Jesus Christ', '🎅 Santa Claus', '🧒 Chinnu'], a: 0, h: 'Jugnu told you on Christmas Island.' },
+    { tag: 'In-text', q: 'On Christmas, people go to the ___ to pray.', o: ['🏫 School', '⛪ Church', '🛒 Market'], a: 1, h: 'It is the building with a tall tower.' },
+    { tag: 'In-text', q: 'Who brings gifts for children on Christmas?', o: ['📮 The postman', '🐱 A cat', '🎅 Santa Claus'], a: 2, h: 'He wears red and has a white beard.' },
+    { tag: 'In-text', q: 'What do people decorate on Christmas?', o: ['🎄 The Christmas tree', '🪁 Kites', '🚲 A bicycle'], a: 0, h: 'You hung baubles on it!' }
+  ],
+  gurupurab: [
+    { tag: 'In-text', q: 'On Gurupurab, people go to the…', o: ['🏖️ Beach', '🛕 Gurudwara', '🦁 Zoo'], a: 1, h: 'It is the white building with a golden dome.' },
+    { tag: 'In-text', q: 'On Gurupurab, people pray to the…', o: ['📖 Guru Granth Sahib', '🎄 Christmas tree', '🌝 Moon'], a: 0, h: 'It is the holy book.' },
+    { tag: 'In-text', q: 'The meal everyone shares at the gurudwara is called…', o: ['🎂 Cake', '🥣 Sewain', '🍛 Langar'], a: 2, h: 'You served it to five people!' },
+    { tag: 'In-text', q: 'On Gurupurab, people take out…', o: ['🥁 Processions', '⛄ Snowmen', '🪁 Kites'], a: 0, h: 'Remember the drum and the marching!' }
+  ],
+  eid: [
+    { tag: 'In-text', q: 'Eid is celebrated after a holy month of fasting called…', o: ['📅 December', '🌙 Ramzan', '🪔 Diwali'], a: 1, h: 'Jugnu said it at the very start.' },
+    { tag: 'In-text', q: 'On Eid, men pray together in…', o: ['🛝 A playground', '🕌 Mosques', '🛒 A market'], a: 1, h: 'It is the building with the green dome.' },
+    { tag: 'In-text', q: 'Which sweet dish is cooked on Eid?', o: ['🍕 Pizza', '🥗 Salad', '🥣 Sewain'], a: 2, h: 'You stirred it in the pot!' },
+    { tag: 'In-text', q: 'On Eid, alms are given to…', o: ['💝 The poor and needy', '👫 Only friends', '🚫 Nobody'], a: 0, h: 'You shared gifts with people who needed help.' }
+  ],
+  national: [
+    { tag: 'Exercise A · Q3', q: 'When do we celebrate <b>Independence Day</b>?', o: ['26th January', '15th August', '2nd October'], a: 1, h: 'It is in August.' },
+    { tag: 'In-text', q: '<b>Republic Day</b> is celebrated on…', o: ['26th January', '15th August', '25th December'], a: 0, h: 'It is in January.' },
+    { tag: 'In-text', q: '<b>Gandhi Jayanti</b> is celebrated on…', o: ['15th August', '26th January', '2nd October'], a: 2, h: 'It is in October.' },
+    { tag: 'In-text', q: 'How many National days do we celebrate in India?', o: ['1', '3', '5'], a: 1, h: 'Count the flags you hoisted!' },
+    { tag: 'In-text', q: 'On Independence Day, our country became free of…', o: ['🇬🇧 The British rule', '🌧️ Rain', '📚 Homework'], a: 0, h: 'Jugnu told you about it.' },
+    { tag: 'Find Out', q: 'Why do we celebrate Gandhi Jayanti?', o: ['🎂 It is Mahatma Gandhi’s birthday', '🎆 It is New Year', '⚽ It is Sports Day'], a: 0, h: 'Gandhiji was born on 2nd October.' }
+  ],
+  special: [
+    { tag: 'In-text', q: 'Which of these are <b>special days</b> we celebrate with family and friends?', o: ['🎂💍 Birthdays and weddings', '📝 Exam days', '🌧️ Rainy days'], a: 0, h: 'Think of Chinnu’s party and the stage!' },
+    { tag: 'In-text', q: 'What do we do at parties?', o: ['😴 Sleep all day', '🎶 Sing and dance', '🧹 Sweep the floor'], a: 1, h: 'Everyone was moving to music!' },
+    { tag: 'Summary', q: 'Festivals are ___ occasions.', o: ['😊 Happy', '😢 Sad', '😨 Scary'], a: 0, h: 'How do you feel on a festival?' },
+    { tag: 'In-text', q: 'We celebrate festivals with our…', o: ['👨‍👩‍👧 Family and friends', '🚫 No one', '🏫 Only teachers'], a: 0, h: 'The people we love!' }
+  ],
+  finale: [
+    { tag: 'Exercise A · Q1', q: 'Which festival is called the festival of lights?', o: ['🌙 Eid', '🪔 Diwali', '🎄 Christmas'], a: 1 },
+    { tag: 'Exercise A · Q2', q: 'Which festival is celebrated on 25th December every year?', o: ['🌙 Eid', '🪔 Diwali', '🎄 Christmas'], a: 2 },
+    { tag: 'Exercise A · Q3', q: 'When do we celebrate Independence Day?', o: ['26th January', '15th August', '2nd October'], a: 1 },
+    { tag: 'In-text', q: 'What do people eat together on Gurupurab?', o: ['🍛 Langar', '🎂 Cake', '🍕 Pizza'], a: 0 },
+    { tag: 'In-text', q: 'Which sweet dish is cooked on Eid?', o: ['🍦 Ice cream', '🥣 Sewain', '🍛 Langar'], a: 1 },
+    { tag: 'In-text', q: 'Who brings gifts for children on Christmas?', o: ['🎅 Santa Claus', '🐘 An elephant', '👮 A policeman'], a: 0 },
+    { tag: 'In-text', q: 'Republic Day is celebrated on…', o: ['2nd October', '26th January', '15th August'], a: 1 },
+    { tag: 'In-text', q: 'Gandhi Jayanti is celebrated on…', o: ['2nd October', '25th December', '26th January'], a: 0 },
+    { tag: 'Fact Snippet', q: 'On Diwali, who returned to Ayodhya?', o: ['🏹 Lord Rama', '🎅 Santa Claus', '🧒 Chinnu'], a: 0 },
+    { tag: 'Summary', q: 'Days that are special for the whole country are called…', o: ['🎂 Birthdays', '🇮🇳 National days', '🌧️ Rainy days'], a: 1 }
+  ]
+};
+
+const LEVELS = [
+  { id: 'diwali', name: 'Diwali', sub: 'Festival of Lights', emoji: '🪔', sticker: 'Diwali Diya', play: playDiwali, mini: miniDiwali, isl: ['#3F7D4E', '#6B4E71'] },
+  { id: 'christmas', name: 'Christmas', sub: '25th December', emoji: '🎄', sticker: 'Christmas Star', play: playChristmas, mini: miniXmas, isl: ['#F4F8FF', '#5C6B8A'] },
+  { id: 'gurupurab', name: 'Gurupurab', sub: 'Langar & Procession', emoji: '🥁', sticker: 'Langar Drum', play: playGurupurab, mini: miniGuru, isl: ['#7CB342', '#8D6E63'] },
+  { id: 'eid', name: 'Eid', sub: 'Sewain & Sharing', emoji: '🌙', sticker: 'Eid Moon', play: playEid, mini: miniEid, isl: ['#5B8C5A', '#4A5568'] },
+  { id: 'national', name: 'National Days', sub: '26 Jan · 15 Aug · 2 Oct', emoji: '🇮🇳', sticker: 'Tiranga', play: playNational, mini: miniNat, isl: ['#8BC34A', '#8D6E63'] },
+  { id: 'special', name: 'Special Days', sub: 'Birthdays & Weddings', emoji: '🎂', sticker: 'Birthday Cake', play: playSpecial, mini: miniSpecial, isl: ['#F4E1C1', '#7B5E57'] },
+  { id: 'finale', name: 'Grand Finale', sub: 'Festival Revision', emoji: '🏆', sticker: 'Festival Star Trophy', play: playFinale, mini: miniFinale, isl: ['#4E7D5B', '#5A4A7A'] }
+];
+
+/* ===== Main flow: hub map, levels, rewards ===== */
+let current = -1;
+
+function buildHub() {
+  App.clearScene(); UI.hideAll(); current = -1;
+  $('#hudTitle').innerHTML = '<b>Festival Islands</b><small>Let’s Celebrate · Class 1</small>';
+  setSky('sky-hub');
+  setEnv({ light: [-.4, .9, .5], lightCol: [.9, .75, .8], ambTop: [.45, .4, .65], ambBot: [.3, .2, .3], rim: [1, .6, .4], fog: hex('#2a1850'), fogN: 30, fogF: 80 });
+  App.setView({ target: [0, .2, 0], dist: 27, yaw: .3, pitch: .5, auto: .06 });
+  addStarsSky(170);
+  // centre island with the big festival tree
+  const c = makeIsland(4, '#4E8F5A', '#6B4E71', 1); App.root.add(c);
+  const tree = grp(); tree.add(mk('cyl', '#6B3E26').sc(.45, 2.6, .45).at(0, 1.3, 0));
+  [[0, 3.2, 0, 1.6], [1.1, 2.8, .3, 1.1], [-1.1, 2.9, -.2, 1.15], [.3, 3.3, -1, 1.1], [-.2, 2.7, 1, 1]].forEach(([x, y, z, r]) => tree.add(mk('sphere', '#2F8F4E').sc(r, r * .85, r).at(x, y, z)));
+  App.root.add(tree);
+  for (let i = 0; i < 30; i++) { const a = i / 30 * Math.PI * 6, h = 2.3 + i / 30 * 1.6, r = 1.7 - i / 30 * .4; App.P.glows.push({ p: [Math.cos(a) * r, h, Math.sin(a) * r], c: [COL.gold, COL.pink, COL.blue, COL.green][i % 4], size: .55, pulse: 3, ph: i }); }
+  const swing = grp().at(1.2, 0, 1.2); swing.add(mk('box', '#8B5E3C').sc(.7, .06, .3).at(0, .7, 0), mk('cyl', '#DDD').sc(.012, 1.8, .012).at(-.3, 1.6, 0), mk('cyl', '#DDD').sc(.012, 1.8, .012).at(.3, 1.6, 0)); App.root.add(swing);
+  App.every((dt, t) => { swing.r[0] = Math.sin(t * 1.4) * .2; });
+  addJugnu([2.2, 3.4, 2.2]);
+  for (let i = 0; i < 12; i++) { const cl = makeCloud(rnd(1, 1.8)); cl.at(Math.cos(i) * rnd(8, 18), rnd(-5, -3), Math.sin(i * 1.3) * rnd(8, 18)); cl.children.forEach(k => k.opacity = .8); App.root.add(cl); }
+  // festival islands
+  LEVELS.forEach((L, i) => {
+    const a = i / LEVELS.length * Math.PI * 2 - Math.PI / 2 + .45, R = 10.5;
+    const isl = makeIsland(2.3, L.isl[0], L.isl[1], i); const g = grp().add(isl);
+    const m = grp().add(L.mini()); m.sc(.85); g.add(m);
+    g.at(Math.cos(a) * R, 0, Math.sin(a) * R); g.r[1] = -a - Math.PI / 2;
+    App.root.add(g);
+    const y0 = rnd(-.2, .2); App.every((dt, t) => { g.p[1] = y0 + Math.sin(t * .9 + i) * .25; });
+    const open = Save.unlocked(i), st = Save.d.stars[i];
+    if (!open) { isl.top.color = shade(isl.top.color, .5); const lk = grp().at(0, 1.3, 0); lk.add(mk('box', '#FFD23F', { emis: .3 }).sc(.7, .55, .3), mk('torus', '#DDDDDD').sc(.25, .3, .5).at(0, .35, 0)); g.add(lk); App.every((dt, t) => { lk.r[1] = Math.sin(t * 1.5 + i) * .5; }); }
+    else if (!st) App.P.glows.push({ node: g, c: COL.gold, size: 5, pulse: 3, a: .35, off: [0, .6, 0] });
+    const stars = open ? ('<span class="st">' + '★'.repeat(st) + '<i>' + '★'.repeat(3 - st) + '</i></span>') : '<span class="st">🔒</span>';
+    App.label(g, [0, 3.6, 0], `<em>${L.emoji}</em><b>${i + 1}. ${L.name}</b>${stars}`, 'isl' + (open ? '' : ' locked') + (st ? ' done' : ''));
+    App.pick(g, 2.3, () => {
+      Sound.tap();
+      if (!Save.unlocked(i)) { shake(g); Sound.wrong(); UI.toast(`🔒 Finish <b>${LEVELS[i - 1].name}</b> first to open this island!`, 2200); return; }
+      startLevel(i, g);
+    }, [0, 1, 0]);
+  });
+  $('#hudStars').textContent = Save.total();
+  $('#teacher').hidden = false;
+}
+
+async function startLevel(i, fromNode) {
+  if (App.busy) return; App.busy = true;
+  $('#title').hidden = true; $('#teacher').hidden = true;
+  try {
+    if (fromNode) {
+      App.view.auto = 0; const wp = fromNode.wpos(); let ty = Math.atan2(wp[0], wp[2]); const cy = App.view.yaw;
+      ty += Math.round((cy - ty) / (Math.PI * 2)) * Math.PI * 2;
+      await App.flyView({ target: wp, dist: 9, pitch: .38, yaw: ty }, 1.1);
+    }
+    await UI.fade(true);
+    App.clearScene(); UI.hideAll(); current = i;
+    const L = LEVELS[i];
+    $('#hudTitle').innerHTML = `<b>${L.emoji} ${L.name}</b><small>Island ${i + 1} of ${LEVELS.length}</small>`;
+    const run = App.run;
+    const p = L.play(run);
+    await wait(150); await UI.fade(false);
+    App.busy = false;
+    const r = await p;
+    if (run !== App.run) return;
+    if (r && r.retry) { startLevel(i); return; }
+    reward(i, r.mistakes);
+  } catch (e) {
+    App.busy = false;
+    if (e !== CANCEL) { console.error(e); UI.fade(false); }
+  }
+}
+
+function reward(i, mistakes) {
+  const stars = mistakes === 0 ? 3 : mistakes === 1 ? 2 : 1;
+  const L = LEVELS[i];
+  Save.d.stars[i] = Math.max(Save.d.stars[i], stars); Save.save();
+  $('#hudStars').textContent = Save.total();
+  const R = $('#reward'); R.hidden = false; R.classList.remove('in'); void R.offsetWidth; R.classList.add('in');
+  $('#rwSticker').textContent = L.emoji;
+  $('#rwTitle').textContent = i === LEVELS.length - 1 ? 'Festival Star Champion!' : `${L.name} Island complete!`;
+  $('#rwText').innerHTML = `You earned the <b>${L.sticker}</b> sticker for your book!`;
+  const S = $('#rwStars'); S.innerHTML = '';
+  for (let k = 0; k < 3; k++) { const s = document.createElement('span'); s.textContent = '★'; s.className = k < stars ? 'on' : ''; s.style.animationDelay = (0.35 + k * .3) + 's'; S.appendChild(s); if (k < stars) setTimeout(() => Sound.tone(880 + k * 220, .25, 'triangle', .15), 350 + k * 300); }
+  const next = $('#rwNext');
+  next.hidden = i >= LEVELS.length - 1;
+  next.onclick = () => { Sound.tap(); R.hidden = true; startLevel(i + 1); };
+  $('#rwMap').onclick = () => { Sound.tap(); R.hidden = true; goHub(); };
+  $('#rwAgain').onclick = () => { Sound.tap(); R.hidden = true; startLevel(i); };
+  Sound.win();
+  const t = App.view.target;
+  confetti([t[0], t[1] + 1, t[2]]); setTimeout(() => confetti([t[0] - 2, t[1] + 1, t[2]]), 400); setTimeout(() => confetti([t[0] + 2, t[1] + 1, t[2]]), 800);
+  Voice.say(`Hooray! You earned ${stars} stars and the ${L.sticker} sticker!`);
+}
+
+async function goHub() {
+  if (App.busy) return; App.busy = true;
+  await UI.fade(true); buildHub(); await wait(100); await UI.fade(false); App.busy = false;
+}
+
+function openBook() {
+  Sound.tap();
+  const B = $('#book'); B.hidden = false;
+  $('#bookGrid').innerHTML = LEVELS.map((L, i) => {
+    const st = Save.d.stars[i];
+    return `<div class="stk ${st ? 'got' : ''}"><div class="e">${st ? L.emoji : '?'}</div><b>${st ? L.sticker : 'Locked'}</b><span>${st ? '★'.repeat(st) + '<i>' + '★'.repeat(3 - st) + '</i>' : L.name}</span></div>`;
+  }).join('');
+  $('#bookCount').textContent = `${Save.d.stars.filter(s => s > 0).length} of ${LEVELS.length} stickers · ${Save.total()} ★`;
+}
+
+function syncToggles() {
+  $('#btnSound').textContent = Sound.on ? '🔊' : '🔇';
+  $('#btnVoice').classList.toggle('off', !Voice.on);
+  $('#chkAll').checked = !!Save.d.all;
+}
+
+function boot() {
+  Save.load(); Sound.on = Save.d.sound !== false; Voice.on = Save.d.voice !== false;
+  try { App.init(); } catch (e) {
+    $('#loadMsg').textContent = 'Sorry! This device cannot show 3D graphics (WebGL is off). Please try Chrome or another browser.';
+    return;
+  }
+  buildHub();
+  syncToggles();
+  $('#btnHome').onclick = () => { Sound.tap(); if (current >= 0) goHub(); };
+  $('#btnBook').onclick = openBook;
+  $('#bookClose').onclick = () => { Sound.tap(); $('#book').hidden = true; };
+  $('#btnSound').onclick = () => { Sound.unlock(); Sound.on = !Sound.on; Save.d.sound = Sound.on; Save.save(); syncToggles(); Sound.tap(); };
+  $('#btnVoice').onclick = () => { Voice.on = !Voice.on; Save.d.voice = Voice.on; Save.save(); syncToggles(); if (!Voice.on) Voice.stop(); else Voice.say('Read aloud is on!'); };
+  $('#chkAll').onchange = e => { Save.d.all = e.target.checked; Save.save(); UI.toast(Save.d.all ? '👩‍🏫 All islands are open.' : '🔒 Islands open one by one.'); if (current < 0) buildHub(); };
+  $('#btnPlay').onclick = () => {
+    Sound.unlock(); Sound.chime(); $('#title').classList.add('out');
+    setTimeout(() => { $('#title').hidden = true; }, 600);
+    Voice.say('Tap an island to begin your festival journey!');
+    UI.toast('👆 Tap island 1 to begin! Drag to spin the world.', 3000);
+  };
+  // loader
+  let p = 0; const bar = $('#loadBar');
+  const iv = setInterval(() => {
+    p = Math.min(100, p + rnd(8, 18)); bar.style.width = p + '%';
+    if (p >= 100) { clearInterval(iv); setTimeout(() => { $('#loader').classList.add('out'); setTimeout(() => $('#loader').hidden = true, 700); }, 250); }
+  }, 110);
+}
+if (document.readyState === 'loading') window.addEventListener('DOMContentLoaded', boot); else boot();
+
+window.__APP=App;window.__UI=UI;window.__LEVELS=LEVELS;window.__startLevel=startLevel;window.__Save=Save;window.__QUIZ=QUIZ;
+})();
+</script>
+
+</body></html>

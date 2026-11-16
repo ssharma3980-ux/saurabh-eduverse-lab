@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<title>Saurabh's EDUVERSE — Science Games</title>
-<meta name="description" content="Free 3D science games for CBSE / NCERT Class 6 to 10, in English and all 22 Indian languages.">
+<title>Saurabh's EDUVERSE — Learning Games</title>
+<meta name="description" content="Free 3D learning games for CBSE / NCERT Class 1 to 10, in English and all 22 Indian languages.">
 <meta name="theme-color" content="#060c18">
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="icon" href="../icon-192.png">
@@ -91,8 +91,8 @@ footer{color:var(--dim);font-size:13px;text-align:center;padding:24px 16px 40px}
 const G=window.EDU_GAMES,L=window.EDU_LANGS,TX=window.EDU_TEXT;
 const $=id=>document.getElementById(id);
 const store={get(k){try{return localStorage.getItem(k)}catch(e){return null}},set(k,v){try{localStorage.setItem(k,v)}catch(e){}}};
-const CLASSES=[6,7,8,9,10];
-let lang=store.get('eduLang')||pickLang(),cls=+store.get('eduCls')||0,query='';
+const CLASSES=[1,2,3,4,5,6,7,8,9,10];
+let lang=store.get('eduLang')||pickLang(),cls=store.get('eduCls')||'0',query='';
 const savedSet=new Set(JSON.parse(store.get('eduSaved')||'[]'));
 
 function pickLang(){const codes=L.map(l=>l.code);for(const n of (navigator.languages||[navigator.language||'en'])){const c=(n||'').toLowerCase().split('-')[0];if(codes.includes(c))return c}return 'en'}
@@ -112,17 +112,20 @@ function render(){
   if(info.font){useFont(info.font);document.body.style.fontFamily=`'${info.font}','Exo 2',system-ui,sans-serif`}else document.body.style.fontFamily='';
   $('lang').value=lang;$('tag').textContent=t('tag');$('q').placeholder=t('search');
   $('install').textContent=t('install');$('labTitle').textContent='🔬 '+t('lab');$('off').textContent=t('offline');
-  $('tabs').innerHTML=[0,...CLASSES.filter(c=>G.some(g=>g.cls===c))].map(c=>{const n=c?G.filter(g=>g.cls===c).length:G.length;
-    return `<button class="tab${c===cls?' on':''}" data-c="${c}">${c?t('cls')+' '+c:t('all')}<small>${n}</small></button>`}).join('');
+  const tabs=['0',...CLASSES.filter(c=>G.some(g=>g.cls===c)).map(String)];if(G.some(g=>g.fun))tabs.push('fun');
+  if(!tabs.includes(cls))cls='0';
+  $('tabs').innerHTML=tabs.map(c=>{const n=c==='0'?G.length:c==='fun'?G.filter(g=>g.fun).length:G.filter(g=>g.cls===+c).length;
+    const label=c==='0'?t('all'):c==='fun'?'🎲 '+t('fun'):t('cls')+' '+c;
+    return `<button class="tab${c===cls?' on':''}" data-c="${c}">${label}<small>${n}</small></button>`}).join('');
   const q=query.trim().toLowerCase();
-  const list=G.filter(g=>(!cls||g.cls===cls)&&(!q||(g.title+' '+topic(g)+' '+TX.en.topics[g.topic]).toLowerCase().includes(q)));
+  const list=G.filter(g=>(cls==='0'||(cls==='fun'?g.fun:g.cls===+cls))&&(!q||(g.title+' '+topic(g)+' '+TX.en.topics[g.topic]).toLowerCase().includes(q)));
   const info2=L.find(l=>l.code===lang);
   $('grid').innerHTML=list.length?list.map(g=>{
     const url=g.path+'/index.html';
     const tr=(lang!=='en'&&info2.gt&&online())?`<a class="btn ghost small" href="https://translate.google.com/translate?sl=en&tl=${info2.gt}&u=${encodeURIComponent(new URL(url,location.href).href)}" rel="noopener">🌐 ${esc(t('trans'))}</a>`:'';
     const sv=('serviceWorker' in navigator&&online())?`<button class="btn ghost small" data-save="${g.path}">${savedSet.has(g.path)?'✔ '+esc(t('saved')):'⬇ '+esc(t('save'))}</button>`:'';
     return `<article class="card">
-      <a class="thumb" href="${url}"><img loading="lazy" src="${g.path}/thumbnail.webp" alt="${esc(g.title)}"><span class="badge">${esc(t('cls'))} ${g.cls}</span></a>
+      <a class="thumb" href="${url}"><img loading="lazy" src="${g.path}/thumbnail.webp" alt="${esc(g.title)}"><span class="badge">${g.fun?esc(t('fun')):esc(t('cls'))+' '+g.cls}</span></a>
       <div class="body">
         <div class="title">${g.emoji||''} ${esc(g.title)}</div>
         <div class="topic">${g.ch?esc(t('ch'))+' '+g.ch+' · ':''}${esc(topic(g))}</div>
@@ -130,7 +133,7 @@ function render(){
       </div></article>`}).join(''):`<div class="none">${esc(t('none'))}</div>`;
   $('labs').innerHTML=window.EDU_LABS.map(l=>`<a class="lab" href="${l.url}"><span class="e">${l.emoji}</span><span>${esc(l.title)}</span></a>`).join('');
 }
-$('tabs').onclick=e=>{const b=e.target.closest('.tab');if(!b)return;cls=+b.dataset.c;store.set('eduCls',cls);render()};
+$('tabs').onclick=e=>{const b=e.target.closest('.tab');if(!b)return;cls=b.dataset.c;store.set('eduCls',cls);render()};
 $('q').oninput=e=>{query=e.target.value;render()};
 
 /* offline + install */

@@ -5,6 +5,10 @@
    3. Add one line below. "topic" must be one of the keys in i18n.js (topics),
       or write the topic in English as "topicText". */
 window.EDU_GAMES = [
+  { cls: 1,  path: 'class-1/festival-islands-3d',     title: 'Festival Islands 3D',           ch: 12, topic: 'fest',    emoji: '🪔' },
+  { cls: 1,  path: 'class-1/helper-town-express',     title: 'Helper Town Express',           ch: 10, topic: 'work',    emoji: '🛺' },
+  { cls: 3,  path: 'class-3/bubbly-healthy-island-3d',title: "Bubbly's Healthy Happy Island 3D", ch: 9, topic: 'health', emoji: '🫧' },
+  { cls: 3,  path: 'class-3/birbal-crow-count',       title: "Birbal's Crow Count",           ch: 0,  topic: 'hund',    emoji: '🐦' },
   { cls: 6,  path: 'class-6/bharat-ki-yatra-3d',      title: 'Bharat ki Yatra 3D',            ch: 9,  topic: 'sep',     emoji: '🚂' },
   { cls: 6,  path: 'class-6/boondi-water-journey-3d', title: "Boondi's Water Journey 3D",     ch: 8,  topic: 'water',   emoji: '💧' },
   { cls: 6,  path: 'class-6/taapu-temperature-trek',  title: "Taapu's Temperature Trek",      ch: 7,  topic: 'temp',    emoji: '🌡️' },
@@ -19,7 +23,14 @@ window.EDU_GAMES = [
   { cls: 10, path: 'class-10/neuroatlas-3d',          title: 'NeuroAtlas 3D',                 ch: 6,  topic: 'control', emoji: '🧬' },
   { cls: 10, path: 'class-10/volt-city-3d',           title: 'Volt City 3D',                  ch: 11, topic: 'elec',    emoji: '⚡' },
   { cls: 10, path: 'class-10/magnet-quest-3d',        title: 'Magnet Quest 3D',               ch: 13, topic: 'magnet',  emoji: '🧲' },
-  { cls: 10, path: 'class-10/magnet-heredity-quiz',   title: 'Magnet & Heredity MCQ Quiz',    ch: 0,  topic: 'quiz',    emoji: '📝' }
+  { cls: 10, path: 'class-10/magnet-heredity-quiz',   title: 'Magnet & Heredity MCQ Quiz',    ch: 0,  topic: 'quiz',    emoji: '📝' },
+
+  /* Fun & Skills (not tied to a class) */
+  { cls: 0, fun: true, path: 'fun/turbo-horizon-bharat',   title: 'Turbo Horizon: Bharat Edition', topic: 'race', emoji: '🏎️',
+    files: ['../../vendor/three-r128/three.min.js','../../vendor/three-r128/postprocessing/EffectComposer.js','../../vendor/three-r128/postprocessing/RenderPass.js','../../vendor/three-r128/postprocessing/ShaderPass.js','../../vendor/three-r128/postprocessing/UnrealBloomPass.js','../../vendor/three-r128/shaders/CopyShader.js','../../vendor/three-r128/shaders/GammaCorrectionShader.js','../../vendor/three-r128/shaders/LuminosityHighPassShader.js'] },
+  { cls: 0, fun: true, path: 'fun/typenova-typing-trainer', title: 'TypeNova — Typing Trainer',    topic: 'type', emoji: '⌨️' },
+  { cls: 0, fun: true, path: 'fun/hanami-koi-pond',         title: 'Hanami Koi Pond',              topic: 'koi',  emoji: '🎏',
+    files: ['../../vendor/three-r128/three.min.js'] }
 ];
 
 /* 3D labs that are already on the website */

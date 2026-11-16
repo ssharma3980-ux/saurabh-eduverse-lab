@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="description" content="Helper Town Express: a Class 1 science game on People at Work (Nature Window-1, Chapter 10) by Saurabh's Eduverse.">
+<title>Helper Town Express | People at Work | Saurabh's Eduverse</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sky:#8ED8F8;--sky2:#E6F8FF;--grass:#8BDB5E;--grass2:#55B944;
+  --marigold:#FFB627;--yellow:#FFD23F;--green:#1E9E50;--green-d:#13743A;
+  --red:#E23D3D;--red-d:#A52424;--pink:#FF6FA5;--violet:#7C5CFF;
+  --ink:#23265E;--paper:#FFFDF5;--road:#5E6275;--good:#1E9E50;--bad:#E8505B;
+  --font:ui-rounded,"SF Pro Rounded","Arial Rounded MT Bold","Nunito","Varela Round","Trebuchet MS",system-ui,sans-serif;
+}
+@media (prefers-color-scheme:dark){
+  :root:not([data-theme="light"]){--sky:#34448A;--sky2:#8A76C4;--grass:#4F9E46;--grass2:#387B34}
+  :root:not([data-theme="light"]) .sun{background:radial-gradient(circle,#FFFDE7 45%,#E3E3F3 72%);box-shadow:0 0 40px rgba(255,255,255,.45)}
+}
+:root[data-theme="dark"]{--sky:#34448A;--sky2:#8A76C4;--grass:#4F9E46;--grass2:#387B34}
+html,body{height:100%}
+body{font-family:var(--font);color:var(--ink);background:var(--sky);overflow:hidden;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;line-height:1.35}
+button{font:inherit;color:inherit}
+button:focus-visible,input:focus-visible{outline:4px solid var(--violet);outline-offset:3px}
+
+/* ---------- living background ---------- */
+.scene{position:fixed;inset:0;z-index:0;background:linear-gradient(var(--sky) 0%,var(--sky2) 78%);overflow:hidden}
+.sun{position:absolute;top:5vh;right:7vw;width:84px;height:84px;border-radius:50%;background:radial-gradient(circle,#FFF59D 40%,#FFD23F 72%);box-shadow:0 0 0 14px rgba(255,210,63,.25),0 0 0 30px rgba(255,210,63,.12);animation:sunpulse 4s ease-in-out infinite}
+.cloud{position:absolute;left:0;width:120px;height:40px;background:#fff;border-radius:40px;opacity:.9;animation:drift linear infinite}
+.cloud::before,.cloud::after{content:'';position:absolute;background:#fff;border-radius:50%}
+.cloud::before{width:50px;height:50px;top:-24px;left:18px}
+.cloud::after{width:64px;height:64px;top:-34px;left:46px}
+.c1{top:14vh;animation-duration:52s;animation-delay:-8s}
+.c2{top:30vh;--s:.7;animation-duration:70s;animation-delay:-40s}
+.c3{top:8vh;--s:.55;animation-duration:44s;animation-delay:-25s}
+.bird{position:absolute;top:20vh;left:0;width:26px;height:12px;animation:drift 30s linear infinite;animation-delay:-12s}
+.bird::before,.bird::after{content:'';position:absolute;top:0;width:13px;height:10px;border-top:3px solid var(--ink);border-radius:50% 50% 0 0;animation:flap .5s ease-in-out infinite alternate}
+.bird::before{left:0;transform-origin:right bottom}.bird::after{right:0;transform-origin:left bottom}
+.hills{position:absolute;bottom:0;left:0;width:100%;height:22vh}
+@keyframes drift{from{transform:translateX(-160px) scale(var(--s,1))}to{transform:translateX(110vw) scale(var(--s,1))}}
+@keyframes flap{to{transform:rotate(18deg)}}
+@keyframes sunpulse{50%{transform:scale(1.06)}}
+
+#confetti{position:fixed;inset:0;width:100%;height:100%;z-index:80;pointer-events:none}
+
+/* ---------- screens ---------- */
+.screen{position:fixed;inset:0;z-index:2;overflow-y:auto;overflow-x:hidden;opacity:0;visibility:hidden;transform:translateY(14px);transition:opacity .35s,transform .35s,visibility 0s linear .35s;-webkit-overflow-scrolling:touch}
+.screen.show{opacity:1;visibility:visible;transform:none;transition:opacity .35s,transform .35s}
+
+/* ---------- buttons ---------- */
+.btn{border:0;cursor:pointer;border-radius:999px;padding:.7em 1.3em;min-height:52px;font-weight:800;font-size:clamp(1rem,2.6vw,1.2rem);color:#fff;background:var(--green);box-shadow:0 5px 0 var(--green-d);transition:transform .12s,box-shadow .12s,filter .12s;touch-action:manipulation}
+.btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--green-d)}
+.btn.alt{background:var(--marigold);color:var(--ink);box-shadow:0 5px 0 #C98300}
+.btn.alt:active{box-shadow:0 1px 0 #C98300}
+.btn.ghostbtn{background:#fff;color:var(--ink);box-shadow:0 5px 0 #B9BEDB}
+.btn.ghostbtn:active{box-shadow:0 1px 0 #B9BEDB}
+.btn.red{background:var(--red);box-shadow:0 5px 0 var(--red-d)}
+.btn.sm{min-height:44px;font-size:.95rem;padding:.5em 1em}
+.btn.big{font-size:clamp(1.25rem,4vw,1.6rem);padding:.75em 1.8em}
+@media (hover:hover){.btn:hover{filter:brightness(1.07);transform:translateY(-2px)}.btn:active{transform:translateY(4px)}}
+.iconbtn{border:3px solid var(--ink);background:#fff;border-radius:16px;width:48px;height:48px;font-size:1.4rem;cursor:pointer;display:grid;place-items:center;flex:none;box-shadow:0 3px 0 var(--ink);transition:transform .1s}
+.iconbtn:active{transform:translateY(3px);box-shadow:0 0 0 var(--ink)}
+.iconbtn.off{opacity:.5;background:#E0E3EE;text-decoration:line-through}
+
+/* ---------- loading ---------- */
+.loadwrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;padding:24px;text-align:center}
+.loadwrap .tinku{width:150px}
+.loadbar{width:min(320px,80vw);height:22px;border:4px solid var(--ink);border-radius:14px;background:#fff;overflow:hidden}
+.loadbar i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,var(--marigold) 0 12px,var(--yellow) 12px 24px);animation:load 1.3s ease-out forwards}
+.loadtxt{font-weight:800;font-size:1.15rem}
+@keyframes load{to{width:100%}}
+
+/* ---------- start ---------- */
+.startwrap{min-height:100%;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px 16px 26vh;text-align:center}
+.brand{font-weight:900;font-size:1rem;background:var(--ink);color:#fff;border-radius:999px;padding:.35em 1em}
+.plaque{position:relative;background:var(--paper);border-radius:30px;padding:20px 22px 18px;border:5px solid var(--ink);box-shadow:0 8px 0 var(--ink);max-width:600px;width:100%;animation:swingIn .9s cubic-bezier(.2,1.4,.5,1)}
+.plaque::before{content:'';position:absolute;inset:7px;border-radius:21px;border:3px dashed var(--red);pointer-events:none}
+.plaque::after{content:'';position:absolute;left:18px;right:18px;top:-18px;height:18px;background:radial-gradient(circle at 50% 100%,var(--marigold) 7px,transparent 8px) 0 0/28px 18px repeat-x}
+.title{display:flex;flex-direction:column;align-items:center;font-weight:900;line-height:.95;font-size:clamp(2.3rem,9vw,4.2rem);color:var(--marigold);letter-spacing:.01em;
+  text-shadow:3px 0 var(--ink),-3px 0 var(--ink),0 3px var(--ink),0 -3px var(--ink),2px 2px var(--ink),-2px -2px var(--ink),2px -2px var(--ink),-2px 2px var(--ink),0 8px 0 var(--red)}
+.ribbon{margin-top:10px;font-size:.62em;color:#fff;background:var(--green);padding:.12em .7em .2em;border:4px solid var(--ink);border-radius:12px;transform:rotate(-3deg);text-shadow:0 3px 0 var(--ink)}
+.chips{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-top:14px}
+.chips span{background:#fff;border:3px solid var(--ink);border-radius:999px;padding:.2em .8em;font-weight:800;font-size:.9rem}
+.parade{position:relative;width:min(600px,100%);height:150px;margin-top:6px;overflow:hidden}
+.parade .crowd{position:absolute;bottom:22px;left:0;right:0;display:flex;justify-content:space-around}
+.parade .crowd svg{width:clamp(56px,15vw,86px);height:auto}
+.parade .sidewalk{position:absolute;bottom:0;left:0;right:0;height:26px;background:var(--road);border-radius:10px;border:3px solid var(--ink)}
+.parade .tinku{position:absolute;bottom:4px;left:0;width:110px;animation:driveby 9s linear infinite;z-index:2}
+@keyframes driveby{from{transform:translateX(-140px)}to{transform:translateX(min(640px,100vw))}}
+.tagline{font-weight:800;font-size:1.1rem;background:rgba(255,253,245,.85);border-radius:14px;padding:.3em .8em}
+
+/* ---------- tinku + people ---------- */
+.tinku{display:block;height:auto;overflow:visible}
+.tinku .tk-body{animation:rumble .35s ease-in-out infinite alternate}
+.tinku .wheel{transform-box:view-box;animation:spin .9s linear infinite}
+@keyframes rumble{to{transform:translateY(-2px)}}
+@keyframes spin{to{transform:rotate(360deg)}}
+.person{display:block;overflow:visible}
+.person .arm{transform-box:view-box;transform-origin:80px 86px;animation:wave 1.8s ease-in-out infinite}
+.person .eyes{transform-box:view-box;transform-origin:60px 50px;animation:blink 4.2s infinite}
+@keyframes wave{0%,100%{transform:rotate(0)}50%{transform:rotate(-16deg)}}
+@keyframes blink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.1)}}
+
+/* ---------- map ---------- */
+.maphead,.lvhead{position:sticky;top:0;z-index:5;display:flex;align-items:center;gap:8px;padding:10px 12px;padding-top:max(10px,env(safe-area-inset-top));background:rgba(255,253,245,.94);border-bottom:4px solid var(--ink)}
+.maphead .brand{font-size:.85rem}
+@media (max-width:440px){.maphead .brand{display:none}.maphead .iconbtn{width:44px;height:44px;font-size:1.25rem}}
+.mapfoot{text-align:center;margin-top:16px}
+.spacer{flex:1}
+.starcount{font-weight:900;font-size:1.1rem;background:var(--yellow);border:3px solid var(--ink);border-radius:999px;padding:.2em .7em;white-space:nowrap}
+.mapbody{max-width:640px;margin:0 auto;padding:14px 14px 28vh}
+.maptitle{text-align:center;font-size:clamp(1.6rem,6vw,2.2rem);font-weight:900;color:#fff;margin:14px 0 4px;text-shadow:2px 0 var(--ink),-2px 0 var(--ink),0 2px var(--ink),0 -2px var(--ink),0 5px 0 var(--ink)}
+.stops{position:relative;margin:10px auto 0;padding:14px 0}
+.stops::before{content:'';position:absolute;top:0;bottom:0;left:50%;width:64px;margin-left:-32px;background:var(--road);border-radius:32px;border:4px solid var(--ink)}
+.stops::after{content:'';position:absolute;top:18px;bottom:18px;left:50%;width:6px;margin-left:-3px;background:repeating-linear-gradient(#fff 0 16px,transparent 16px 32px)}
+.row{position:relative;z-index:1;display:grid;grid-template-columns:1fr 64px 1fr;align-items:center;column-gap:14px;min-height:128px}
+.node{grid-column:2;grid-row:1;justify-self:center;width:42px;height:42px;border-radius:50%;background:var(--paper);border:4px solid var(--ink);display:grid;place-items:center;font-weight:900;font-size:1.1rem}
+.node.ok{background:var(--green);color:#fff}
+.node.here{width:92px;height:auto;background:none;border:0;animation:hop 1.2s ease-in-out infinite}
+@keyframes hop{50%{transform:translateY(-6px)}}
+.stop{grid-row:1;position:relative;cursor:pointer;background:var(--paper);border:4px solid var(--ink);border-radius:22px;box-shadow:0 6px 0 var(--ink);padding:10px 8px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;transition:transform .15s}
+.row.l .stop{grid-column:1}.row.r .stop{grid-column:3}
+.row.l .stop::after,.row.r .stop::after{content:'';position:absolute;top:50%;width:14px;height:6px;margin-top:-3px;background:var(--ink)}
+.row.l .stop::after{right:-18px}.row.r .stop::after{left:-18px}
+.stop .sico{font-size:2.2rem;line-height:1.1}
+.stop b{font-size:clamp(.95rem,3.4vw,1.1rem);line-height:1.15}
+.stop .sst{font-size:.95rem;letter-spacing:1px}
+.off{filter:grayscale(1);opacity:.3}
+.stop.locked{background:#E3E6F0;border-color:#9FA5C0;box-shadow:0 6px 0 #9FA5C0;color:#6B7194}
+.stop.cur{background:#FFF4C9;animation:beckon 1.6s ease-in-out infinite}
+@keyframes beckon{50%{transform:scale(1.05)}}
+.stop.locked:active{animation:shake .4s}
+.stickers{margin-top:18px;text-align:center}
+.stickers h3{font-size:1.2rem;margin-bottom:8px}
+.stk{display:flex;flex-wrap:wrap;gap:8px;justify-content:center}
+.stk span{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;font-size:1.7rem;background:#E3E6F0;border:3px dashed #9FA5C0}
+.stk span.got{background:var(--yellow);border-color:var(--red);animation:pop .5s}
+.stk span:not(.got){filter:grayscale(1);opacity:.5}
+.teacher{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:18px}
+
+/* ---------- shared panels ---------- */
+.panel{background:var(--paper);border:4px solid var(--ink);border-radius:24px;box-shadow:0 6px 0 var(--ink);padding:14px}
+.guide{display:flex;align-items:center;gap:10px;margin-bottom:14px}
+.guide .tinku{width:84px;flex:none}
+.bubble{position:relative;flex:1;min-width:0;overflow-wrap:break-word;background:#fff;border:4px solid var(--ink);border-radius:20px;padding:10px 14px;font-weight:700;font-size:clamp(1rem,3.3vw,1.2rem)}
+.guide .bubble::before{content:'';position:absolute;left:-14px;top:50%;margin-top:-10px;border:10px solid transparent;border-right:14px solid var(--ink);border-left:0}
+.spk{flex:none;width:48px;height:48px;border-radius:50%;border:3px solid var(--ink);background:var(--yellow);font-size:1.3rem;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.spk:active{transform:translateY(3px);box-shadow:none}
+.src{text-align:center;margin-top:12px;font-weight:800;font-size:.9rem;color:var(--ink);background:rgba(255,253,245,.85);border-radius:12px;padding:.35em .8em;width:fit-content;margin-left:auto;margin-right:auto}
+.srctag{display:inline-block;font-weight:800;font-size:.85rem;background:#EDE7FF;border:2px solid var(--violet);color:#4B32C3;border-radius:999px;padding:.15em .7em}
+.hint{min-height:2.8em;text-align:center;font-weight:800;font-size:clamp(1rem,3.2vw,1.2rem);margin-top:12px;display:flex;align-items:center;justify-content:center}
+
+/* ---------- level shell ---------- */
+.lvhead{flex-wrap:wrap}
+.lvtitle{flex:1 1 auto;min-width:0;font-weight:900;font-size:clamp(1.05rem,3.6vw,1.35rem);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lvtitle #lv-icon{margin-right:6px}
+@media (max-width:440px){.stopn{display:none}}
+.prog{flex:0 1 240px;height:16px;background:#E8EAF6;border-radius:10px;overflow:hidden;border:3px solid var(--ink)}
+.prog i{display:block;height:100%;width:0;background:repeating-linear-gradient(45deg,var(--green) 0 10px,#2BC46A 10px 20px);transition:width .5s}
+@media (max-width:560px){.prog{flex:1 1 100%;order:5}}
+@media (max-width:360px){.guide .tinku{width:52px}.guide{gap:8px}.spk{width:42px;height:42px}.guide .bubble{font-size:.92rem;padding:8px 10px}.lvtitle{font-size:.95rem}.lvhead .iconbtn{width:42px;height:42px;font-size:1.15rem}}
+.lvbody{max-width:920px;margin:0 auto;padding:14px 14px 60px}
+
+/* ---------- L1 meet street ---------- */
+.street{position:relative;display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:0 4px 34px}
+.street::after{content:'';position:absolute;left:-14px;right:-14px;bottom:0;height:30px;background:var(--road);border-top:4px solid var(--ink);border-bottom:4px solid var(--ink)}
+@media (max-width:640px){.street{grid-template-columns:repeat(2,1fr);row-gap:0}.street .house{margin-bottom:10px}}
+.house{position:relative;z-index:1;border:0;background:none;cursor:pointer;padding:0;display:flex;flex-direction:column;align-items:center;align-self:end}
+.house .roof{width:100%;height:46px;background:var(--roof);clip-path:polygon(50% 0,100% 100%,0 100%);position:relative}
+.house .walls{width:88%;background:var(--wall);border:4px solid var(--ink);border-bottom:0;display:flex;flex-direction:column;align-items:center;padding:8px 6px 0}
+.hsign{font-weight:900;font-size:clamp(.72rem,2.6vw,.9rem);background:#fff;border:2px solid var(--ink);border-radius:8px;padding:2px 6px;margin-bottom:8px;white-space:nowrap}
+.door{position:relative;width:74%;aspect-ratio:3/4;background:#FFF3C4;border:3px solid var(--ink);border-bottom:0;border-radius:12px 12px 0 0;perspective:500px;overflow:hidden}
+.door .peek{position:absolute;inset:8% 4% 0}
+.door .peek svg{width:100%;height:100%}
+.door-panel{position:absolute;inset:0;z-index:2;background:linear-gradient(90deg,#A1662F,#C98A4B);border-radius:9px 9px 0 0;transform-origin:left center;transition:transform .55s cubic-bezier(.3,1.3,.6,1);animation:knock 3s ease-in-out infinite;animation-delay:var(--d)}
+.door-panel::before{content:'';position:absolute;inset:12% 16% 50%;border:3px solid rgba(35,38,94,.35);border-radius:6px}
+.door-panel::after{content:'';position:absolute;right:12%;top:55%;width:10px;height:10px;border-radius:50%;background:var(--yellow);border:2px solid var(--ink)}
+.house.open .door-panel{transform:rotateY(-100deg);animation:none}
+@keyframes knock{0%,86%,100%{transform:rotateY(0)}90%{transform:rotateY(-14deg)}94%{transform:rotateY(0)}97%{transform:rotateY(-8deg)}}
+.house .tick{position:absolute;top:28px;right:0;font-size:1.8rem;transform:scale(0);transition:transform .35s cubic-bezier(.2,1.6,.5,1);z-index:3}
+.house.met .tick{transform:scale(1)}
+@media (hover:hover){.house:hover .roof{filter:brightness(1.1)}}
+.meet{display:flex;flex-direction:column;align-items:center;gap:12px}
+.meet-art svg{width:150px;height:auto;animation:slideUp .5s cubic-bezier(.2,1.4,.5,1)}
+.bubble.big{text-align:center;font-size:clamp(1.2rem,4.4vw,1.55rem);width:100%}
+.bubble.big::before{content:'';position:absolute;top:-16px;left:50%;margin-left:-10px;border:10px solid transparent;border-bottom:14px solid var(--ink);border-top:0}
+.ln{opacity:0;transform:translateY(8px);animation:lineIn .4s forwards;animation-delay:calc(var(--i)*.75s + .2s)}
+@keyframes lineIn{to{opacity:1;transform:none}}
+
+/* ---------- options (L2, L7) ---------- */
+.opts{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.opt{cursor:pointer;background:#fff;border:4px solid var(--ink);border-radius:20px;padding:8px 6px 10px;box-shadow:0 5px 0 var(--ink);display:flex;flex-direction:column;align-items:center;gap:4px;font-weight:800;font-size:clamp(.85rem,3vw,1.1rem);line-height:1.15;transition:transform .15s,background .2s;touch-action:manipulation}
+.opt svg{width:100%;max-width:110px;height:auto;aspect-ratio:3/4}
+.opt:active{transform:translateY(4px);box-shadow:0 1px 0 var(--ink)}
+.opt.right{background:#D7F8E0;border-color:var(--good);box-shadow:0 5px 0 var(--good);animation:pop .45s}
+.opt.wrong{background:#FFE0E3;border-color:var(--bad);box-shadow:0 5px 0 var(--bad);opacity:.6;animation:shake .45s}
+.whoami .mystery{display:flex;align-items:center;gap:12px}
+.mys-card{flex:none;width:92px;height:118px;border:4px dashed var(--violet);border-radius:18px;background:#EDE7FF;display:grid;place-items:center;font-size:3rem}
+.mys-card svg{width:88px;height:auto;animation:pop .5s}
+.qmark{animation:wobble 1.4s ease-in-out infinite}
+@keyframes wobble{25%{transform:rotate(-12deg)}75%{transform:rotate(12deg)}}
+.whoami .bubble{animation:pop .4s}
+.whoami .bubble::before{content:'';position:absolute;left:-14px;top:50%;margin-top:-10px;border:10px solid transparent;border-right:14px solid var(--ink);border-left:0}
+.ask{text-align:center;font-weight:900;font-size:clamp(1.3rem,5vw,1.8rem);margin:12px 0 10px}
+
+/* ---------- L3 match ---------- */
+.match{position:relative;display:grid;grid-template-columns:1fr 1fr;column-gap:clamp(34px,8vw,90px)}
+.mcol{display:flex;flex-direction:column;gap:12px;position:relative;z-index:1}
+.lines{position:absolute;inset:0;width:100%;height:100%;z-index:2;pointer-events:none;overflow:visible}
+.ml{fill:none;stroke-width:6;stroke-linecap:round}
+.ml.draw{stroke-dasharray:100;stroke-dashoffset:100;animation:dash .6s ease-out forwards}
+.ml.bad{stroke-dasharray:10 8}
+@keyframes dash{to{stroke-dashoffset:0}}
+.mcard{cursor:pointer;display:flex;align-items:center;gap:8px;min-height:84px;width:100%;background:#fff;border:4px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);padding:6px 10px;text-align:left;font-weight:800;font-size:clamp(.9rem,3.2vw,1.15rem);line-height:1.15;transition:transform .15s,background .2s;touch-action:manipulation}
+.mcard .person{width:48px;height:64px;flex:none}
+.mcard em{font-style:normal;font-size:1.8rem;flex:none}
+.mcard{position:relative}
+.mcard .dot{position:absolute;top:50%;margin-top:-11px;width:22px;height:22px;border-radius:50%;background:var(--ink);border:4px solid #fff;box-shadow:0 0 0 3px var(--ink);z-index:3}
+.wk .dot{right:-14px}
+.wo .dot{left:-14px}
+.wo{padding-left:16px}
+.mcard.sel{background:#FFF4C9;transform:scale(1.04);border-color:var(--marigold);box-shadow:0 4px 0 #C98300}
+.mcard.matched{background:#F0FFF4;border-color:var(--mc);box-shadow:0 4px 0 var(--mc);cursor:default}
+.mcard.matched .dot{background:var(--mc);box-shadow:0 0 0 3px var(--mc)}
+@media (max-width:480px){.mcard{flex-direction:column;align-items:center;text-align:center;gap:2px;padding:6px 8px}.wo{padding-left:8px}.mcard .person{width:42px;height:56px}}
+
+/* ---------- L4 fix-it ---------- */
+.cartzone{display:flex;justify-content:center;padding:6px 0 14px}
+.cart{cursor:grab;touch-action:none;display:flex;flex-direction:column;align-items:center;gap:4px;background:#FFF4C9;border:4px solid var(--ink);border-radius:22px;box-shadow:0 6px 0 var(--ink);padding:10px 18px;min-width:220px;max-width:92%;text-align:center}
+.cart.enter{animation:rollIn .6s cubic-bezier(.2,1.3,.5,1)}
+.cart.gone{opacity:0}
+.cart.lifted{opacity:.35}
+.big-e{font-size:3.4rem;line-height:1.1;animation:bob 1.6s ease-in-out infinite}
+.it-t{font-weight:900;font-size:clamp(1.05rem,3.8vw,1.35rem)}
+.drag-hint{font-size:.85rem;font-weight:700;opacity:.75}
+.bins{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media (max-width:640px){.bins{grid-template-columns:repeat(2,1fr)}}
+.bin{cursor:pointer;background:#fff;border:4px solid var(--ink);border-radius:18px 18px 10px 10px;box-shadow:0 5px 0 var(--ink);padding:6px 4px 8px;display:flex;flex-direction:column;align-items:center;font-weight:900;font-size:clamp(.85rem,3vw,1.05rem);line-height:1.1;text-align:center;position:relative;transition:transform .15s,background .15s;touch-action:manipulation}
+.bin::before{content:'';position:absolute;top:-4px;left:-4px;right:-4px;height:14px;border-radius:18px 18px 0 0;background:repeating-linear-gradient(90deg,var(--red) 0 16px,#fff 16px 32px);border:4px solid var(--ink);border-bottom:0}
+.bin .person{width:72px;height:96px;margin-top:10px}
+.bin.hover{background:#FFF4C9;transform:scale(1.06)}
+.bin.happy{background:#D7F8E0;animation:pop .5s}
+.bin.nope{background:#FFE0E3}
+.ghost{position:fixed;z-index:90;pointer-events:none;transform:translate(-50%,-50%) scale(1.05) rotate(-4deg);margin:0;min-width:0;box-shadow:0 14px 24px rgba(35,38,94,.35);animation:none!important}
+.flyer{position:fixed;z-index:85;margin:0;pointer-events:none;transition:transform .55s ease-in,opacity .55s ease-in;animation:none!important}
+.snip{display:flex;flex-direction:column;align-items:center;gap:10px}
+.snip .person{width:120px;height:auto}
+.snip-tag{font-weight:900;background:var(--pink);color:#fff;border:3px solid var(--ink);border-radius:999px;padding:.2em .9em}
+
+/* ---------- L5 word train ---------- */
+.wt{text-align:center}
+.track{position:relative;padding:18px 0 30px;overflow:hidden;min-height:150px;display:flex;align-items:flex-end;justify-content:center}
+.track::after{content:'';position:absolute;left:0;right:0;bottom:6px;height:12px;background:repeating-linear-gradient(90deg,#8D6E63 0 8px,transparent 8px 22px),linear-gradient(transparent 3px,var(--ink) 3px,var(--ink) 6px,transparent 6px)}
+.train{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:center;gap:16px 6px;position:relative;z-index:1;max-width:100%}
+.train.in{animation:trainIn .8s cubic-bezier(.2,1.1,.5,1)}
+.train.out{animation:trainOut .7s ease-in forwards}
+@keyframes trainIn{from{transform:translateX(110%)}to{transform:none}}
+@keyframes trainOut{to{transform:translateX(-120%)}}
+.engine{font-size:3.2rem;line-height:1;transform:scaleX(-1);display:inline-block}
+.coach{position:relative;background:var(--c);color:#fff;font-weight:900;border:3px solid var(--ink);border-radius:14px 14px 6px 6px;padding:10px 12px 14px;margin-bottom:10px;font-size:clamp(1.05rem,3.6vw,1.45rem);line-height:1.2;text-shadow:0 2px 0 rgba(35,38,94,.5)}
+.coach::after{content:'';position:absolute;left:10px;right:10px;bottom:-12px;height:14px;background:radial-gradient(circle,var(--ink) 6px,transparent 7px) left/14px 14px no-repeat,radial-gradient(circle,var(--ink) 6px,transparent 7px) right/14px 14px no-repeat}
+.coach.blank{background:#fff;color:var(--violet);border-style:dashed;min-width:118px;text-shadow:none}
+.coach.blank.hover{background:#EDE7FF}
+.coach.blank.filled{background:var(--yellow);color:var(--ink);border-style:solid;animation:pop .45s}
+.tiles{display:flex;flex-wrap:wrap;gap:12px;justify-content:center;margin-top:8px}
+.tile{cursor:grab;touch-action:none;min-height:58px;padding:.4em 1.2em;border-radius:16px;border:4px solid var(--ink);background:#fff;box-shadow:0 5px 0 var(--ink);font-weight:900;font-size:clamp(1.1rem,4vw,1.4rem)}
+.tile.lifted{opacity:.35}
+.tile.wrong{background:#FFE0E3;border-color:var(--bad);box-shadow:0 5px 0 var(--bad);opacity:.5;animation:shake .45s;cursor:default}
+.tile.used{visibility:hidden}
+
+/* ---------- L6 family ---------- */
+.fam-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+@media (max-width:560px){.fam-grid{grid-template-columns:repeat(3,1fr)}}
+.chip{cursor:pointer;background:#fff;border:4px solid var(--ink);border-radius:18px;box-shadow:0 4px 0 var(--ink);padding:8px 4px;display:flex;flex-direction:column;align-items:center;gap:2px;font-weight:800;font-size:clamp(.85rem,3vw,1.05rem);line-height:1.1;text-align:center;min-height:86px;justify-content:center;touch-action:manipulation}
+.chip em{font-style:normal;font-size:2rem}
+.chip:active{transform:translateY(3px);box-shadow:0 1px 0 var(--ink)}
+.fam-list{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin:12px 0 4px}
+.fam-list span{display:inline-flex;align-items:center;gap:6px;background:#FFF4C9;border:3px solid var(--ink);border-radius:999px;padding:.25em .4em .25em .8em;font-weight:800}
+.fam-list button{border:0;background:var(--red);color:#fff;width:28px;height:28px;border-radius:50%;cursor:pointer;font-weight:900}
+.other{display:flex;gap:8px;margin-top:12px;justify-content:center;flex-wrap:wrap}
+.other input,.namebox input{font:inherit;font-weight:800;font-size:1.1rem;border:4px solid var(--ink);border-radius:14px;padding:.45em .7em;min-height:52px;width:min(260px,100%);color:var(--ink);background:#fff;-webkit-user-select:text;user-select:text}
+.center{text-align:center}
+.center .btn{margin-top:14px}
+.tycard{position:relative;margin:14px auto 0;max-width:460px;background:#fff;border:5px solid var(--ink);border-radius:20px;padding:34px 18px 18px;text-align:center;box-shadow:0 8px 0 var(--pink);animation:pop .5s}
+.tycard::before{content:'';position:absolute;top:0;left:0;right:0;height:22px;border-radius:14px 14px 0 0;background:linear-gradient(135deg,var(--marigold) 25%,transparent 25%) -11px 0/22px 22px,linear-gradient(225deg,var(--green) 25%,transparent 25%) -11px 0/22px 22px}
+.tycard h3{font-size:clamp(1.25rem,4.4vw,1.6rem);color:var(--red);margin-bottom:10px}
+.tycard ul{list-style:none;display:flex;flex-direction:column;gap:6px;font-size:clamp(1.05rem,3.8vw,1.3rem);font-weight:800}
+.tycard .respect{margin-top:12px;font-weight:900;color:var(--green);font-size:1.15rem}
+.tycard .from{margin-top:8px;font-weight:800}
+.namebox{display:flex;justify-content:center;margin-top:12px}
+
+/* ---------- L7 boss ---------- */
+.bosstop{display:flex;justify-content:space-between;align-items:center;font-weight:900}
+.hearts{font-size:1.7rem;letter-spacing:4px}
+.heart{display:inline-block}
+.heart.lost{animation:heartbreak .6s forwards}
+@keyframes heartbreak{40%{transform:scale(1.4)}100%{transform:scale(.9);filter:grayscale(1);opacity:.3}}
+.bcount{background:var(--ink);color:#fff;border-radius:999px;padding:.2em .8em}
+.ride{position:relative;height:104px;margin:10px 0 14px;background:var(--road);border:4px solid var(--ink);border-radius:18px;overflow:hidden}
+.ride::before{content:'';position:absolute;left:0;right:0;top:50%;height:5px;margin-top:-2px;background:repeating-linear-gradient(90deg,#fff 0 22px,transparent 22px 44px)}
+.ride .flag{position:absolute;right:8px;top:50%;transform:translateY(-50%);font-size:2.6rem;animation:bob 2s ease-in-out infinite}
+.ride .tk{position:absolute;bottom:2px;left:calc(var(--p,0)*(100% - 170px) + 6px);width:100px;transition:left .9s cubic-bezier(.3,1.4,.6,1)}
+.bq{display:flex;align-items:center;gap:10px;background:#fff;border:4px solid var(--ink);border-radius:20px;padding:10px 12px;margin-bottom:12px}
+.bq-e{font-size:2.8rem;flex:none;animation:bob 1.6s ease-in-out infinite}
+.bq-t{flex:1;font-weight:900;font-size:clamp(1.1rem,3.9vw,1.45rem)}
+.tf{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.tfb em{font-style:normal;font-size:3rem}
+.tfb span{font-size:1.3rem}
+.bfb{min-height:3.2em;margin-top:12px;text-align:center;font-weight:800;font-size:clamp(1rem,3.4vw,1.2rem);display:flex;flex-direction:column;align-items:center;gap:10px}
+
+/* ---------- modal ---------- */
+.overlay{position:fixed;inset:0;z-index:50;background:rgba(35,38,94,.55);display:flex;align-items:center;justify-content:center;padding:16px}
+.overlay[hidden]{display:none}
+.mbox{position:relative;background:var(--paper);border:5px solid var(--ink);border-radius:28px;box-shadow:0 8px 0 var(--ink);max-width:520px;width:100%;max-height:92vh;overflow:auto;padding:22px 18px;text-align:center;animation:popIn .45s cubic-bezier(.2,1.5,.5,1)}
+.mbox h2{font-size:clamp(1.5rem,5.5vw,2.1rem);line-height:1.1;margin:4px 0 8px}
+.mbox p{font-weight:700;font-size:clamp(1rem,3.4vw,1.15rem)}
+.mbtns{display:flex;flex-wrap:wrap;gap:10px;justify-content:center;margin-top:16px}
+.intro .tinku{width:150px;margin:0 auto}
+.stopno{display:inline-block;background:var(--ink);color:#fff;border-radius:999px;padding:.15em .9em;margin-top:6px}
+.goal{background:#FFF4C9;border:3px solid var(--ink);border-radius:14px;padding:.5em .8em;margin:8px 0 6px}
+.bigstars{display:flex;justify-content:center;gap:10px;margin:6px 0}
+.bigstars span{font-size:3.2rem;transform:scale(0);animation:starIn .5s cubic-bezier(.2,1.6,.5,1) forwards;animation-delay:calc(var(--i)*.35s + .3s)}
+@keyframes starIn{to{transform:scale(1)}}
+.sticker{margin:12px auto 4px;width:88px;height:88px;border-radius:50%;background:var(--yellow);border:4px dashed var(--red);display:grid;place-items:center;font-size:2.8rem;animation:spinIn .8s cubic-bezier(.2,1.4,.5,1) 1.2s both}
+@keyframes spinIn{from{transform:rotate(-200deg) scale(0)}to{transform:none}}
+.cert{margin-top:14px;border:4px double var(--ink);border-radius:18px;padding:12px;background:linear-gradient(#FFF8E1,#FFFDF5)}
+.cert .cname{font-size:1.6rem;font-weight:900;color:var(--red)}
+.certbadges{font-size:1.6rem;letter-spacing:4px;margin-top:6px}
+
+#toast{position:fixed;left:50%;bottom:24px;z-index:95;transform:translate(-50%,160%);background:var(--ink);color:#fff;font-weight:800;padding:.7em 1.2em;border-radius:16px;max-width:90vw;text-align:center;transition:transform .35s cubic-bezier(.2,1.4,.5,1),visibility 0s linear .35s;pointer-events:none;visibility:hidden}
+#toast.show{transform:translate(-50%,0);visibility:visible;transition:transform .35s cubic-bezier(.2,1.4,.5,1)}
+
+.spark{position:fixed;z-index:88;pointer-events:none;font-size:1.4rem;transform:translate(-50%,-50%);animation:spark .85s ease-out forwards}
+@keyframes spark{to{transform:translate(calc(-50% + var(--dx)),calc(-50% + var(--dy))) scale(.3);opacity:0}}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+@keyframes popIn{from{transform:scale(.6);opacity:0}to{transform:none;opacity:1}}
+@keyframes swingIn{from{transform:translateY(-60px) rotate(-6deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes slideUp{from{transform:translateY(40px);opacity:0}to{transform:none;opacity:1}}
+@keyframes rollIn{from{transform:translateX(-80px) rotate(-10deg);opacity:0}to{transform:none;opacity:1}}
+@keyframes shake{20%,60%{transform:translateX(-8px)}40%,80%{transform:translateX(8px)}}
+@keyframes bob{50%{transform:translateY(-5px)}}
+.shake{animation:shake .45s}
+
+@media (prefers-reduced-motion:reduce){
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}
+  .cloud,.bird,.parade .tinku{display:none}
+}
+
+</style>
+</head>
+<body>
+<div class="scene" aria-hidden="true">
+  <div class="sun"></div>
+  <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+  <div class="bird"></div>
+  <svg class="hills" viewBox="0 0 1200 200" preserveAspectRatio="none">
+    <path d="M0 110 Q150 50 300 100 T600 90 T900 80 T1200 100 V200 H0Z" style="fill:var(--grass)"/>
+    <path d="M0 150 Q200 105 400 145 T800 135 T1200 145 V200 H0Z" style="fill:var(--grass2)"/>
+  </svg>
+</div>
+<canvas id="confetti" aria-hidden="true"></canvas>
+
+<main id="app">
+  <section id="loading" class="screen show" aria-label="Loading">
+    <div class="loadwrap">
+      <div id="load-tk"></div>
+      <div class="loadbar"><i></i></div>
+      <p class="loadtxt">Starting Tinku's engine…</p>
+    </div>
+  </section>
+
+  <section id="start" class="screen" aria-label="Start">
+    <div class="startwrap">
+      <p class="brand">✨ Saurabh's Eduverse</p>
+      <div class="plaque">
+        <h1 class="title"><span>Helper Town</span><span class="ribbon">Express</span></h1>
+        <p class="chips"><span>Class 1 Science</span><span>Nature Window-1</span><span>Chapter 10: People at Work</span></p>
+      </div>
+      <div class="parade" aria-hidden="true">
+        <div class="crowd" id="crowd"></div>
+        <div class="sidewalk"></div>
+        <div id="parade-tk"></div>
+      </div>
+      <button class="btn big" id="go-start">▶ Start the ride</button>
+      <p class="tagline">Ride with Tinku and meet the people who help us!</p>
+    </div>
+  </section>
+
+  <section id="map" class="screen" aria-label="Route map">
+    <header class="maphead">
+      <span class="brand">Saurabh's Eduverse</span>
+      <span class="spacer"></span>
+      <span class="starcount" aria-label="Stars">⭐ <b id="total-stars">0</b>/21</span>
+      <button class="iconbtn" id="tg-sound" aria-label="Sound effects on or off">🔊</button>
+      <button class="iconbtn" id="tg-voice" aria-label="Read aloud on or off">🗣️</button>
+      <button class="iconbtn" id="to-home" aria-label="Home">🏠</button>
+    </header>
+    <div class="mapbody">
+      <div id="map-guide"></div>
+      <h2 class="maptitle">Tinku's route</h2>
+      <div class="stops" id="stops"></div>
+      <div class="panel stickers">
+        <h3>My sticker book</h3>
+        <div class="stk" id="stk"></div>
+      </div>
+      <div class="teacher">
+        <button class="btn ghostbtn sm" id="t-reset">↺ Start over</button>
+      </div>
+      <p class="mapfoot"><span class="brand">✨ Saurabh's Eduverse</span></p>
+    </div>
+  </section>
+
+  <section id="level" class="screen" aria-label="Game stop">
+    <header class="lvhead">
+      <button class="iconbtn" id="lv-back" aria-label="Back to map">🗺️</button>
+      <div class="lvtitle"><span id="lv-icon"></span><span id="lv-name"></span></div>
+      <button class="iconbtn spk-now" id="lv-speak" aria-label="Hear it again">🔊</button>
+      <div class="prog" aria-hidden="true"><i id="lv-prog"></i></div>
+    </header>
+    <div class="lvbody" id="lv-body"></div>
+  </section>
+</main>
+
+<div id="modal" class="overlay" hidden><div class="mbox" id="mbox" role="dialog" aria-modal="true"></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+(function(){
+'use strict';
+const $=(s,r)=>(r||document).querySelector(s);
+const $$=(s,r)=>Array.from((r||document).querySelectorAll(s));
+const esc=t=>String(t==null?'':t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const shuffle=a=>{a=a.slice();for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const starsFor=m=>m<=1?3:m<=3?2:1;
+
+/* =================== SAVE =================== */
+const KEY='eduverse_c1_people_at_work_v1';
+const DEF={stars:{},unlocked:1,all:false,sound:true,voice:true,family:[],kid:'',welcomed:false};
+function load(){try{const r=localStorage.getItem(KEY);if(r){const o=JSON.parse(r);if(o&&typeof o==='object')return Object.assign(JSON.parse(JSON.stringify(DEF)),o)}}catch(e){}return JSON.parse(JSON.stringify(DEF))}
+let S=load();
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+
+/* =================== SOUND =================== */
+let AC=null;
+function ac(){if(!AC){try{AC=new(window.AudioContext||window.webkitAudioContext)()}catch(e){AC=null}}if(AC&&AC.state==='suspended'){try{AC.resume()}catch(e){}}return AC}
+function tone(f,d,type,v,when){if(!S.sound)return;const a=ac();if(!a)return;try{const t=a.currentTime+(when||0);const o=a.createOscillator(),g=a.createGain();o.type=type||'sine';o.frequency.setValueAtTime(f,t);g.gain.setValueAtTime(.0001,t);g.gain.exponentialRampToValueAtTime(v||.14,t+.01);g.gain.exponentialRampToValueAtTime(.0001,t+(d||.12));o.connect(g);g.connect(a.destination);o.start(t);o.stop(t+(d||.12)+.05)}catch(e){}}
+const SFX={
+  tap:()=>tone(660,.07,'triangle',.1),
+  good:()=>[523,659,784].forEach((f,i)=>tone(f,.16,'triangle',.14,i*.09)),
+  bad:()=>{tone(240,.16,'sine',.12);tone(190,.22,'sine',.1,.12)},
+  star:i=>tone(880+i*220,.22,'sine',.14),
+  win:()=>[523,659,784,1047,784,1047].forEach((f,i)=>tone(f,.2,'triangle',.13,i*.12)),
+  horn:()=>{tone(470,.1,'square',.05);tone(470,.13,'square',.05,.17)},
+  knock:()=>{tone(170,.06,'square',.08);tone(170,.06,'square',.08,.15)}
+};
+
+/* =================== VOICE =================== */
+let VOICE=null,SPEAK='';
+function pickVoice(){try{const vs=speechSynthesis.getVoices();VOICE=vs.find(v=>/en[-_]IN/i.test(v.lang))||vs.find(v=>/^en/i.test(v.lang))||null}catch(e){}}
+if('speechSynthesis' in window){pickVoice();try{speechSynthesis.onvoiceschanged=pickVoice}catch(e){}}
+function say(t,force){if(!('speechSynthesis' in window))return;if(!S.voice&&!force)return;try{speechSynthesis.cancel();const clean=String(t).replace(/[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{FE0F}\u{200D}]/gu,'').replace(/_+/g,' blank ');const u=new SpeechSynthesisUtterance(clean);if(VOICE)u.voice=VOICE;u.lang=VOICE?VOICE.lang:'en-IN';u.rate=.88;u.pitch=1.1;speechSynthesis.speak(u)}catch(e){}}
+function hush(){try{if('speechSynthesis' in window)speechSynthesis.cancel()}catch(e){}}
+function setSpeak(t){SPEAK=t}
+document.addEventListener('click',e=>{const b=e.target.closest('.spk-now');if(b){say(SPEAK,true)}});
+
+/* =================== FX =================== */
+const cv=$('#confetti'),cx=cv.getContext('2d');let parts=[],raf=0;
+const RM=()=>window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches;
+function confetti(n){n=n||130;if(RM())n=25;const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr;const cols=['#FFB627','#E23D3D','#1E9E50','#FF6FA5','#4FC3F7','#FFD23F','#7C5CFF'];
+  for(let i=0;i<n;i++)parts.push({x:Math.random()*cv.width,y:-20-Math.random()*cv.height*.4,vx:(Math.random()-.5)*4*dpr,vy:(2+Math.random()*4)*dpr,r:Math.random()*6.3,vr:(Math.random()-.5)*.3,w:(6+Math.random()*8)*dpr,h:(4+Math.random()*6)*dpr,c:cols[i%cols.length],life:0,g:.05*dpr});
+  if(!raf)raf=requestAnimationFrame(tick)}
+function tick(){cx.clearRect(0,0,cv.width,cv.height);parts=parts.filter(p=>p.y<cv.height+40&&p.life<420);
+  for(const p of parts){p.x+=p.vx;p.y+=p.vy;p.vy+=p.g;p.r+=p.vr;p.life++;cx.save();cx.translate(p.x,p.y);cx.rotate(p.r);cx.fillStyle=p.c;cx.fillRect(-p.w/2,-p.h/2,p.w,p.h);cx.restore()}
+  raf=parts.length?requestAnimationFrame(tick):0;if(!raf)cx.clearRect(0,0,cv.width,cv.height)}
+function sparkle(el){if(!el)return;const r=el.getBoundingClientRect();for(let k=0;k<6;k++){const s=document.createElement('span');s.className='spark';s.textContent=k%2?'⭐':'✨';s.style.left=(r.left+r.width/2)+'px';s.style.top=(r.top+r.height/2)+'px';const a=Math.PI*2*k/6;s.style.setProperty('--dx',Math.cos(a)*75+'px');s.style.setProperty('--dy',Math.sin(a)*75+'px');document.body.appendChild(s);setTimeout(()=>s.remove(),900)}}
+function fly(src,dst){const a=src.getBoundingClientRect(),b=dst.getBoundingClientRect();const c=src.cloneNode(true);c.removeAttribute('id');c.classList.add('flyer');Object.assign(c.style,{left:a.left+'px',top:a.top+'px',width:a.width+'px',height:a.height+'px'});document.body.appendChild(c);src.classList.add('gone');
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{c.style.transform=`translate(${b.left+b.width/2-(a.left+a.width/2)}px,${b.top+b.height/2-(a.top+a.height/2)}px) scale(.25)`;c.style.opacity='0'}));setTimeout(()=>c.remove(),700)}
+let toastT=0;
+function toast(m){const t=$('#toast');t.textContent=m;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200)}
+
+/* =================== ART =================== */
+const TINKU=`<svg class="tinku" viewBox="0 0 150 112" aria-hidden="true"><g class="tk-body">
+<path d="M18 42 Q20 12 56 10 L112 10 Q132 12 134 36 L134 44 L18 44Z" fill="#FFD23F" stroke="#23265E" stroke-width="3"/>
+<path d="M26 18 H126" stroke="#E23D3D" stroke-width="4" stroke-dasharray="7 6"/>
+<path d="M12 44 H138 L140 82 Q140 92 130 92 H22 Q12 92 12 82Z" fill="#1E9E50" stroke="#23265E" stroke-width="3"/>
+<path d="M100 20 L128 38 L128 64 L100 64Z" fill="#BFE9FF" stroke="#23265E" stroke-width="3"/>
+<rect x="26" y="50" width="52" height="28" rx="7" fill="#FFFDF5" stroke="#23265E" stroke-width="2.5"/>
+<path d="M36 64 h32 M52 56 v16" stroke="#FFB627" stroke-width="5" stroke-linecap="round"/>
+<circle cx="107" cy="40" r="7" fill="#fff" stroke="#23265E" stroke-width="2"/><circle cx="120" cy="45" r="6" fill="#fff" stroke="#23265E" stroke-width="2"/>
+<circle cx="108.5" cy="41" r="3" fill="#23265E"/><circle cx="121.5" cy="46" r="2.6" fill="#23265E"/>
+<path d="M108 76 Q122 86 136 74" stroke="#23265E" stroke-width="3" fill="none" stroke-linecap="round"/>
+<circle cx="140" cy="62" r="5" fill="#FFF59D" stroke="#23265E" stroke-width="2"/></g>
+<g class="wheel" style="transform-origin:38px 94px"><circle cx="38" cy="94" r="15" fill="#2B2D42"/><circle cx="38" cy="94" r="6" fill="#CFD8DC"/><path d="M38 81 V107 M25 94 H51" stroke="#CFD8DC" stroke-width="2.5"/></g>
+<g class="wheel" style="transform-origin:116px 94px"><circle cx="116" cy="94" r="15" fill="#2B2D42"/><circle cx="116" cy="94" r="6" fill="#CFD8DC"/><path d="M116 81 V107 M103 94 H129" stroke="#CFD8DC" stroke-width="2.5"/></g></svg>`;
+
+const H={
+  doctor:{label:'Doctor',name:'Inderjeet',lines:['I am Inderjeet.','I am a doctor.','I cure sick people.'],fact:'A doctor cures sick people.',look:{shirt:'#FFFFFF',inner:'#FFD23F',pants:'#3D5A98',hs:'short',ex:['coat','steth'],prop:'📋'}},
+  postman:{label:'Postman',name:'Shyam Singh',lines:['I am Shyam Singh.','I am a postman.','I bring your letters.'],fact:'A postman brings our letters.',look:{shirt:'#C9A461',pants:'#B08D52',hat:'khaki',ex:['bag'],prop:'✉️',skin:'#D9A06B'}},
+  police:{label:'Policeman',name:'Hari Singh',lines:['I am Hari Singh.','I am a policeman.','I catch thieves.'],fact:'A policeman catches thieves.',look:{shirt:'#B8924F',pants:'#9C7A3C',hat:'police',ex:['belt','badge'],mous:1}},
+  teacher:{label:'Teacher',name:'Priya Arora',lines:['I am Priya Arora.','I am a teacher.','I teach in a school.'],fact:'A teacher teaches in a school.',look:{shirt:'#E84A8A',border:'#FFB627',dress:1,hs:'bun',bindi:1,ex:['pallu'],prop:'📘',skin:'#E8B48A'}},
+  cobbler:{label:'Cobbler',work:'mends our shoes',icon:'👞',fact:'A cobbler mends our shoes.',look:{shirt:'#5DADE2',pants:'#6D4C41',ex:['apron'],prop:'👞',skin:'#D9A06B'}},
+  carpenter:{label:'Carpenter',work:'makes furniture',icon:'🪑',fact:'A carpenter makes furniture.',look:{shirt:'#43A047',pants:'#1565C0',hat:'band',prop:'🔨'}},
+  barber:{label:'Barber',work:'trims our hair',icon:'💇',fact:'A barber trims our hair.',look:{shirt:'#FFFFFF',pants:'#546E7A',hs:'bald',hair:'#B0BEC5',ex:['glasses'],mous:1,prop:'✂️'}},
+  tailor:{label:'Tailor',work:'stitches our clothes',icon:'👕',fact:'A tailor stitches our clothes.',look:{shirt:'#FDD835',pants:'#5D4037',ex:['tape'],prop:'🧵',skin:'#E8B48A'}},
+  vet:{label:'Veterinary doctor',fact:'A veterinary doctor treats sick animals.',look:{shirt:'#FFFFFF',inner:'#FF6FA5',pants:'#00897B',hs:'pony',ex:['coat','steth'],prop:'🐶',skin:'#E8B48A'}}
+};
+const OUT='rgba(35,38,94,.35)';
+function person(k){
+  const d=H[k].look,skin=d.skin||'#F1C27D',shirt=d.shirt,pants=d.pants||'#34495E',hair=d.hair||'#2A1A10',ex=d.ex||[];
+  let s=`<svg class="person" viewBox="0 0 120 160" aria-hidden="true"><ellipse cx="60" cy="155" rx="34" ry="5" fill="rgba(0,0,0,.12)"/>`;
+  if(d.dress){s+=`<path d="M38 100 L28 150 L92 150 L82 100Z" fill="${shirt}" stroke="${OUT}" stroke-width="2"/><path d="M29.5 143 L90.5 143 L92 150 L28 150Z" fill="${d.border}"/>`}
+  else{s+=`<rect x="45" y="110" width="12" height="40" rx="6" fill="${pants}"/><rect x="63" y="110" width="12" height="40" rx="6" fill="${pants}"/>`}
+  s+=`<ellipse cx="50" cy="151" rx="10" ry="5" fill="#4A2C1A"/><ellipse cx="70" cy="151" rx="10" ry="5" fill="#4A2C1A"/>`;
+  s+=`<path d="M40 88 Q28 102 30 118" stroke="${OUT}" stroke-width="15" stroke-linecap="round" fill="none"/><path d="M40 88 Q28 102 30 118" stroke="${shirt}" stroke-width="11" stroke-linecap="round" fill="none"/><circle cx="30" cy="120" r="6" fill="${skin}"/>`;
+  s+=`<path d="M38 82 Q60 72 82 82 L86 118 Q60 124 34 118Z" fill="${shirt}" stroke="${OUT}" stroke-width="2"/>`;
+  if(ex.includes('coat'))s+=`<path d="M53 77 L60 92 L67 77Z" fill="${d.inner}"/><path d="M60 92 V120" stroke="#B0BEC5" stroke-width="2"/><path d="M50 79 L60 100 L70 79" fill="none" stroke="#B0BEC5" stroke-width="2.5"/>`;
+  if(ex.includes('steth'))s+=`<path d="M50 80 Q46 100 58 104 Q70 100 70 80" fill="none" stroke="#2E7D5B" stroke-width="3"/><circle cx="58" cy="106" r="4.5" fill="#90A4AE" stroke="#2E7D5B" stroke-width="2"/>`;
+  if(ex.includes('apron'))s+=`<path d="M44 92 L76 92 L79 121 L41 121Z" fill="#8D6E63"/><path d="M44 92 L52 80 M76 92 L68 80" stroke="#8D6E63" stroke-width="3"/>`;
+  if(ex.includes('tape'))s+=`<path d="M49 78 Q46 100 44 114 M71 78 Q74 100 76 114" stroke="#E23D3D" stroke-width="4" fill="none" stroke-dasharray="4 3"/>`;
+  if(ex.includes('pallu'))s+=`<path d="M44 78 Q70 92 84 118 L77 121 Q63 97 40 85Z" fill="${d.border}"/>`;
+  if(ex.includes('belt'))s+=`<rect x="35" y="107" width="50" height="6" fill="#5D4037"/><rect x="56" y="106" width="9" height="8" rx="1" fill="#FFD23F"/>`;
+  if(ex.includes('badge'))s+=`<path d="M70 88 l2.8 5 5.2 1 -3.8 3.8 1 5.2 -5.2 -2.8 -5.2 2.8 1 -5.2 -3.8 -3.8 5.2 -1z" fill="#FFD23F" stroke="#8D6E3F" stroke-width="1"/>`;
+  if(ex.includes('bag'))s+=`<path d="M42 82 L80 110" stroke="#6D4C2E" stroke-width="4"/><rect x="68" y="102" width="24" height="19" rx="3" fill="#8D6E3F" stroke="#5D4037" stroke-width="2"/><rect x="72" y="96" width="13" height="9" fill="#fff" stroke="#90A4AE" transform="rotate(-10 78 100)"/>`;
+  s+=`<g class="arm"><path d="M80 86 Q96 78 98 62" stroke="${OUT}" stroke-width="15" stroke-linecap="round" fill="none"/><path d="M80 86 Q96 78 98 62" stroke="${shirt}" stroke-width="11" stroke-linecap="round" fill="none"/><circle cx="98" cy="58" r="6.5" fill="${skin}"/>${d.prop?`<text x="100" y="50" font-size="22" text-anchor="middle">${d.prop}</text>`:''}</g>`;
+  s+=`<rect x="54" y="68" width="12" height="12" fill="${skin}"/><circle cx="33" cy="52" r="6" fill="${skin}"/><circle cx="87" cy="52" r="6" fill="${skin}"/>`;
+  if(d.hs==='bun')s+=`<circle cx="60" cy="21" r="11" fill="${hair}"/>`;
+  if(d.hs==='pony')s+=`<path d="M84 38 Q102 56 90 80" stroke="${hair}" stroke-width="10" fill="none" stroke-linecap="round"/>`;
+  s+=`<circle cx="60" cy="50" r="27" fill="${skin}"/>`;
+  if(d.hs==='short'||(!d.hs&&!d.hat))s+=`<path d="M33 48 Q31 20 60 20 Q90 20 87 48 Q80 31 62 34 Q44 30 33 48Z" fill="${hair}"/>`;
+  if(!d.hs&&d.hat==='band')s+=`<path d="M33 46 Q31 20 60 20 Q90 20 87 46 Q80 32 62 34 Q44 31 33 46Z" fill="${hair}"/>`;
+  if(d.hs==='bun'||d.hs==='pony')s+=`<path d="M33 54 Q29 22 60 22 Q91 22 87 54 Q84 33 60 31 Q40 33 33 54Z" fill="${hair}"/>`;
+  if(d.hs==='bald')s+=`<path d="M34 52 Q31 40 38 34 M86 52 Q89 40 82 34" stroke="${hair}" stroke-width="6" fill="none" stroke-linecap="round"/>`;
+  s+=`<g class="eyes"><ellipse cx="50" cy="50" rx="3.4" ry="4.2" fill="#23265E"/><ellipse cx="70" cy="50" rx="3.4" ry="4.2" fill="#23265E"/><circle cx="51.2" cy="48.4" r="1.2" fill="#fff"/><circle cx="71.2" cy="48.4" r="1.2" fill="#fff"/></g>`;
+  s+=`<circle cx="43" cy="60" r="4" fill="#FF8A80" opacity=".45"/><circle cx="77" cy="60" r="4" fill="#FF8A80" opacity=".45"/>`;
+  if(d.mous)s+=`<path d="M49 58 Q54.5 54.5 60 58 Q65.5 54.5 71 58" stroke="${hair}" stroke-width="3.2" fill="none" stroke-linecap="round"/>`;
+  s+=`<path d="M51 62 Q60 70 69 62" stroke="#8B3A2F" stroke-width="2.6" fill="none" stroke-linecap="round"/>`;
+  if(ex.includes('glasses'))s+=`<circle cx="50" cy="50" r="7.5" fill="none" stroke="#333" stroke-width="2"/><circle cx="70" cy="50" r="7.5" fill="none" stroke="#333" stroke-width="2"/><path d="M57.5 50 H62.5" stroke="#333" stroke-width="2"/>`;
+  if(d.bindi)s+=`<circle cx="60" cy="39" r="2.2" fill="#E23D3D"/>`;
+  if(d.hat==='khaki')s+=`<path d="M32 38 Q33 14 60 14 Q87 14 88 38Z" fill="#B8924F" stroke="${OUT}" stroke-width="2"/><path d="M28 37 H96 Q95 43 86 43 H31Z" fill="#8D6E3F"/>`;
+  if(d.hat==='police')s+=`<path d="M30 36 Q30 11 60 11 Q90 11 90 36Z" fill="#A07E40" stroke="${OUT}" stroke-width="2"/><rect x="27" y="33" width="66" height="8" rx="3.5" fill="#3E2723"/><path d="M60 15 l3 6 6.5 1 -4.7 4.5 1.1 6.5 -5.9 -3.1 -5.9 3.1 1.1 -6.5 -4.7 -4.5 6.5 -1z" fill="#FFD23F"/>`;
+  if(d.hat==='band')s+=`<rect x="33" y="33" width="54" height="7" rx="3.5" fill="#E23D3D"/>`;
+  return s+'</svg>';
+}
+function guide(text){return `<div class="guide">${TINKU}<p class="bubble">${text}</p><button class="spk spk-now" aria-label="Hear it again">🔊</button></div>`}
+
+/* =================== CONTENT (from the chapter) =================== */
+const Q2=[
+  {clue:'I cure sick people.',a:'doctor',hint:'This helper uses a stethoscope 🩺'},
+  {clue:'I bring your letters.',a:'postman',hint:'This helper carries a bag of letters ✉️'},
+  {clue:'I catch thieves.',a:'police',hint:'This helper wears a police cap'},
+  {clue:'I teach in a school.',a:'teacher',hint:'This helper teaches children 📘'},
+  {clue:'I am Inderjeet.',a:'doctor',hint:'Inderjeet cures sick people.'},
+  {clue:'I am Shyam Singh.',a:'postman',hint:'Shyam Singh brings your letters.'},
+  {clue:'I am Hari Singh.',a:'police',hint:'Hari Singh catches thieves.'},
+  {clue:'I am Priya Arora.',a:'teacher',hint:'Priya Arora teaches in a school.'}
+];
+const R4=[
+  {bins:['cobbler','tailor','carpenter','barber'],items:[
+    {e:'👟',t:'My shoe is torn!',a:'cobbler'},
+    {e:'👕',t:'My shirt is torn!',a:'tailor'},
+    {e:'🪑',t:'The chair is broken!',a:'carpenter'},
+    {e:'💇',t:'My hair is too long!',a:'barber'},
+    {e:'👗',t:'Please stitch a new dress.',a:'tailor'},
+    {e:'🛏️',t:'We need a new bed.',a:'carpenter'}]},
+  {bins:['doctor','vet','postman','police'],items:[
+    {e:'🤒',t:'I feel sick. I have a fever.',a:'doctor'},
+    {e:'🐶',t:'My puppy is sick.',a:'vet'},
+    {e:'✉️',t:'This letter must reach Nani.',a:'postman'},
+    {e:'🚨',t:'A thief took a bag!',a:'police'},
+    {e:'🐄',t:'Our cow is sick.',a:'vet'},
+    {e:'🤧',t:'Dadi has a bad cold.',a:'doctor'}]}
+];
+const Q5=[
+  {pre:'Many people',post:'in our neighbourhood.',a:'work',o:['work','sleep','cry'],src:'📝 Summary'},
+  {pre:'They',post:'us in our daily lives.',a:'help',o:['help','scare','forget'],src:'📝 Summary'},
+  {pre:'A doctor cures',post:'people.',a:'sick',o:['sick','tall','funny'],src:'📗 Lesson'},
+  {pre:'A postman brings your',post:'.',a:'letters',o:['letters','shoes','chairs'],src:'📗 Lesson'},
+  {pre:'A policeman catches',post:'.',a:'thieves',o:['thieves','fish','buses'],src:'📗 Lesson'},
+  {pre:'A teacher teaches in a',post:'.',a:'school',o:['school','river','tree'],src:'📗 Lesson'},
+  {pre:'The person who treats sick animals is called a',post:'doctor.',a:'veterinary',o:['veterinary','school','shoe'],src:'💡 Fact Snippet'},
+  {pre:'All these people help us. We should',post:'them.',a:'respect',o:['respect','tease','push'],src:'📝 Summary'}
+];
+const Q7=[
+  {t:'pick',e:'🤒',q:'Rohan has a fever. Who will help him?',a:'doctor',o:['doctor','tailor','barber']},
+  {t:'pick',e:'✉️',q:'Who brings letters to our homes?',a:'postman',o:['postman','carpenter','cobbler']},
+  {t:'pick',e:'🚨',q:'A thief ran away with a bag! Who will catch him?',a:'police',o:['police','teacher','barber']},
+  {t:'pick',e:'🐶',q:'Moti the dog is sick. Who will treat him?',a:'vet',o:['vet','postman','tailor']},
+  {t:'pick',e:'🪑',q:'Who makes furniture?',a:'carpenter',o:['carpenter','barber','doctor']},
+  {t:'pick',e:'👞',q:'Who mends our shoes?',a:'cobbler',o:['cobbler','teacher','police']},
+  {t:'tf',e:'✂️',q:'A barber trims our hair.',a:true,why:'A barber trims our hair.'},
+  {t:'pick',e:'👕',q:'Who stitches our clothes?',a:'tailor',o:['tailor','doctor','carpenter']},
+  {t:'tf',e:'📮',q:'A postman cures sick people.',a:false,why:'A doctor cures sick people. A postman brings our letters.'},
+  {t:'tf',e:'🙏',q:'We should respect people who help us.',a:true,why:'All these people help us. We should respect them.'}
+];
+
+/* =================== LEVELS =================== */
+const LEVELS=[
+  {id:1,icon:'🏘️',title:'Meet the Helpers',goal:'Knock on each door and meet 4 helpers.',badge:'Street Explorer'},
+  {id:2,icon:'🔍',title:'Who Am I?',goal:'Listen to the clue and find the helper.',badge:'Little Detective'},
+  {id:3,icon:'🔗',title:'Match the Work',goal:'Join each worker with their work.',badge:'Super Matcher'},
+  {id:4,icon:'🛠️',title:'Fix-It Street',goal:'Take each problem to the right helper.',badge:'Fix-It Friend'},
+  {id:5,icon:'🚂',title:'Word Train',goal:'Put the missing word on the train.',badge:'Word Driver'},
+  {id:6,icon:'💖',title:'My Family Helpers',goal:'Tell us the work your family does.',badge:'Family Star'},
+  {id:7,icon:'🏆',title:'Rescue Ride',goal:'Answer right and drive Tinku to the Helper Town Fair!',badge:'Helper Hero'}
+];
+
+let CUR=null,timers=[],cleanups=[];
+function later(fn,ms){const t=setTimeout(fn,ms);timers.push(t);return t}
+function onClean(fn){cleanups.push(fn)}
+function clean(){timers.forEach(clearTimeout);timers=[];cleanups.forEach(f=>{try{f()}catch(e){}});cleanups=[];$$('.ghost,.flyer').forEach(g=>g.remove());hush()}
+function isUnlocked(n){return n>=1&&n<=7}
+function totalStars(){return LEVELS.reduce((s,L)=>s+(S.stars[L.id]||0),0)}
+function currentStop(){for(let n=1;n<=7;n++){if(isUnlocked(n)&&!S.stars[n])return n}return 0}
+function setProg(f){$('#lv-prog').style.width=Math.round(Math.max(0,Math.min(1,f))*100)+'%'}
+
+/* ---------- modal ---------- */
+function modal(html){const m=$('#modal');$('#mbox').innerHTML=html;m.hidden=false;const f=$('#mbox button');if(f){try{f.focus({preventScroll:true})}catch(e){}}}
+function closeModal(){$('#modal').hidden=true;$('#mbox').innerHTML=''}
+function bindActs(map){$$('#mbox [data-act]').forEach(b=>{b.addEventListener('click',()=>{SFX.tap();const fn=map[b.dataset.act];if(fn)fn()})})}
+
+/* ---------- screens ---------- */
+function show(id){$$('.screen').forEach(s=>s.classList.toggle('show',s.id===id));const el=$('#'+id);if(el)el.scrollTop=0}
+
+function goMap(){clean();closeModal();CUR=null;renderMap();show('map')}
+
+function renderMap(){
+  const cs=currentStop();
+  $('#stops').innerHTML=LEVELS.map((L,i)=>{const n=L.id,open=isUnlocked(n),st=S.stars[n]||0,here=n===cs;
+    return `<div class="row ${i%2?'r':'l'}"><span class="node ${here?'here':''} ${st&&!here?'ok':''}">${here?TINKU:(st?'✔':n)}</span><button class="stop ${open?'open':'locked'} ${here?'cur':''}" data-n="${n}" aria-label="Stop ${n}: ${L.title}${open?'':' (locked)'}"><span class="sico">${open?L.icon:'🔒'}</span><b>${L.title}</b><span class="sst">${'⭐'.repeat(st)}<span class="off">${'⭐'.repeat(3-st)}</span></span></button></div>`}).join('');
+  $$('#stops .stop').forEach(b=>b.addEventListener('click',()=>{const n=+b.dataset.n;if(isUnlocked(n)){SFX.tap();openLevel(n)}else{SFX.bad();const m=`Finish stop ${n-1} first to open this stop!`;toast('🔒 '+m);say(m)}}));
+  $('#total-stars').textContent=totalStars();
+  $('#stk').innerHTML=LEVELS.map(L=>`<span class="${S.stars[L.id]?'got':''}" title="${L.badge}" aria-label="${L.badge} sticker ${S.stars[L.id]?'earned':'not earned yet'}">${L.icon}</span>`).join('');
+  const msg=cs?(cs===1&&!S.stars[1]?'Hi! I am Tinku the Tuk-Tuk. Many people help us every day. Hop on, let us meet them!':`Hop on! Next stop: ${LEVELS[cs-1].title}.`):'Wow! You are a Helper Hero! Play any stop again to win more stars.';
+  $('#map-guide').innerHTML=`<div class="guide">${TINKU}<p class="bubble">${msg}</p><button class="spk" data-msg="1" aria-label="Hear it">🔊</button></div>`;
+  $('#map-guide .spk').onclick=()=>say(msg,true);
+  $('#tg-sound').textContent=S.sound?'🔊':'🔇';$('#tg-sound').classList.toggle('off',!S.sound);
+  $('#tg-voice').classList.toggle('off',!S.voice);
+  return msg;
+}
+
+function openLevel(n){
+  if(!isUnlocked(n))return;
+  clean();closeModal();
+  const L=LEVELS[n-1];CUR={id:n,icon:L.icon,title:L.title,badge:L.badge,done:false};
+  $('#lv-icon').textContent=L.icon;$('#lv-name').innerHTML=`<span class="stopn">Stop ${n}: </span>${L.title}`;$('#toast').classList.remove('show');
+  setProg(0);$('#lv-body').innerHTML='';show('level');
+  setSpeak(`Stop ${n}. ${L.title}. ${L.goal}`);
+  modal(`<div class="intro">${TINKU}<p class="stopno">Stop ${n} of 7</p><h2>${L.icon} ${L.title}</h2><p class="goal">🎯 ${L.goal}</p><div class="mbtns"><button class="btn" data-act="go">Let's go! 🛺</button><button class="btn ghostbtn" data-act="map">🗺️ Map</button></div></div>`);
+  SFX.horn();say(SPEAK);
+  bindActs({go:()=>{closeModal();RUN[n]($('#lv-body'))},map:goMap});
+}
+
+function finish(stars){
+  if(!CUR||CUR.done)return;CUR.done=true;
+  const n=CUR.id;S.stars[n]=Math.max(S.stars[n]||0,stars);
+  if(n===S.unlocked&&n<7)S.unlocked=n+1;
+  save();setProg(1);
+  later(()=>{
+    SFX.win();confetti();
+    for(let k=0;k<stars;k++)later(()=>SFX.star(k),650+k*350);
+    const head=stars===3?'Superstar! 🌟':stars===2?'Great job! 👏':'Well done! 👍';
+    const sub=stars===3?'You won all 3 stars!':'Play again to win all 3 stars.';
+    const last=n===7;
+    modal(`<div class="done"><h2>${head}</h2><div class="bigstars">${[0,1,2].map(k=>`<span class="${k<stars?'':'off'}" style="--i:${k}">⭐</span>`).join('')}</div><p>${sub}</p><div class="sticker">${CUR.icon}</div><p>New sticker: <b>${CUR.badge}</b></p>${last?heroCert():''}<div class="mbtns">${last?'':'<button class="btn" data-act="next">Next stop 🛺</button>'}<button class="btn alt" data-act="again">🔁 Play again</button><button class="btn ghostbtn" data-act="map">🗺️ Map</button></div></div>`);
+    say(`${head.replace(/[^A-Za-z! ]/g,'')} You won ${stars} star${stars>1?'s':''}. New sticker: ${CUR.badge}.${last?' You are a Helper Hero! All these people help us. We should respect them.':''}`);
+    bindActs({next:()=>openLevel(n+1),again:()=>openLevel(n),map:goMap});
+  },500);
+}
+function heroCert(){return `<div class="cert"><p>🏅 Helper Hero certificate</p><p class="cname">${esc(S.kid)||'Super Kid'}</p><p>learned about the people who help us in our neighbourhood.</p><div class="certbadges">${LEVELS.map(L=>`<span title="${L.badge}">${L.icon}</span>`).join('')}</div></div>`}
+
+/* ---------- drag helper (pointer events; tap still works) ---------- */
+function makeDrag(el,targetSel,onDrop){
+  let st=null,ghost=null,moved=false,over=null;
+  const end=()=>{if(ghost){ghost.remove();ghost=null}el.classList.remove('lifted');if(over){over.classList.remove('hover');over=null}st=null};
+  el.addEventListener('pointerdown',e=>{if(e.button>0)return;st={x:e.clientX,y:e.clientY,id:e.pointerId};moved=false});
+  el.addEventListener('pointermove',e=>{if(!st||e.pointerId!==st.id)return;
+    if(!moved&&Math.hypot(e.clientX-st.x,e.clientY-st.y)>10){moved=true;try{el.setPointerCapture(e.pointerId)}catch(_){}ghost=el.cloneNode(true);ghost.removeAttribute('id');ghost.classList.add('ghost');ghost.classList.remove('enter');const r=el.getBoundingClientRect();ghost.style.width=r.width+'px';document.body.appendChild(ghost);el.classList.add('lifted')}
+    if(moved){e.preventDefault();ghost.style.left=e.clientX+'px';ghost.style.top=e.clientY+'px';const t=document.elementFromPoint(e.clientX,e.clientY);const tg=t&&t.closest(targetSel);if(tg!==over){if(over)over.classList.remove('hover');over=tg;if(over)over.classList.add('hover')}}});
+  el.addEventListener('pointerup',e=>{if(!st)return;const wasMoved=moved;const t=wasMoved?document.elementFromPoint(e.clientX,e.clientY):null;end();if(wasMoved){el.dataset.dragged='1';setTimeout(()=>{delete el.dataset.dragged},80);const tg=t&&t.closest(targetSel);if(tg)onDrop(tg)}});
+  el.addEventListener('pointercancel',end);
+  onClean(end);
+}
+const wasDragged=el=>{if(el.dataset.dragged){delete el.dataset.dragged;return true}return false};
+
+/* =================== STOP 1: Meet the helpers =================== */
+function L1(body){
+  const order=['doctor','postman','police','teacher'];
+  const P={doctor:['Clinic','➕','#4FC3F7','#E1F5FE'],postman:['Post Office','📮','#E23D3D','#FFEBEE'],police:['Police Station','🚓','#3F51B5','#E8EAF6'],teacher:['School','🏫','#FFB627','#FFF8E1']};
+  const intro='Many people work in our neighbourhood. They help us in our daily lives. Let us meet some of them! Tap a door.';
+  body.innerHTML=guide(intro)+`<div class="street">${order.map((k,i)=>`<button class="house" data-k="${k}" style="--roof:${P[k][2]};--wall:${P[k][3]};--d:${i*.4}s" aria-label="Open the ${P[k][0]} door"><span class="roof"></span><span class="walls"><span class="hsign">${P[k][1]} ${P[k][0]}</span><span class="door"><span class="peek">${person(k)}</span><span class="door-panel"></span></span></span><span class="tick">✅</span></button>`).join('')}</div><p class="src">📗 From the lesson: pages 56 and 57</p>`;
+  setSpeak(intro);say(intro);
+  const met=new Set();let busy=false;
+  $$('.house',body).forEach(h=>h.addEventListener('click',()=>{
+    if(busy||CUR.done)return;busy=true;const k=h.dataset.k;SFX.knock();h.classList.add('open');
+    later(()=>meet(k,()=>{busy=false;if(!met.has(k)){met.add(k);h.classList.add('met');setProg(met.size/4)}
+      if(met.size===4){const m='You met all the helpers! They help us every day.';setSpeak(m);say(m);later(()=>finish(3),900)}
+      else{const left=4-met.size,m=`Great! ${left} more door${left>1?'s':''} to open.`;setSpeak(m);say(m)}}),500);
+  }));
+}
+function meet(k,done){
+  const h=H[k];
+  modal(`<div class="meet"><div class="meet-art">${person(k)}</div><div class="bubble big">${h.lines.map((l,i)=>`<p class="ln" style="--i:${i}">${l}</p>`).join('')}</div><div class="mbtns"><button class="btn spk-now alt" aria-label="Hear again">🔊 Hear again</button><button class="btn" data-act="ok">👋 Hello, ${h.label.toLowerCase()}!</button></div></div>`);
+  setSpeak(h.lines.join(' '));say(SPEAK);
+  bindActs({ok:()=>{closeModal();done()}});
+}
+
+/* =================== STOP 2: Who am I? =================== */
+function L2(body){
+  let i=0,mist=0,lock=false;const qs=Q2;
+  body.innerHTML=`<div class="panel whoami"><div class="mystery"><div class="mys-card" id="w-card"></div><p class="bubble" id="w-clue"></p><button class="spk spk-now" aria-label="Hear the clue">🔊</button></div><p class="ask">Who am I?</p><div class="opts" id="w-opts"></div><p class="hint" id="w-hint" aria-live="polite"></p></div><p class="src">📗 From the lesson: what each helper says</p>`;
+  function next(){
+    if(i>=qs.length){finish(starsFor(mist));return}
+    const q=qs[i];lock=false;setProg(i/qs.length);
+    const opts=shuffle([q.a].concat(shuffle(['doctor','postman','police','teacher'].filter(x=>x!==q.a)).slice(0,2)));
+    $('#w-card',body).innerHTML='<span class="qmark">❓</span>';
+    const clue=$('#w-clue',body);clue.innerHTML=`<b>${q.clue}</b>`;clue.style.animation='none';void clue.offsetWidth;clue.style.animation='';
+    $('#w-hint',body).textContent='';
+    $('#w-opts',body).innerHTML=opts.map(k=>`<button class="opt" data-k="${k}">${person(k)}<span>${H[k].label}</span></button>`).join('');
+    setSpeak(q.clue+' Who am I?');say(SPEAK);
+    $$('.opt',body).forEach(b=>b.addEventListener('click',()=>{
+      if(lock||b.classList.contains('wrong'))return;
+      if(b.dataset.k===q.a){lock=true;b.classList.add('right');SFX.good();sparkle(b);
+        const h=H[q.a],m=q.clue.indexOf('I am')===0?`Yes! ${h.name} is a ${h.label.toLowerCase()}.`:`Yes! ${h.fact}`;
+        $('#w-card',body).innerHTML=person(q.a);$('#w-hint',body).textContent='🎉 '+m;say(m);i++;setProg(i/qs.length);later(next,2000)}
+      else{mist++;b.classList.add('wrong');SFX.bad();$('#w-hint',body).textContent='💡 '+q.hint;say('Try again! '+q.hint)}
+    }));
+  }
+  next();
+}
+
+/* =================== STOP 3: Match (textbook To Do) =================== */
+function L3(body){
+  const W=['cobbler','carpenter','barber','tailor'],works=shuffle(W),cols=['#E23D3D','#1E9E50','#7C5CFF','#FF8F00'];
+  const intro='Match the workers with their work. Tap a worker, then tap their work.';
+  body.innerHTML=guide(intro)+`<div class="panel"><div class="match" id="mt"><svg class="lines" id="mt-lines" aria-hidden="true"></svg><div class="mcol">${W.map(k=>`<button class="mcard wk" data-k="${k}">${person(k)}<span>${H[k].label}</span><i class="dot"></i></button>`).join('')}</div><div class="mcol">${works.map(k=>`<button class="mcard wo" data-k="${k}"><i class="dot"></i><em>${H[k].icon}</em><span>${H[k].work}</span></button>`).join('')}</div></div><p class="hint" id="mt-msg" aria-live="polite"></p></div><p class="src">✏️ Textbook To Do: Match the following workers with their work</p>`;
+  setSpeak(intro);say(intro);
+  const box=$('#mt',body),svg=$('#mt-lines',body),msg=$('#mt-msg',body);
+  let sel=null,mist=0,lock=false;const done=[];
+  const wk=k=>box.querySelector(`.wk[data-k="${k}"]`),wo=k=>box.querySelector(`.wo[data-k="${k}"]`);
+  function pt(el){const b=box.getBoundingClientRect(),r=el.querySelector('.dot').getBoundingClientRect();return{x:r.left+r.width/2-b.left,y:r.top+r.height/2-b.top}}
+  function line(a,c,color,cls){const p1=pt(a),p2=pt(c);const p=document.createElementNS('http://www.w3.org/2000/svg','path');
+    const vertical=Math.abs(p2.x-p1.x)<30;const mx=(p1.x+p2.x)/2;
+    p.setAttribute('d',vertical?`M${p1.x} ${p1.y} L${p2.x} ${p2.y}`:`M${p1.x} ${p1.y} C${mx} ${p1.y} ${mx} ${p2.y} ${p2.x} ${p2.y}`);
+    p.setAttribute('pathLength','100');p.setAttribute('stroke',color);p.setAttribute('class','ml '+(cls||''));svg.appendChild(p);return p}
+  function redraw(){svg.innerHTML='';done.forEach((k,i)=>line(wk(k),wo(k),cols[i]))}
+  let rt=0;const onR=()=>{cancelAnimationFrame(rt);rt=requestAnimationFrame(redraw)};
+  if('ResizeObserver' in window){const ro=new ResizeObserver(onR);ro.observe(box);onClean(()=>ro.disconnect())}else{addEventListener('resize',onR);onClean(()=>removeEventListener('resize',onR))}
+  $$('.mcard',box).forEach(c=>c.addEventListener('click',()=>{
+    if(lock||c.classList.contains('matched'))return;
+    const side=c.classList.contains('wk')?'wk':'wo';
+    if(!sel||sel.side===side){$$('.mcard.sel',box).forEach(x=>x.classList.remove('sel'));sel={side,el:c};c.classList.add('sel');SFX.tap();say(side==='wk'?H[c.dataset.k].label:H[c.dataset.k].work);return}
+    const a=side==='wk'?c:sel.el,b=side==='wk'?sel.el:c;sel.el.classList.remove('sel');sel=null;
+    if(a.dataset.k===b.dataset.k){
+      const k=a.dataset.k;done.push(k);const col=cols[done.length-1];
+      [a,b].forEach(x=>{x.classList.add('matched');x.style.setProperty('--mc',col)});
+      line(a,b,col,'draw');SFX.good();sparkle(b);msg.textContent='🎉 '+H[k].fact;say(H[k].fact);setProg(done.length/4);
+      if(done.length===4){lock=true;later(()=>{const m='All these people help us. We should respect them.';msg.innerHTML='🙏 <b>'+m+'</b>';setSpeak(m);say(m);later(()=>finish(starsFor(mist)),2800)},1700)}
+    }else{
+      mist++;const p=line(a,b,'#E8505B','bad');[a,b].forEach(x=>{x.classList.remove('shake');void x.offsetWidth;x.classList.add('shake')});SFX.bad();
+      const m=`Not a match. Which work does the ${H[a.dataset.k].label.toLowerCase()} do? Try again!`;msg.textContent='💡 '+m;say(m);
+      later(()=>{p.remove();[a,b].forEach(x=>x.classList.remove('shake'))},700);
+    }
+  }));
+}
+
+/* =================== STOP 4: Fix-It Street (drag & drop sorting) =================== */
+function L4(body){
+  const rounds=R4.map(x=>({bins:x.bins,items:shuffle(x.items)}));const total=rounds.reduce((s,x)=>s+x.items.length,0);
+  let r=0,i=0,mist=0,lock=true,count=0;
+  function round(){
+    const R=rounds[r];i=0;
+    const intro=r===0?'These things need help! Drag each one to the right helper. Or just tap the helper.':'Now help the people and animals of our street! Drag or tap.';
+    body.innerHTML=guide(intro)+`<div class="panel"><div class="cartzone"><div class="cart" id="fx-item" role="img"><span class="big-e">🛒</span><span class="it-t">Get ready…</span></div></div><div class="bins">${R.bins.map(k=>`<button class="bin" data-bin="${k}">${person(k)}<span>${H[k].label}</span></button>`).join('')}</div><p class="hint" id="fx-msg" aria-live="polite"></p></div><p class="src">${r===0?'✏️ Based on the textbook To Do: workers and their work':'📗 Lesson helpers and 💡 Fact Snippet'}</p>`;
+    $$('.bin',body).forEach(b=>b.addEventListener('click',()=>check(b)));
+    const item=$('#fx-item',body);
+    makeDrag(item,'[data-bin]',t=>check(t));
+    item.addEventListener('click',()=>{if(!wasDragged(item))say(SPEAK,true)});
+    say(intro);later(showItem,2600);
+  }
+  function showItem(){
+    const R=rounds[r];
+    if(i>=R.items.length){r++;if(r<rounds.length){lock=true;snippet(()=>round())}else finish(starsFor(mist));return}
+    const it=R.items[i],el=$('#fx-item',body);
+    el.innerHTML=`<span class="big-e">${it.e}</span><span class="it-t">${it.t}</span><span class="drag-hint">✋ Drag me to a helper</span>`;
+    el.setAttribute('aria-label',it.t);el.classList.remove('gone','enter');void el.offsetWidth;el.classList.add('enter');
+    $('#fx-msg',body).textContent='';setSpeak(it.t+' Who can help?');say(SPEAK);lock=false;
+  }
+  function check(bin){
+    if(lock||!bin)return;const it=rounds[r].items[i];
+    if(bin.dataset.bin===it.a){lock=true;SFX.good();fly($('#fx-item',body),bin);bin.classList.remove('happy');void bin.offsetWidth;bin.classList.add('happy');
+      count++;setProg(count/total);const m=H[it.a].fact;$('#fx-msg',body).textContent='🎉 '+m;say(m);i++;later(showItem,1900)}
+    else{mist++;SFX.bad();bin.classList.remove('shake');void bin.offsetWidth;bin.classList.add('shake','nope');later(()=>bin.classList.remove('shake','nope'),650);
+      const m=`Not this helper. ${H[bin.dataset.bin].fact} Try again!`;$('#fx-msg',body).textContent='💡 '+m;say(m)}
+  }
+  function snippet(cb){
+    const m='The person who treats sick animals is called a veterinary doctor.';
+    later(()=>{modal(`<div class="snip"><span class="snip-tag">💡 Fact Snippet</span>${person('vet')}<h2>Animal doctor!</h2><p>${m}</p><div class="mbtns"><button class="btn spk-now alt">🔊 Hear again</button><button class="btn" data-act="ok">Got it! 🐾</button></div></div>`);setSpeak(m);say(m);bindActs({ok:()=>{closeModal();cb()}})},1300);
+  }
+  round();
+}
+
+/* =================== STOP 5: Word Train (fill in the blanks) =================== */
+function L5(body){
+  let i=0,mist=0,lock=false;const cols=['#E23D3D','#1E9E50'];
+  const intro='Choo choo! One word is missing on the train. Tap or drag the right word.';
+  body.innerHTML=guide(intro)+`<div class="panel wt"><span class="srctag" id="wt-src"></span><div class="track"><div class="train" id="wt-train"></div></div><div class="tiles" id="wt-tiles"></div><p class="hint" id="wt-msg" aria-live="polite"></p></div>`;
+  say(intro);
+  function q(){
+    if(i>=Q5.length){finish(starsFor(mist));return}
+    const Q=Q5[i],dotOnly=Q.post==='.';lock=false;setProg(i/Q5.length);
+    $('#wt-src',body).textContent=Q.src;
+    const tr=$('#wt-train',body);tr.className='train';void tr.offsetWidth;tr.classList.add('in');SFX.horn();
+    tr.innerHTML=`<span class="engine" aria-hidden="true">🚂</span><span class="coach" style="--c:${cols[0]}">${Q.pre}</span><span class="coach blank" data-blank="1">${dotOnly?'? .':'?'}</span>${dotOnly?'':`<span class="coach" style="--c:${cols[1]}">${Q.post}</span>`}`;
+    $('#wt-msg',body).textContent='';
+    $('#wt-tiles',body).innerHTML=shuffle(Q.o).map(w=>`<button class="tile" data-w="${w}">${w}</button>`).join('');
+    setSpeak(`${Q.pre}, blank, ${dotOnly?'':Q.post}`);later(()=>say(SPEAK),i===0?3200:300);
+    $$('.tile',body).forEach(t=>{
+      makeDrag(t,'[data-blank]',()=>answer(t));
+      t.addEventListener('click',()=>{if(wasDragged(t))return;answer(t)});
+    });
+    function answer(t){
+      if(lock||t.classList.contains('wrong'))return;
+      if(t.dataset.w===Q.a){lock=true;const bl=$('[data-blank]',tr);bl.textContent=Q.a+(dotOnly?'.':'');bl.classList.add('filled');t.classList.add('used');SFX.good();sparkle(bl);
+        const full=`${Q.pre} ${Q.a}${dotOnly?'.':' '+Q.post}`;$('#wt-msg',body).textContent='🎉 '+full;say(full);i++;setProg(i/Q5.length);
+        later(()=>{tr.classList.remove('in');tr.classList.add('out')},2200);later(q,2900)}
+      else{mist++;t.classList.add('wrong');SFX.bad();const m=`"${t.dataset.w}" does not fit. Try another word!`;$('#wt-msg',body).textContent='💡 '+m;say(m)}
+    }
+  }
+  q();
+}
+
+/* =================== STOP 6: My family helpers (textbook activity) =================== */
+function L6(body){
+  const MEM=[['Mummy','👩'],['Papa','👨'],['Dadi','👵'],['Dada','👴'],['Nani','👵'],['Nana','👴'],['Aunty','👩'],['Uncle','👨']];
+  const JOBS=[['farmer','🧑‍🌾'],['shopkeeper','🏪'],['driver','🚗'],['doctor','🩺'],['nurse','🏥'],['teacher','📘'],['homemaker','🏠'],['cook','🍳'],['police officer','👮'],['tailor','🧵'],['office worker','💼'],['engineer','👷']];
+  let list=Array.isArray(S.family)?S.family.slice(0,4):[];let member=null;
+  const listHtml=()=>list.length?`<div class="fam-list">${list.map((x,ix)=>`<span>${x.me} ${esc(x.m)}: <b>${esc(x.j)}</b> ${x.je}<button data-rm="${ix}" aria-label="Remove">×</button></span>`).join('')}</div>`:'';
+  function bindRm(){$$('[data-rm]',body).forEach(b=>b.addEventListener('click',()=>{list.splice(+b.dataset.rm,1);SFX.tap();pickMember()}))}
+  function pickMember(){
+    const m=list.length?'Add another person, or make your thank-you card!':'Write down the work your family does! Who works in your family? Tap a person.';
+    body.innerHTML=guide(m)+`<div class="panel">${listHtml()}${list.length<4?`<div class="fam-grid">${MEM.map(x=>`<button class="chip" data-m="${x[0]}" data-e="${x[1]}"><em>${x[1]}</em>${x[0]}</button>`).join('')}</div>`:''}${list.length?'<div class="center"><button class="btn alt" id="mk-card">🎨 Make my thank-you card</button></div>':''}</div><p class="src">✏️ Textbook activity: Write down the work that your parents do</p>`;
+    setSpeak(m);say(m);bindRm();setProg(list.length?.5:0);
+    $$('.chip',body).forEach(c=>c.addEventListener('click',()=>{SFX.tap();member={m:c.dataset.m,me:c.dataset.e};pickJob()}));
+    const mk=$('#mk-card',body);if(mk)mk.addEventListener('click',()=>{SFX.tap();card()});
+  }
+  function pickJob(){
+    const m=`What work does your ${member.m} do?`;
+    body.innerHTML=guide(`${member.me} ${m}`)+`<div class="panel"><div class="fam-grid">${JOBS.map(x=>`<button class="chip" data-j="${x[0]}" data-e="${x[1]}"><em>${x[1]}</em>${x[0]}</button>`).join('')}</div><div class="other"><input id="own-job" maxlength="24" placeholder="Other work? Type it" aria-label="Type other work"><button class="btn sm" id="own-ok">✔ Add</button></div><div class="center"><button class="btn ghostbtn sm" id="job-back">⬅ Back</button></div></div>`;
+    setSpeak(m);say(m);
+    const add=(j,e)=>{j=String(j).trim();if(!j)return;list.push({m:member.m,me:member.me,j:j,je:e});SFX.good();say(`My ${member.m}: ${j}.`);pickMember()};
+    $$('.chip',body).forEach(c=>c.addEventListener('click',()=>add(c.dataset.j,c.dataset.e)));
+    const inp=$('#own-job',body);
+    $('#own-ok',body).addEventListener('click',()=>{if(inp.value.trim())add(inp.value,'⭐');else{SFX.bad();inp.focus();toast('✏️ Type the work first')}});
+    inp.addEventListener('keydown',e=>{if(e.key==='Enter')$('#own-ok',body).click()});
+    $('#job-back',body).addEventListener('click',()=>{SFX.tap();pickMember()});
+  }
+  function card(){
+    S.family=list;save();setProg(.9);
+    const m='Here is your thank-you card! All these people help us. We should respect them. Tell your class about the work your family does.';
+    body.innerHTML=guide('Your thank-you card is ready! 🎉 Tell your class about it.')+`<div class="panel"><div class="namebox"><input id="kid" maxlength="20" placeholder="Write your name" aria-label="Your name" value="${esc(S.kid)}"></div><div class="tycard" id="ty"><h3>Thank you, my family helpers!</h3><ul>${list.map(x=>`<li>${x.me} My ${esc(x.m)}: ${esc(x.j)} ${x.je}</li>`).join('')}</ul><p class="respect">All these people help us.<br>We should respect them. 🙏</p><p class="from">From: <span id="ty-name">${esc(S.kid)||'________'}</span></p></div><div class="center mbtns"><button class="btn ghostbtn" id="ty-edit">✏️ Change</button><button class="btn" id="ty-done">✅ Done</button></div></div><p class="src">🗣️ Teacher's Tip: talk about the jobs of your parents</p>`;
+    setSpeak(m);say(m);confetti(60);SFX.win();
+    const kid=$('#kid',body);kid.addEventListener('input',()=>{S.kid=kid.value.slice(0,20);$('#ty-name',body).textContent=S.kid||'________';save()});
+    $('#ty-edit',body).addEventListener('click',()=>{SFX.tap();pickMember()});
+    $('#ty-done',body).addEventListener('click',()=>{SFX.tap();finish(3)});
+  }
+  pickMember();
+}
+
+/* =================== STOP 7: Rescue Ride (boss) =================== */
+function L7(body){
+  let i=0,hearts=3,lock=false;const qs=Q7;
+  body.innerHTML=`<div class="panel"><div class="bosstop"><span class="hearts" id="bh" aria-label="Hearts">${'<span class="heart">❤️</span>'.repeat(3)}</span><span class="bcount" id="bc"></span></div><div class="ride" aria-hidden="true"><span class="flag">🎡</span><div class="tk" id="btk">${TINKU}</div></div><div class="bq"><span class="bq-e" id="be"></span><p class="bq-t" id="bt"></p><button class="spk spk-now" aria-label="Hear the question">🔊</button></div><div id="bo"></div><div class="bfb" id="bfb" aria-live="polite"></div></div><p class="src">🏆 Final round: the whole chapter</p>`;
+  const tk=$('#btk',body);
+  const move=()=>tk.style.setProperty('--p',Math.min(i/qs.length,1));
+  function ask(){
+    if(i>=qs.length){SFX.horn();confetti(40);later(()=>finish(hearts),1100);return}
+    const q=qs[i];lock=false;setProg(i/qs.length);
+    $('#bc',body).textContent=`${i+1} / ${qs.length}`;$('#be',body).textContent=q.e;$('#bt',body).textContent=q.q;$('#bfb',body).innerHTML='';
+    setSpeak(q.t==='tf'?q.q+' True or false?':q.q);say(SPEAK);
+    $('#bo',body).innerHTML=q.t==='pick'?`<div class="opts">${shuffle(q.o).map(k=>`<button class="opt" data-k="${k}">${person(k)}<span>${H[k].label}</span></button>`).join('')}</div>`:`<div class="tf"><button class="opt tfb" data-v="1"><em>👍</em><span>True</span></button><button class="opt tfb" data-v="0"><em>👎</em><span>False</span></button></div>`;
+    $$('#bo .opt',body).forEach(b=>b.addEventListener('click',()=>pick(b,q)));
+  }
+  function pick(b,q){
+    if(lock)return;lock=true;
+    const ok=q.t==='pick'?b.dataset.k===q.a:(b.dataset.v==='1')===q.a;
+    const fb=$('#bfb',body);
+    if(ok){b.classList.add('right');SFX.good();sparkle(b);i++;move();later(SFX.horn,400);
+      const m=q.t==='pick'?H[q.a].fact:(q.a?'Yes, that is true! ':'Right, that is false! ')+q.why;fb.textContent='🎉 '+m;say(m);later(ask,2300)}
+    else{b.classList.add('wrong');SFX.bad();hearts--;const hs=$$('.heart',body);if(hs[hearts])hs[hearts].classList.add('lost');
+      const right=q.t==='pick'?$(`#bo .opt[data-k="${q.a}"]`,body):$(`#bo .opt[data-v="${q.a?1:0}"]`,body);if(right)right.classList.add('right');
+      const m=q.t==='pick'?`The right helper is the ${H[q.a].label.toLowerCase()}. ${H[q.a].fact}`:(q.a?'It is true! ':'It is false! ')+q.why;
+      fb.innerHTML=`<span>💡 ${m}</span>`;say(m);
+      if(hearts<=0){later(()=>{modal(`<div><div style="font-size:4rem">😴</div><h2>Tinku needs a rest!</h2><p>You used all 3 hearts. Let us try the ride again. You can do it!</p><div class="mbtns"><button class="btn" data-act="retry">🔁 Try again</button><button class="btn ghostbtn" data-act="map">🗺️ Map</button></div></div>`);say('Tinku needs a rest! Let us try again. You can do it!');bindActs({retry:()=>openLevel(7),map:goMap})},2400)}
+      else{const nb=document.createElement('button');nb.className='btn alt';nb.textContent='Next ▶';nb.addEventListener('click',()=>{SFX.tap();i++;move();ask()});fb.appendChild(nb)}
+    }
+  }
+  move();ask();
+}
+
+const RUN={1:L1,2:L2,3:L3,4:L4,5:L5,6:L6,7:L7};
+
+/* =================== BOOT =================== */
+$('#load-tk').innerHTML=TINKU;$('#parade-tk').innerHTML=TINKU;
+$('#crowd').innerHTML=['doctor','postman','police','teacher'].map(person).join('');
+$('#go-start').addEventListener('click',()=>{ac();SFX.horn();renderMap();show('map');
+  if(!S.welcomed){S.welcomed=true;save()}
+  later(()=>say(renderMap()),300)});
+$('#to-home').addEventListener('click',()=>{SFX.tap();clean();show('start')});
+$('#lv-back').addEventListener('click',()=>{SFX.tap();goMap()});
+$('#tg-sound').addEventListener('click',()=>{S.sound=!S.sound;save();ac();SFX.tap();renderMap()});
+$('#tg-voice').addEventListener('click',()=>{S.voice=!S.voice;save();SFX.tap();if(!S.voice)hush();toast(S.voice?'🗣️ Read aloud is on':'🗣️ Read aloud is off');renderMap()});
+$('#t-reset').addEventListener('click',()=>{SFX.tap();modal(`<div><div style="font-size:3rem">↺</div><h2>Start over?</h2><p>This clears all stars, stickers and the family card on this device.</p><div class="mbtns"><button class="btn red" data-act="yes">Yes, start over</button><button class="btn ghostbtn" data-act="no">Cancel</button></div></div>`);bindActs({yes:()=>{const keep={sound:S.sound,voice:S.voice};S=Object.assign(JSON.parse(JSON.stringify(DEF)),keep);save();closeModal();renderMap();toast('↺ Fresh start!')},no:closeModal})});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!$('#modal').hidden){const b=$('#mbox [data-act="no"],#mbox [data-act="map"]');if(b)b.click()}});
+addEventListener('resize',()=>{if(raf){const dpr=window.devicePixelRatio||1;cv.width=innerWidth*dpr;cv.height=innerHeight*dpr}});
+setTimeout(()=>show('start'),1400);
+
+window.__helperTown={H,Q2,R4,Q5,Q7,LEVELS,state:()=>S,open:openLevel};
+})();
+
+</script>
+</body>
+</html>

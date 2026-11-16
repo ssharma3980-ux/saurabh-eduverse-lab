@@ -1,0 +1,640 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,interactive-widget=resizes-content">
+<title>TypeNova — Typing Speed Trainer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@600;800;900&family=JetBrains+Mono:wght@400;600&family=Outfit:wght@300;400;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#060914;--panel:rgba(18,24,52,.62);--line:rgba(130,150,255,.16);
+  --cyan:#22e1ff;--violet:#8b5cf6;--pink:#ff3d9a;--green:#2bff9b;--red:#ff4d6d;--gold:#ffd166;
+  --text:#e8eeff;--mute:#8590b8;--dim:#4c5683;
+  --appH:100vh;
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+html,body{background:var(--bg);color:var(--text);font-family:Outfit,system-ui,sans-serif;overflow-x:hidden}
+body{min-height:100vh}
+button{font-family:inherit;cursor:pointer;border:none;color:inherit;background:none}
+#bg{position:fixed;inset:0;z-index:0;pointer-events:none}
+.aurora{position:fixed;inset:-20%;z-index:0;pointer-events:none;filter:blur(70px);opacity:.55}
+.aurora i{position:absolute;border-radius:50%;animation:float 18s ease-in-out infinite alternate}
+.aurora i:nth-child(1){width:45vw;height:45vw;background:#2b1bff55;left:5%;top:10%}
+.aurora i:nth-child(2){width:40vw;height:40vw;background:#ff2d9a33;right:5%;top:30%;animation-duration:22s}
+.aurora i:nth-child(3){width:35vw;height:35vw;background:#00e5ff33;left:35%;bottom:0;animation-duration:26s}
+@keyframes float{to{transform:translate(8vw,-6vh) scale(1.15)}}
+.view{position:relative;z-index:1;display:none}
+.view.on{display:block;animation:fadeIn .45s ease}
+@keyframes fadeIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+
+/* ---------- header ---------- */
+header{display:flex;align-items:center;gap:14px;padding:16px 24px}
+.logo{display:flex;align-items:center;gap:12px}
+.logo svg{filter:drop-shadow(0 0 10px #22e1ff88)}
+.logo h1{font-family:Orbitron;font-weight:900;font-size:26px;letter-spacing:2px;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));-webkit-background-clip:text;background-clip:text;color:transparent}
+.logo small{display:block;font-size:12px;color:var(--mute);letter-spacing:3px;text-transform:uppercase}
+.spacer{flex:1}
+.iconbtn{width:42px;height:42px;border-radius:12px;background:var(--panel);border:1px solid var(--line);display:grid;place-items:center;font-size:18px;transition:.2s}
+.iconbtn:active{transform:scale(.92)}
+.iconbtn.off{opacity:.45}
+
+/* ---------- home ---------- */
+.grid{display:grid;grid-template-columns:1.05fr 1fr;gap:18px;padding:4px 24px 30px;max-width:1400px;margin:0 auto}
+.card{background:var(--panel);border:1px solid var(--line);border-radius:22px;padding:20px;backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);position:relative;overflow:hidden}
+.card::before{content:"";position:absolute;inset:0;border-radius:inherit;padding:1px;background:linear-gradient(135deg,#22e1ff55,transparent 40%,transparent 60%,#ff3d9a44);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;pointer-events:none}
+.card h2{font-family:Orbitron;font-size:15px;letter-spacing:2px;text-transform:uppercase;color:var(--cyan);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+.card h2 span{font-size:18px}
+.lbl{font-size:12px;color:var(--mute);letter-spacing:2px;text-transform:uppercase;margin:10px 0 8px}
+.chips{display:flex;gap:8px;flex-wrap:wrap}
+.chip{padding:10px 16px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line);font-weight:600;font-size:15px;transition:.2s;color:var(--mute)}
+.chip.on{background:linear-gradient(135deg,#22e1ff33,#8b5cf633);border-color:var(--cyan);color:#fff;box-shadow:0 0 18px #22e1ff44}
+.go{margin-top:18px;width:100%;padding:16px;border-radius:16px;font-family:Orbitron;font-weight:800;font-size:18px;letter-spacing:3px;color:#04101c;background:linear-gradient(90deg,var(--cyan),#7cf7ff,var(--violet));background-size:200% 100%;animation:sheen 4s linear infinite;box-shadow:0 8px 30px #22e1ff55,inset 0 0 0 1px #ffffff66;transition:transform .15s}
+.go:active{transform:scale(.97)}
+.go.alt{background:linear-gradient(90deg,var(--pink),#ff8fc8,var(--violet));background-size:200% 100%;box-shadow:0 8px 30px #ff3d9a44}
+@keyframes sheen{to{background-position:200% 0}}
+.lessons{display:grid;grid-template-columns:repeat(2,1fr);gap:10px}
+.lesson{display:flex;align-items:center;gap:12px;padding:12px;border-radius:16px;background:rgba(255,255,255,.035);border:1px solid var(--line);text-align:left;transition:.2s}
+.lesson:active{transform:scale(.97)}
+.lesson.next{border-color:var(--gold);box-shadow:0 0 18px #ffd16633}
+.lesson .num{width:40px;height:40px;flex:none;border-radius:12px;display:grid;place-items:center;font-family:Orbitron;font-weight:800;background:linear-gradient(135deg,#8b5cf6,#22e1ff);color:#06101e}
+.lesson b{display:block;font-size:15px}
+.lesson em{display:block;font-style:normal;font-size:12px;color:var(--mute);font-family:'JetBrains Mono'}
+.stars{color:var(--gold);font-size:13px;letter-spacing:1px;margin-top:2px}
+.stars .o{color:#39406a}
+.stats4{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.stat{background:rgba(255,255,255,.035);border:1px solid var(--line);border-radius:14px;padding:12px;text-align:center}
+.stat b{display:block;font-family:Orbitron;font-size:24px;background:linear-gradient(180deg,#fff,#9bdcff);-webkit-background-clip:text;background-clip:text;color:transparent}
+.stat small{font-size:11px;color:var(--mute);letter-spacing:1.5px;text-transform:uppercase}
+canvas.chart{width:100%;height:170px;display:block;margin-top:14px}
+.weak{display:flex;gap:8px;flex-wrap:wrap;min-height:44px;align-items:center}
+.wk{width:44px;height:44px;border-radius:12px;display:grid;place-items:center;font-family:'JetBrains Mono';font-weight:600;font-size:20px;background:#ff4d6d22;border:1px solid #ff4d6d77;color:#ffc2cd;box-shadow:0 0 14px #ff4d6d33}
+.note{color:var(--mute);font-size:14px;line-height:1.5}
+.tips{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.tip{background:rgba(255,255,255,.03);border-radius:14px;padding:12px;font-size:13.5px;line-height:1.45;color:#c5cdf0;border:1px solid var(--line)}
+.tip b{color:var(--cyan);display:block;margin-bottom:4px}
+.full{grid-column:1/-1}
+
+/* ---------- keyboard ---------- */
+.kb{display:flex;flex-direction:column;gap:6px;padding:10px;border-radius:18px;background:linear-gradient(180deg,#1b2244cc,#0d1230ee);border:1px solid var(--line);box-shadow:inset 0 1px 0 #ffffff14,0 10px 40px #0008}
+.kb .row{display:flex;gap:6px;flex:1;min-height:0}
+.key{flex:1;position:relative;border-radius:9px;background:linear-gradient(180deg,#4a5578,#3a4466);display:grid;place-items:center;font-size:clamp(13px,1.9vh,22px);font-weight:600;color:#f2f5ff;box-shadow:0 2px 0 #1a2040;transition:background .15s,box-shadow .15s,transform .1s;min-height:22px;text-transform:uppercase;overflow:hidden}
+.key sup{position:absolute;top:2px;right:6px;font-size:.55em;color:#c8d0ef;font-weight:400}
+.key.mod{background:linear-gradient(180deg,#2f3757,#262d4a);color:#b9c2e6}
+.key.blue{background:linear-gradient(180deg,#5e95f5,#4a7fe0);color:#fff}
+.key.space{background:linear-gradient(180deg,#4a5578,#3a4466)}
+.key.L{box-shadow:0 2px 0 #1a2040,inset 0 -3px 0 #22e1ff55}
+.key.R{box-shadow:0 2px 0 #1a2040,inset 0 -3px 0 #ff3d9a55}
+.key.hl{background:linear-gradient(180deg,#5ff0ff,#18b8e0)!important;color:#03121c!important;box-shadow:0 0 22px #22e1ffcc,0 0 4px #fff inset!important;transform:translateY(-2px);animation:pulse 1s ease-in-out infinite}
+.key.hl2{background:linear-gradient(180deg,#c39bff,#8b5cf6)!important;color:#fff!important;box-shadow:0 0 18px #8b5cf6cc!important}
+.key.hold::after{content:"HOLD";position:absolute;bottom:2px;font-size:9px;letter-spacing:1px;color:#03121c;font-weight:800}
+.key.okf{background:linear-gradient(180deg,#5dffb4,#18c97a)!important;color:#03121c!important}
+.key.badf{background:linear-gradient(180deg,#ff7a90,#e0284a)!important;transform:translateX(2px)}
+@keyframes pulse{50%{box-shadow:0 0 34px #22e1ff,0 0 6px #fff inset}}
+.kbstatic .key{min-height:30px;font-size:14px}
+.legend{display:flex;gap:14px;font-size:12px;color:var(--mute);margin-top:8px;flex-wrap:wrap}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:3px;vertical-align:-2px;margin-right:5px}
+
+/* ---------- typing view ---------- */
+#typing{height:var(--appH);display:none;flex-direction:column;padding:10px 18px 10px;gap:10px}
+#typing.on{display:flex}
+.tbar{display:flex;align-items:center;gap:10px;flex:none}
+.live{display:flex;gap:10px;flex:1;justify-content:center}
+.lv{min-width:96px;padding:6px 14px;border-radius:14px;background:var(--panel);border:1px solid var(--line);text-align:center}
+.lv b{display:block;font-family:Orbitron;font-size:22px;line-height:1.1}
+.lv small{font-size:10px;letter-spacing:2px;color:var(--mute);text-transform:uppercase}
+#lvWpm b{color:var(--cyan);text-shadow:0 0 14px #22e1ff88}
+#lvAcc b{color:var(--green)}
+#lvTime b{color:var(--gold)}
+#lvCombo b{color:var(--pink)}
+.ttl{font-family:Orbitron;font-size:12px;letter-spacing:2px;color:var(--mute);max-width:200px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.prog{height:4px;border-radius:4px;background:#ffffff10;overflow:hidden;flex:none}
+.prog i{display:block;height:100%;width:0;background:linear-gradient(90deg,var(--cyan),var(--violet),var(--pink));box-shadow:0 0 12px var(--cyan);transition:width .15s}
+.tbox{position:relative;flex:none;border-radius:20px;background:linear-gradient(180deg,#0f1532dd,#0a0f26ee);border:1px solid var(--line);padding:14px 24px;box-shadow:inset 0 0 40px #22e1ff10,0 10px 40px #0006;cursor:text}
+.tclip{position:relative;overflow:hidden;height:calc(var(--lh) * 3)}
+.tinner{position:relative;font-family:'JetBrains Mono',monospace;font-size:var(--fs);line-height:var(--lh);transition:transform .25s ease;color:var(--dim);word-break:keep-all}
+.tinner .w{display:inline-block;white-space:nowrap}
+.c{transition:color .08s}
+.c.ok{color:#eaf2ff;text-shadow:0 0 8px #ffffff22}
+.c.bad{color:var(--red);background:#ff4d6d26;border-radius:3px;text-shadow:0 0 8px #ff4d6d88}
+.c.sp.bad{background:#ff4d6d55}
+.c.fix{text-decoration:underline wavy #ffd16688;text-underline-offset:5px}
+#caret{position:absolute;left:0;top:0;width:3px;border-radius:3px;background:var(--cyan);box-shadow:0 0 12px var(--cyan),0 0 3px #fff;transition:transform .09s ease-out,background .3s;pointer-events:none}
+#caret.idle{animation:blink 1s steps(1) infinite}
+@keyframes blink{50%{opacity:0}}
+#cap{position:absolute;left:24px;top:14px;width:2px;height:24px;opacity:0;font-size:16px;border:0;outline:0;resize:none;background:transparent;color:transparent;caret-color:transparent;z-index:-1}
+.tapover{position:absolute;inset:0;border-radius:20px;display:grid;place-items:center;background:#060914cc;backdrop-filter:blur(4px);font-family:Orbitron;letter-spacing:2px;font-size:16px;color:var(--cyan);z-index:5}
+.tapover span{padding:14px 22px;border-radius:14px;border:1px solid var(--cyan);box-shadow:0 0 24px #22e1ff55;animation:pulse2 1.6s infinite}
+@keyframes pulse2{50%{box-shadow:0 0 40px #22e1ffaa}}
+.kbwrap{flex:1;min-height:0;display:flex;justify-content:center}
+.kbwrap .kb{width:min(100%,1100px);height:100%;max-height:300px}
+.combo{position:absolute;pointer-events:none;font-family:Orbitron;font-weight:900;color:var(--pink);text-shadow:0 0 14px var(--pink);animation:rise 1s ease-out forwards;z-index:6;font-size:18px}
+@keyframes rise{to{transform:translateY(-50px) scale(1.4);opacity:0}}
+.spark{position:absolute;width:6px;height:6px;border-radius:50%;pointer-events:none;z-index:6}
+.shake{animation:shake .25s}
+@keyframes shake{25%{transform:translateX(-4px)}75%{transform:translateX(4px)}}
+
+/* ---------- results ---------- */
+.res{max-width:1200px;margin:0 auto;padding:10px 24px 40px}
+.rank{text-align:center;margin:6px 0 16px}
+.rank .badge{display:inline-block;padding:8px 22px;border-radius:30px;font-family:Orbitron;letter-spacing:2px;font-size:15px;background:linear-gradient(90deg,#22e1ff22,#8b5cf633);border:1px solid var(--cyan)}
+.rank h3{font-family:Orbitron;font-size:30px;margin-top:10px}
+.pb{color:var(--gold);text-shadow:0 0 18px #ffd166aa;font-family:Orbitron;letter-spacing:3px;font-size:14px;margin-top:6px;display:none}
+.rings{display:flex;gap:30px;justify-content:center;align-items:center;flex-wrap:wrap}
+.ring{position:relative;width:180px;height:180px}
+.ring svg{transform:rotate(-90deg)}
+.ring .in{position:absolute;inset:0;display:grid;place-items:center;text-align:center}
+.ring b{font-family:Orbitron;font-size:44px;display:block;line-height:1}
+.ring small{font-size:12px;color:var(--mute);letter-spacing:2px}
+.rtiles{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;min-width:280px}
+.rbtns{display:flex;gap:12px;justify-content:center;margin-top:20px;flex-wrap:wrap}
+.rbtns button{padding:14px 26px;border-radius:14px;font-family:Orbitron;letter-spacing:2px;font-weight:800;font-size:14px;background:var(--panel);border:1px solid var(--line)}
+.rbtns .pri{background:linear-gradient(90deg,var(--cyan),var(--violet));color:#04101c;border:0;box-shadow:0 6px 24px #22e1ff55}
+.rgrid{display:grid;grid-template-columns:1.3fr 1fr;gap:18px;margin-top:20px}
+#confetti{position:fixed;inset:0;pointer-events:none;z-index:50}
+
+@media (max-width:900px){
+  .grid,.rgrid{grid-template-columns:1fr}
+  .tips{grid-template-columns:1fr}
+  .stats4{grid-template-columns:repeat(2,1fr)}
+  .lv{min-width:70px;padding:5px 8px}.lv b{font-size:18px}
+  .ttl{display:none}
+}
+@media (max-height:520px){ .lv b{font-size:17px} .lv small{font-size:9px} .tbox{padding:8px 16px} #typing{gap:6px;padding-top:6px} }
+</style>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="aurora"><i></i><i></i><i></i></div>
+<canvas id="confetti"></canvas>
+
+<!-- ================= HOME ================= -->
+<section id="home" class="view on">
+  <header>
+    <div class="logo">
+      <svg width="46" height="46" viewBox="0 0 48 48"><defs><linearGradient id="lg" x1="0" x2="1"><stop offset="0" stop-color="#22e1ff"/><stop offset="1" stop-color="#ff3d9a"/></linearGradient></defs><rect x="3" y="11" width="42" height="26" rx="7" fill="none" stroke="url(#lg)" stroke-width="3"/><g fill="url(#lg)"><rect x="9" y="17" width="5" height="5" rx="1.5"/><rect x="17" y="17" width="5" height="5" rx="1.5"/><rect x="25" y="17" width="5" height="5" rx="1.5"/><rect x="33" y="17" width="5" height="5" rx="1.5"/><rect x="13" y="27" width="22" height="4" rx="2"/></g></svg>
+      <div><h1>TYPENOVA</h1><small>Touch-typing speed trainer</small></div>
+    </div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="sndBtn" title="Sound">🔊</button>
+    <button class="iconbtn" id="fsBtn" title="Fullscreen">⛶</button>
+  </header>
+
+  <div class="grid">
+    <div class="card">
+      <h2><span>⚡</span>Speed Test</h2>
+      <div class="lbl">Duration</div>
+      <div class="chips" id="durChips">
+        <button class="chip" data-v="15">15s</button><button class="chip" data-v="30">30s</button><button class="chip on" data-v="60">60s</button><button class="chip" data-v="120">2 min</button>
+      </div>
+      <div class="lbl">Content</div>
+      <div class="chips" id="modeChips">
+        <button class="chip on" data-v="words">Easy words</button><button class="chip" data-v="science">Science words</button><button class="chip" data-v="sentences">Sentences</button><button class="chip" data-v="numbers">Numbers</button>
+      </div>
+      <button class="go" id="startTest">START TEST</button>
+      <div class="lbl" style="margin-top:18px">Weak-key drill</div>
+      <div class="weak" id="weakKeys"></div>
+      <button class="go alt" id="startDrill">PRACTICE WEAK KEYS</button>
+    </div>
+
+    <div class="card">
+      <h2><span>🎯</span>Training Path</h2>
+      <div class="lessons" id="lessons"></div>
+    </div>
+
+    <div class="card full">
+      <h2><span>📈</span>Your Progress</h2>
+      <div class="stats4">
+        <div class="stat"><b id="sBest">0</b><small>Best WPM</small></div>
+        <div class="stat"><b id="sAvg">0</b><small>Avg last 10</small></div>
+        <div class="stat"><b id="sAcc">0%</b><small>Avg accuracy</small></div>
+        <div class="stat"><b id="sStreak">0</b><small>Day streak 🔥</small></div>
+      </div>
+      <canvas class="chart" id="histChart"></canvas>
+      <div class="legend"><span><i style="background:var(--cyan)"></i>WPM per session</span><span><i style="background:var(--green)"></i>Accuracy %</span><span id="sTotal"></span></div>
+      <div class="lbl" style="margin-top:16px">Key accuracy map (red = keys you miss most)</div>
+      <div id="homeKb"></div>
+    </div>
+
+    <div class="card full">
+      <h2><span>💡</span>Tablet typing tips</h2>
+      <div class="tips">
+        <div class="tip"><b>Accuracy first</b>Aim for 95%+ accuracy. Speed comes automatically once your fingers stop making mistakes.</div>
+        <div class="tip"><b>Use both hands</b>Cyan-edged keys are your left hand, pink-edged keys your right. Split the work at T/G/B and Y/H/N.</div>
+        <div class="tip"><b>Turn off autocorrect</b>In Gboard settings → Text correction, switch off auto-correction and suggestions so the trainer sees your real keystrokes.</div>
+        <div class="tip"><b>Numbers on your keyboard</b>Long-press Q–P to get 1–0. The guide shows "HOLD" on that key.</div>
+        <div class="tip"><b>Tab = restart</b>Press your Tab key (top-left) anytime to restart the current test instantly.</div>
+        <div class="tip"><b>10 minutes a day</b>Short daily practice beats one long session. Keep your day streak alive!</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ================= TYPING ================= -->
+<section id="typing" class="view">
+  <div class="tbar">
+    <button class="iconbtn" id="exitBtn" title="Back">✕</button>
+    <div class="ttl" id="tTitle"></div>
+    <div class="live">
+      <div class="lv" id="lvWpm"><b>0</b><small>WPM</small></div>
+      <div class="lv" id="lvAcc"><b>100</b><small>Accuracy</small></div>
+      <div class="lv" id="lvTime"><b>60</b><small id="lvTimeL">Seconds</small></div>
+      <div class="lv" id="lvCombo"><b>0</b><small>Combo 🔥</small></div>
+    </div>
+    <button class="iconbtn" id="kbBtn" title="Keyboard guide">⌨</button>
+    <button class="iconbtn" id="restartBtn" title="Restart">↻</button>
+  </div>
+  <div class="prog"><i id="progBar"></i></div>
+  <div class="tbox" id="tbox">
+    <div class="tclip"><div class="tinner" id="tinner"></div></div>
+    <textarea id="cap" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" data-gramm="false"></textarea>
+    <div class="tapover" id="tapover"><span>TAP HERE &amp; START TYPING</span></div>
+  </div>
+  <div class="kbwrap" id="kbwrap"></div>
+</section>
+
+<!-- ================= RESULTS ================= -->
+<section id="results" class="view">
+  <header>
+    <div class="logo"><div><h1>RESULTS</h1><small id="rLabel"></small></div></div>
+    <div class="spacer"></div>
+    <button class="iconbtn" id="rHome" title="Home">⌂</button>
+  </header>
+  <div class="res">
+    <div class="rank"><div class="badge" id="rBadge"></div><h3 id="rMsg"></h3><div class="pb" id="rPB">★ NEW PERSONAL BEST ★</div><div class="stars" id="rStars" style="font-size:30px;margin-top:6px"></div></div>
+    <div class="rings">
+      <div class="ring" id="ringW"></div>
+      <div class="ring" id="ringA"></div>
+      <div class="rtiles">
+        <div class="stat"><b id="rRaw">0</b><small>Raw WPM</small></div>
+        <div class="stat"><b id="rChars">0</b><small>Correct / Wrong</small></div>
+        <div class="stat"><b id="rTime">0s</b><small>Time</small></div>
+        <div class="stat"><b id="rCombo">0</b><small>Best combo</small></div>
+      </div>
+    </div>
+    <div class="rbtns">
+      <button class="pri" id="rRetry">↻ TRY AGAIN</button>
+      <button id="rNext" style="display:none">NEXT LESSON ›</button>
+      <button id="rDrill">WEAK-KEY DRILL</button>
+    </div>
+    <div class="rgrid">
+      <div class="card"><h2><span>📊</span>Speed during test</h2><canvas class="chart" id="resChart" style="height:200px"></canvas>
+        <div class="legend"><span><i style="background:var(--cyan)"></i>WPM</span><span><i style="background:var(--violet)"></i>Raw</span><span><i style="background:var(--red)"></i>Mistakes</span></div></div>
+      <div class="card"><h2><span>🎹</span>Keys you missed</h2><div id="resKb"></div><p class="note" id="resWeak" style="margin-top:10px"></p></div>
+    </div>
+  </div>
+</section>
+
+<script>
+/* ===================== DATA ===================== */
+const EASY = "the be to of and in that have it for not on with he as you do at this but his by from they we say her she or an will my one all would there their what so up out if about who get which go me when make can like time no just him know take people into year your good some could them see other than then now look only come its over think also back after use two how our work first well way even new want because any these give day most us great home school class learn light water earth hand small large place where much before right line too mean old same tell boy follow came show around form three move live point page letter mother answer found study still world high every near add food between own below country plant last keep tree never start city story far sea draw left late run while press close night real life few north open seem together next white children begin got walk example ease paper group always music those both mark often until mile river car feet care second book carry took rain eat room friend began idea fish once base hear horse cut sure watch color face wood main enough plain girl usual young ready above ever red list though feel talk bird soon body dog family direct pose leave song measure door black short class wind question happen complete ship area half rock order fire south problem piece told knew pass since top whole king space heard best hour better true during hundred five remember step early hold west ground interest reach fast verb sing listen six table travel less morning ten simple several toward war lay against slow center love person money serve appear road map".split(" ");
+const SCI = "atom cell energy force motion light sound gravity magnet circuit current voltage battery planet orbit galaxy oxygen carbon nitrogen hydrogen molecule element compound mixture acid base salt metal friction pressure density mass weight speed velocity mirror lens prism spectrum photosynthesis chlorophyll nucleus tissue organ blood heart lungs bacteria virus fungi enzyme protein reaction electron proton neutron charge field wave frequency echo vibration fuel solar thermal heat temperature melting boiling vapour crystal mineral fossil volcano climate weather cloud rainfall erosion soil seed root stem leaf flower pollen fruit habitat species ecosystem food chain microscope laboratory experiment observe measure result graph diagram theory".split(" ");
+const SENT = [
+"Light travels faster than sound, so we see lightning before we hear thunder.",
+"Plants make their own food using sunlight, water and carbon dioxide.",
+"Practice every day and your fingers will learn the way.",
+"The heart pumps blood to every part of the body.",
+"A magnet has two poles, called north and south.",
+"Water boils at one hundred degrees Celsius at sea level.",
+"Slow and steady typing builds speed that lasts.",
+"Energy cannot be created or destroyed, it only changes form.",
+"Friction is a force that opposes motion between two surfaces.",
+"Sound needs a medium like air or water to travel.",
+"Good typists look at the screen, not at the keys.",
+"Keep your wrists relaxed and your shoulders loose.",
+"Mistakes are part of learning, so keep going.",
+"The Earth spins on its axis once every day.",
+"Acids turn blue litmus paper red.",
+"Electric current flows only when a circuit is complete.",
+"Small daily steps lead to big results over time.",
+"Clouds form when water vapour cools and condenses.",
+"Mercury is the closest planet to the Sun.",
+"Read the question carefully before you write the answer.",
+"The human eye works much like a camera.",
+"Iron rusts when it reacts with oxygen and moisture.",
+"Did you know that a day on Venus is longer than its year?",
+"Science is not just a subject, it is a way of thinking.",
+"Every expert was once a beginner who never gave up."
+];
+const LESSONS = [
+ {id:1,name:"Home Row",keys:"asdf ghjkl",goal:15,words:"as ask sad dad lad add all fall hall glad flask salad lash dash flash gash had has half shall gall alas gala jag lass fad sash slash dahl kala aha".split(" "),drill:["asdf","jkl","fjfj","dkdk","slsl","ghgh","fdsa","lkj"]},
+ {id:2,name:"Home + E I R U",keys:"e i r u",goal:18,set:"asdfghjkleiru"},
+ {id:3,name:"Full Top Row",keys:"q w t y o p",goal:20,set:"asdfghjklqwertyuiop"},
+ {id:4,name:"Bottom Row",keys:"z x c v b n m",goal:22,set:"abcdefghijklmnopqrstuvwxyz",need:"zxcvbnm"},
+ {id:5,name:"Top 100 Words",keys:"common words",goal:25,top:true},
+ {id:6,name:"Capitals & Commas",keys:"Shift , .",goal:22,sent:true},
+ {id:7,name:"Numbers",keys:"hold Q–P",goal:15,nums:true},
+ {id:8,name:"Science Sprint",keys:"long words",goal:25,sci:true}
+];
+const K="typenova_v1";
+let DB={history:[],keyStats:{},lessons:{},settings:{sound:true,kb:true}};
+try{const s=JSON.parse(localStorage.getItem(K));if(s)DB=Object.assign(DB,s);}catch(e){}
+const save=()=>{try{localStorage.setItem(K,JSON.stringify(DB))}catch(e){}};
+
+const $=s=>document.querySelector(s), $$=s=>[...document.querySelectorAll(s)];
+const rnd=a=>a[Math.floor(Math.random()*a.length)];
+function pickWords(bank,n){let out=[],last="";for(let i=0;i<n;i++){let w;do{w=rnd(bank)}while(w===last&&bank.length>1);out.push(w);last=w}return out}
+
+/* ===================== TEXT GENERATORS ===================== */
+const ALL=[...new Set(EASY.concat(SCI))];
+function lessonText(L){
+  if(L.drill){let p=[];for(let i=0;i<26;i++)p.push(i%4===3?rnd(L.drill):rnd(L.words));return p.join(" ")}
+  if(L.set){const re=new RegExp("^["+L.set+"]+$");let bank=ALL.filter(w=>re.test(w));if(L.need)bank=bank.filter(w=>[...L.need].some(c=>w.includes(c)));return pickWords(bank,26).join(" ")}
+  if(L.top)return pickWords(EASY.slice(0,100),30).join(" ");
+  if(L.sent)return pickWords(SENT,3).join(" ");
+  if(L.nums)return numberText(18);
+  if(L.sci)return pickWords(SCI,22).join(" ");
+}
+function numberText(n){const t=[()=>Math.floor(Math.random()*90+10)+" "+rnd(["km","kg","cm","boys","girls","marks","days","pages"]),()=>"class "+(Math.floor(Math.random()*6)+6),()=>""+(2000+Math.floor(Math.random()*30)),()=>Math.floor(Math.random()*9+1)+"."+Math.floor(Math.random()*90+10),()=>rnd(EASY.slice(0,120)),()=>rnd(EASY.slice(0,120))];let o=[];for(let i=0;i<n;i++)o.push(rnd(t)());return o.join(" ")}
+function testChunk(mode){
+  if(mode==="words")return pickWords(EASY.slice(0,200),40).join(" ");
+  if(mode==="science")return pickWords(SCI.concat(EASY.slice(0,60)),35).join(" ");
+  if(mode==="sentences")return pickWords(SENT,4).join(" ");
+  if(mode==="numbers")return numberText(25);
+  if(mode==="drill")return drillText(40);
+}
+function weakList(){
+  return Object.entries(DB.keyStats).filter(([k,v])=>/[a-z]/.test(k)&&v.h+v.m>=6)
+    .map(([k,v])=>[k,v.m/(v.h+v.m)]).filter(x=>x[1]>0).sort((a,b)=>b[1]-a[1]).slice(0,6).map(x=>x[0]);
+}
+function drillText(n){
+  const weak=weakList();if(!weak.length)return pickWords(EASY,n).join(" ");
+  const bank=ALL.filter(w=>weak.some(c=>w.includes(c)));
+  let o=[];for(let i=0;i<n;i++){o.push(i%5===4?rnd(weak).repeat(3):rnd(bank))}return o.join(" ");
+}
+
+/* ===================== KEYBOARD (Lenovo Tab P12 / Gboard layout) ===================== */
+const LEFT="qwertasdfgzxcvb";
+const KBL=[
+ [{k:"tab",l:"⇥",g:1.15,c:"mod"},..."qwertyuiop".split("").map((c,i)=>({k:c,l:c,n:"1234567890"[i]})),{k:"bksp",l:"⌫",g:1.15,c:"mod"}],
+ [{k:"caps",l:"⇪",g:1.45,c:"blue"},..."asdfghjkl".split("").map(c=>({k:c,l:c})),{k:"enter",l:"↵",g:1.9,c:"blue"}],
+ [{k:"shift",l:"⇧",g:2,c:"mod"},..."zxcvbnm,.".split("").map(c=>({k:c,l:c})),{k:"shift2",l:"⇧",g:1.35,c:"mod"}],
+ [{k:"sym",l:"?123",g:1.4,c:"mod"},{k:"emoji",l:"☺",g:1.3,c:"mod"},{k:" ",l:"",g:6.6,c:"space"},{k:"left",l:"◀",g:.9,c:"mod"},{k:"right",l:"▶",g:.9,c:"mod"},{k:"sym2",l:"?123",g:1.2,c:"mod"}]
+];
+function buildKB(host,cls){
+  const kb=document.createElement("div");kb.className="kb "+(cls||"");const map={};
+  KBL.forEach(r=>{const row=document.createElement("div");row.className="row";r.forEach(o=>{const d=document.createElement("div");
+    let c="key "+(o.c||"");if(!o.c&&/[a-z]/.test(o.k))c+=LEFT.includes(o.k)?" L":" R";d.className=c;d.style.flex=o.g||1;
+    d.innerHTML=(o.l===","||o.l===".")?o.l:o.l.toUpperCase()+(o.n?`<sup>${o.n}</sup>`:"");map[o.k]=d;row.appendChild(d)});kb.appendChild(row)});
+  host.innerHTML="";host.appendChild(kb);return map;
+}
+const DIG={};"qwertyuiop".split("").forEach((c,i)=>DIG["1234567890"[i]]=c);
+function keysFor(ch){
+  if(ch===undefined)return[];
+  if(ch===" ")return[[" ","hl"]];
+  if(/[a-z,.]/.test(ch))return[[ch,"hl"]];
+  if(/[A-Z]/.test(ch))return[[ch.toLowerCase(),"hl"],["caps","hl2"],["shift","hl2"]];
+  if(/[0-9]/.test(ch))return[[DIG[ch],"hl hold"]];
+  return[["sym","hl"],["sym2","hl2"]];
+}
+function heat(map,stats){
+  Object.entries(map).forEach(([k,el])=>{const s=stats[k];if(!s||s.h+s.m<3||!/[a-z,.]/.test(k))return;
+    const r=s.m/(s.h+s.m);const hue=Math.max(0,130-r*130*4);el.style.background=`linear-gradient(180deg,hsl(${hue} 85% 52%),hsl(${hue} 80% 38%))`;el.style.color="#06101e";el.title=Math.round((1-r)*100)+"% accurate"});
+}
+
+/* ===================== SOUND ===================== */
+let AC=null;
+function snd(type){if(!DB.settings.sound)return;try{AC=AC||new(window.AudioContext||window.webkitAudioContext)();const o=AC.createOscillator(),g=AC.createGain();
+  if(type==="ok"){o.type="triangle";o.frequency.value=1500+Math.random()*300;g.gain.setValueAtTime(.025,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.04)}
+  else if(type==="bad"){o.type="square";o.frequency.value=150;g.gain.setValueAtTime(.04,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.12)}
+  else{o.type="sine";o.frequency.setValueAtTime(600,AC.currentTime);o.frequency.exponentialRampToValueAtTime(1400,AC.currentTime+.25);g.gain.setValueAtTime(.05,AC.currentTime);g.gain.exponentialRampToValueAtTime(.0001,AC.currentTime+.35)}
+  o.connect(g).connect(AC.destination);o.start();o.stop(AC.currentTime+.4)}catch(e){}}
+
+/* ===================== ENGINE ===================== */
+const tinner=$("#tinner"),cap=$("#cap"),tbox=$("#tbox"),tapover=$("#tapover");
+let S=null,spans=[],liveMap={},timer=null,caret;
+let cfg={dur:60,mode:"words"};
+
+function startSession(c){
+  S={c,target:"",typed:"",running:false,start:0,ks:0,okks:0,keyStats:{},combo:0,maxCombo:0,samples:[],errSec:{},lastSec:0,done:false};
+  if(c.type==="lesson")S.target=lessonText(LESSONS[c.lesson-1]);
+  else S.target=testChunk(c.mode);
+  show("typing");
+  $("#tTitle").textContent=c.label;
+  $("#lvTimeL").textContent=c.type==="test"?"Seconds":"Progress";
+  buildText();cap.value="";
+  liveMap=buildKB($("#kbwrap"));$("#kbwrap").style.display=DB.settings.kb?"flex":"none";
+  updateLive();highlight();fitFont();
+  tapover.style.display="grid";
+  setTimeout(focusCap,50);
+}
+function buildText(){tinner.innerHTML="";spans=[];caret=document.createElement("div");caret.id="caret";caret.className="idle";appendText(S.target);tinner.appendChild(caret);tinner.style.transform="translateY(0)"}
+function appendText(str){
+  const f=document.createDocumentFragment();let w=null;
+  for(const ch of str){const s=document.createElement("span");
+    if(ch===" "){s.className="c sp";s.textContent=" ";f.appendChild(s);w=null}
+    else{if(!w){w=document.createElement("span");w.className="w";f.appendChild(w)}s.className="c";s.textContent=ch;w.appendChild(s)}
+    spans.push(s)}
+  if(caret&&caret.parentNode)tinner.insertBefore(f,caret);else tinner.appendChild(f);
+}
+function focusCap(){try{cap.focus({preventScroll:true})}catch(e){cap.focus()}}
+tbox.addEventListener("click",()=>{focusCap();});
+cap.addEventListener("focus",()=>{tapover.style.display="none";window.scrollTo(0,0)});
+cap.addEventListener("blur",()=>{if(S&&!S.done&&$("#typing").classList.contains("on"))tapover.style.display="grid"});
+cap.addEventListener("keydown",e=>{
+  if(e.key==="Tab"){e.preventDefault();restart()}
+  else if(e.key==="Escape"){goHome()}
+  else if(e.key==="Enter"){e.preventDefault()}
+});
+cap.addEventListener("input",onInput);
+
+function onInput(){
+  if(!S||S.done)return;
+  let v=cap.value;
+  if(v.includes("\t")){restart();return}
+  if(/\n/.test(v)){v=v.replace(/\n/g,"");cap.value=v}
+  if(v.length>S.target.length){v=v.slice(0,S.target.length);cap.value=v}
+  if(!S.running&&v.length){S.running=true;S.start=performance.now();caret.classList.remove("idle");timer=setInterval(tick,100)}
+  const old=S.typed;let p=0;while(p<old.length&&p<v.length&&old[p]===v[p])p++;
+  if(p===old.length){for(let i=old.length;i<v.length;i++)stroke(v[i],S.target[i],i)}
+  S.typed=v;
+  const from=Math.min(p,old.length),to=Math.max(old.length,v.length);
+  for(let i=from;i<to&&i<spans.length;i++){const s=spans[i];const t=v[i];
+    s.classList.remove("ok","bad");if(t!==undefined)s.classList.add(t===S.target[i]?"ok":"bad")}
+  if(S.c.type==="test"&&S.target.length-v.length<120){const more=" "+testChunk(S.c.mode);S.target+=more;appendText(more)}
+  placeCaret();highlight();updateLive();
+  if(S.c.type!=="test"&&v.length>=S.target.length)finish();
+}
+function stroke(ch,exp,i){
+  S.ks++;const key=(exp||"").toLowerCase();const ok=ch===exp;
+  const ks=S.keyStats[key]=S.keyStats[key]||{h:0,m:0};
+  const sec=Math.floor((performance.now()-S.start)/1000);
+  if(ok){S.okks++;ks.h++;S.combo++;S.maxCombo=Math.max(S.maxCombo,S.combo);snd("ok");
+    if(S.combo%25===0)comboFx(S.combo)}
+  else{ks.m++;S.combo=0;snd("bad");S.errSec[sec]=(S.errSec[sec]||0)+1;tbox.classList.remove("shake");void tbox.offsetWidth;tbox.classList.add("shake")}
+  const tk=keysFor(ch)[0];const el=tk&&liveMap[tk[0]];
+  if(el){const c=ok?"okf":"badf";el.classList.add(c);setTimeout(()=>el.classList.remove(c),150)}
+}
+function placeCaret(){
+  const i=S.typed.length;let s=spans[i],x,y,h;
+  if(s){x=s.offsetLeft;y=s.offsetTop;h=s.offsetHeight}
+  else{s=spans[spans.length-1];x=s.offsetLeft+s.offsetWidth;y=s.offsetTop;h=s.offsetHeight}
+  caret.style.height=(h*.8)+"px";caret.style.transform=`translate(${x-1}px,${y+h*.1}px)`;
+  const lh=parseFloat(getComputedStyle(tinner).lineHeight);const line=Math.round(y/lh);
+  tinner.style.transform=`translateY(${-Math.max(0,line-1)*lh}px)`;
+  const lvl=S.combo>=100?"var(--gold)":S.combo>=50?"var(--pink)":S.combo>=25?"var(--violet)":"var(--cyan)";
+  caret.style.background=lvl;caret.style.boxShadow=`0 0 14px ${lvl},0 0 3px #fff`;
+  cap.style.top=Math.min(tbox.clientHeight-30,14+(y-Math.max(0,line-1)*lh))+"px";
+}
+function highlight(){
+  Object.values(liveMap).forEach(e=>e.classList.remove("hl","hl2","hold"));
+  if(!S)return;keysFor(S.target[S.typed.length]).forEach(([k,c])=>{const e=liveMap[k];if(e)c.split(" ").forEach(x=>e.classList.add(x))});
+}
+function elapsed(){return S.running?(performance.now()-S.start)/1000:0}
+function calc(){
+  const el=Math.max(elapsed(),.5);let ok=0;for(let i=0;i<S.typed.length;i++)if(S.typed[i]===S.target[i])ok++;
+  return{el,ok,bad:S.typed.length-ok,wpm:ok/5/(el/60),raw:S.typed.length/5/(el/60),acc:S.ks?S.okks/S.ks*100:100};
+}
+function updateLive(){
+  const r=calc();
+  $("#lvWpm b").textContent=S.running&&r.el>1?Math.round(r.wpm):0;
+  $("#lvAcc b").textContent=Math.round(r.acc);
+  $("#lvCombo b").textContent=S.combo;
+  if(S.c.type==="test"){const left=Math.max(0,S.c.dur-elapsed());$("#lvTime b").textContent=Math.ceil(left);$("#progBar").style.width=(elapsed()/S.c.dur*100)+"%"}
+  else{const p=S.typed.length/S.target.length*100;$("#lvTime b").textContent=Math.round(p)+"%";$("#progBar").style.width=p+"%"}
+}
+function tick(){
+  if(!S||!S.running)return;
+  const e=elapsed();const sec=Math.floor(e);
+  while(S.lastSec<sec){S.lastSec++;const r=calc();S.samples.push({t:S.lastSec,wpm:r.ok/5/(S.lastSec/60),raw:S.typed.length/5/(S.lastSec/60),err:S.errSec[S.lastSec-1]||0})}
+  updateLive();
+  if(S.c.type==="test"&&e>=S.c.dur)finish();
+}
+function comboFx(n){
+  const c=document.createElement("div");c.className="combo";c.textContent="🔥 "+n+" COMBO";
+  const cr=caret.getBoundingClientRect(),br=tbox.getBoundingClientRect();
+  c.style.left=(cr.left-br.left-20)+"px";c.style.top=(cr.top-br.top-10)+"px";tbox.appendChild(c);setTimeout(()=>c.remove(),1000);
+  for(let i=0;i<14;i++){const p=document.createElement("div");p.className="spark";const a=Math.random()*Math.PI*2,d=30+Math.random()*50;
+    p.style.background=rnd(["#22e1ff","#ff3d9a","#ffd166","#8b5cf6"]);p.style.left=(cr.left-br.left)+"px";p.style.top=(cr.top-br.top+10)+"px";
+    tbox.appendChild(p);p.animate([{transform:"translate(0,0)",opacity:1},{transform:`translate(${Math.cos(a)*d}px,${Math.sin(a)*d}px)`,opacity:0}],{duration:600,easing:"ease-out"});setTimeout(()=>p.remove(),600)}
+}
+function restart(){clearInterval(timer);if(S)startSession(S.c)}
+function goHome(){clearInterval(timer);if(S)S.done=true;cap.blur();renderHome();show("home")}
+$("#exitBtn").onclick=goHome;$("#restartBtn").onclick=restart;
+$("#kbBtn").onclick=()=>{DB.settings.kb=!DB.settings.kb;save();$("#kbwrap").style.display=DB.settings.kb?"flex":"none";focusCap()};
+
+function fitFont(){
+  const h=window.visualViewport?visualViewport.height:innerHeight;const w=innerWidth;
+  let fs=Math.max(18,Math.min(32,w/42,h/14));
+  document.documentElement.style.setProperty("--fs",fs+"px");document.documentElement.style.setProperty("--lh",(fs*1.65)+"px");
+}
+function setAppH(){const h=window.visualViewport?visualViewport.height:innerHeight;document.documentElement.style.setProperty("--appH",h+"px");fitFont();if(S&&!S.done&&$("#typing").classList.contains("on"))placeCaret()}
+(window.visualViewport||window).addEventListener("resize",setAppH);setAppH();
+
+/* ===================== FINISH & RESULTS ===================== */
+function finish(){
+  if(S.done)return;S.done=true;clearInterval(timer);cap.blur();
+  const r=calc();if(S.c.type==="test")r.el=Math.min(r.el,S.c.dur);
+  r.wpm=r.ok/5/(r.el/60);r.raw=S.typed.length/5/(r.el/60);
+  if(!S.samples.length||S.samples[S.samples.length-1].t<r.el-.5)S.samples.push({t:Math.round(r.el),wpm:r.wpm,raw:r.raw,err:0});
+  const prevBest=Math.max(0,...DB.history.map(h=>h.wpm));
+  for(const[k,v]of Object.entries(S.keyStats)){const g=DB.keyStats[k]=DB.keyStats[k]||{h:0,m:0};g.h+=v.h;g.m+=v.m}
+  let stars=0;
+  if(S.c.type==="lesson"){const L=LESSONS[S.c.lesson-1];stars=r.acc>=96&&r.wpm>=L.goal?3:r.acc>=92&&r.wpm>=L.goal*.8?2:r.acc>=85?1:0;
+    const ls=DB.lessons[L.id]=DB.lessons[L.id]||{stars:0,best:0};ls.stars=Math.max(ls.stars,stars);ls.best=Math.max(ls.best,Math.round(r.wpm))}
+  DB.history.push({d:Date.now(),label:S.c.label,wpm:Math.round(r.wpm),raw:Math.round(r.raw),acc:Math.round(r.acc),dur:Math.round(r.el)});
+  if(DB.history.length>300)DB.history=DB.history.slice(-300);save();
+  showResults(r,r.wpm>prevBest&&DB.history.length>1&&r.wpm>5,stars);
+}
+function rankOf(w){return w<15?["🐢 BEGINNER","Every pro started here!"]:w<25?["🚲 LEARNER","Nice rhythm, keep going!"]:w<35?["🛵 STEADY","You're getting quick!"]:w<45?["🚗 SKILLED","Faster than most people!"]:w<60?["🚀 FAST","Seriously impressive speed!"]:w<80?["⚡ PRO","Elite typing speed!"]:["👑 LEGEND","Unstoppable fingers!"]}
+function ring(host,val,max,label,col1,col2,suffix){
+  const R=78,C=2*Math.PI*R;
+  host.innerHTML=`<svg width="180" height="180"><defs><linearGradient id="g${label}" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="${col1}"/><stop offset="1" stop-color="${col2}"/></linearGradient></defs>
+  <circle cx="90" cy="90" r="${R}" fill="none" stroke="#ffffff10" stroke-width="12"/>
+  <circle cx="90" cy="90" r="${R}" fill="none" stroke="url(#g${label})" stroke-width="12" stroke-linecap="round" stroke-dasharray="${C}" stroke-dashoffset="${C}" style="transition:stroke-dashoffset 1.4s cubic-bezier(.2,.8,.2,1);filter:drop-shadow(0 0 8px ${col1})"/></svg>
+  <div class="in"><div><b style="color:${col1}">0</b><small>${label}</small></div></div>`;
+  const arc=host.querySelectorAll("circle")[1],b=host.querySelector("b");
+  requestAnimationFrame(()=>requestAnimationFrame(()=>arc.style.strokeDashoffset=C*(1-Math.min(1,val/max))));
+  countUp(b,val,suffix);
+}
+function countUp(el,to,suf=""){const t0=performance.now();(function f(t){const p=Math.min(1,(t-t0)/1200),e=1-Math.pow(1-p,3);el.textContent=Math.round(to*e)+suf;if(p<1)requestAnimationFrame(f)})(t0)}
+function showResults(r,pb,stars){
+  show("results");window.scrollTo(0,0);
+  const[badge,msg]=rankOf(r.wpm);$("#rBadge").textContent=badge;$("#rMsg").textContent=msg;$("#rLabel").textContent=S.c.label;
+  $("#rPB").style.display=pb?"block":"none";
+  $("#rStars").innerHTML=S.c.type==="lesson"?starStr(stars):"";
+  ring($("#ringW"),Math.round(r.wpm),100,"WPM","#22e1ff","#8b5cf6","");
+  ring($("#ringA"),Math.round(r.acc),100,"ACCURACY","#2bff9b","#22e1ff","%");
+  $("#rRaw").textContent=Math.round(r.raw);$("#rChars").textContent=r.ok+" / "+r.bad;$("#rTime").textContent=Math.round(r.el)+"s";$("#rCombo").textContent=S.maxCombo;
+  $("#rNext").style.display=S.c.type==="lesson"&&S.c.lesson<LESSONS.length?"inline-block":"none";
+  setTimeout(()=>drawChart($("#resChart"),S.samples.map(s=>s.t+"s"),[{d:S.samples.map(s=>s.raw),c:"#8b5cf6"},{d:S.samples.map(s=>s.wpm),c:"#22e1ff",fill:1}],S.samples.map(s=>s.err)),60);
+  const m=buildKB($("#resKb"),"kbstatic");heat(m,S.keyStats);
+  const miss=Object.entries(S.keyStats).filter(([k,v])=>v.m>0).sort((a,b)=>b[1].m-a[1].m).slice(0,5);
+  $("#resWeak").innerHTML=miss.length?"Most missed: "+miss.map(([k,v])=>`<b style="color:var(--red)">${k===" "?"space":k.toUpperCase()}</b> (${v.m})`).join(", "):"Perfect — no keys missed! 🎉";
+  if(pb||stars===3||r.acc>=98){confetti();snd("win")}
+}
+const starStr=n=>"★".repeat(n)+`<span class="o">${"★".repeat(3-n)}</span>`;
+$("#rRetry").onclick=()=>startSession(S.c);
+$("#rNext").onclick=()=>startLesson(S.c.lesson+1);
+$("#rDrill").onclick=startDrill;
+$("#rHome").onclick=goHome;
+
+/* ===================== CHART ===================== */
+function drawChart(cv,labels,series,errs){
+  const dpr=devicePixelRatio||1,W=cv.clientWidth,H=cv.clientHeight;cv.width=W*dpr;cv.height=H*dpr;const x=cv.getContext("2d");x.scale(dpr,dpr);
+  const pl=34,pr=10,pt=10,pb=22,n=labels.length;
+  if(n<2){x.fillStyle="#8590b8";x.font="14px Outfit";x.fillText("Complete a few sessions to see your graph here.",pl,H/2);return}
+  let mx=Math.max(10,...series.flatMap(s=>s.d));mx=Math.ceil(mx/10)*10;
+  const X=i=>pl+(W-pl-pr)*i/(n-1),Y=v=>pt+(H-pt-pb)*(1-v/mx);
+  x.strokeStyle="#ffffff12";x.fillStyle="#6a75a3";x.font="11px Outfit";x.lineWidth=1;
+  for(let g=0;g<=4;g++){const v=mx*g/4,y=Y(v);x.beginPath();x.moveTo(pl,y);x.lineTo(W-pr,y);x.stroke();x.fillText(Math.round(v),4,y+4)}
+  const step=Math.ceil(n/8);labels.forEach((l,i)=>{if(i%step===0||i===n-1)x.fillText(l,X(i)-8,H-6)});
+  series.forEach(s=>{
+    x.beginPath();s.d.forEach((v,i)=>{const px=X(i),py=Y(v);if(!i)x.moveTo(px,py);else{const qx=(X(i-1)+px)/2;x.bezierCurveTo(qx,Y(s.d[i-1]),qx,py,px,py)}});
+    if(s.fill){const gr=x.createLinearGradient(0,pt,0,H-pb);gr.addColorStop(0,s.c+"55");gr.addColorStop(1,s.c+"00");x.save();x.lineTo(X(n-1),H-pb);x.lineTo(X(0),H-pb);x.closePath();x.fillStyle=gr;x.fill();x.restore();
+      x.beginPath();s.d.forEach((v,i)=>{const px=X(i),py=Y(v);if(!i)x.moveTo(px,py);else{const qx=(X(i-1)+px)/2;x.bezierCurveTo(qx,Y(s.d[i-1]),qx,py,px,py)}})}
+    x.strokeStyle=s.c;x.lineWidth=2.5;x.shadowColor=s.c;x.shadowBlur=10;x.stroke();x.shadowBlur=0;
+  });
+  if(errs)errs.forEach((e,i)=>{if(e){x.fillStyle="#ff4d6d";x.shadowColor="#ff4d6d";x.shadowBlur=8;x.beginPath();x.arc(X(i),Y(series[1].d[i]),3+Math.min(e,4),0,7);x.fill();x.shadowBlur=0}});
+}
+
+/* ===================== HOME ===================== */
+function nextLesson(){for(const L of LESSONS){if(!(DB.lessons[L.id]&&DB.lessons[L.id].stars>=2))return L.id}return 0}
+function renderHome(){
+  const nx=nextLesson();
+  $("#lessons").innerHTML=LESSONS.map(L=>{const s=DB.lessons[L.id]||{stars:0,best:0};
+    return`<button class="lesson ${L.id===nx?"next":""}" data-l="${L.id}"><div class="num">${L.id}</div><div><b>${L.name}</b><em>${L.keys} · goal ${L.goal} wpm</em><div class="stars">${starStr(s.stars)} ${s.best?`<span style="color:var(--mute);font-size:11px;margin-left:6px">best ${s.best}</span>`:""}</div></div></button>`}).join("");
+  $$(".lesson").forEach(b=>b.onclick=()=>startLesson(+b.dataset.l));
+  const H=DB.history,last=H.slice(-10);
+  $("#sBest").textContent=H.length?Math.max(...H.map(h=>h.wpm)):0;
+  $("#sAvg").textContent=last.length?Math.round(last.reduce((a,h)=>a+h.wpm,0)/last.length):0;
+  $("#sAcc").textContent=(last.length?Math.round(last.reduce((a,h)=>a+h.acc,0)/last.length):0)+"%";
+  const days=new Set(H.map(h=>new Date(h.d).toDateString()));let st=0,d=new Date();if(!days.has(d.toDateString()))d.setDate(d.getDate()-1);
+  while(days.has(d.toDateString())){st++;d.setDate(d.getDate()-1)}
+  $("#sStreak").textContent=st;
+  const today=H.filter(h=>new Date(h.d).toDateString()===new Date().toDateString()).reduce((a,h)=>a+h.dur,0);
+  $("#sTotal").textContent=`${H.length} sessions · ${Math.round(today/60)} min today`;
+  const hs=H.slice(-30);drawChart($("#histChart"),hs.map((h,i)=>"#"+(H.length-hs.length+i+1)),[{d:hs.map(h=>h.acc),c:"#2bff9b"},{d:hs.map(h=>h.wpm),c:"#22e1ff",fill:1}]);
+  const m=buildKB($("#homeKb"),"kbstatic");heat(m,DB.keyStats);
+  const wk=weakList();$("#weakKeys").innerHTML=wk.length?wk.map(k=>`<div class="wk">${k.toUpperCase()}</div>`).join(""):`<span class="note">Take a test first — your weakest keys will appear here.</span>`;
+  $("#sndBtn").classList.toggle("off",!DB.settings.sound);$("#sndBtn").textContent=DB.settings.sound?"🔊":"🔇";
+}
+function startLesson(id){const L=LESSONS[id-1];startSession({type:"lesson",lesson:id,label:"Lesson "+id+" · "+L.name})}
+function startDrill(){startSession({type:"test",mode:"drill",dur:60,label:"Weak-key drill · 60s"})}
+function chipGroup(id,key){$$("#"+id+" .chip").forEach(c=>c.onclick=()=>{$$("#"+id+" .chip").forEach(x=>x.classList.remove("on"));c.classList.add("on");cfg[key]=isNaN(+c.dataset.v)?c.dataset.v:+c.dataset.v})}
+chipGroup("durChips","dur");chipGroup("modeChips","mode");
+$("#startTest").onclick=()=>{const names={words:"Easy words",science:"Science words",sentences:"Sentences",numbers:"Numbers"};startSession({type:"test",mode:cfg.mode,dur:cfg.dur,label:names[cfg.mode]+" · "+cfg.dur+"s"})};
+$("#startDrill").onclick=startDrill;
+$("#sndBtn").onclick=()=>{DB.settings.sound=!DB.settings.sound;save();renderHome();snd("ok")};
+$("#fsBtn").onclick=()=>{try{const d=document.documentElement;if(!document.fullscreenElement)(d.requestFullscreen||d.webkitRequestFullscreen).call(d).catch(()=>{});else document.exitFullscreen()}catch(e){}};
+function show(id){$$(".view").forEach(v=>v.classList.remove("on"));$("#"+id).classList.add("on")}
+
+/* ===================== BACKGROUND FX ===================== */
+const bg=$("#bg"),bx=bg.getContext("2d");let P=[];
+function bgSize(){bg.width=innerWidth;bg.height=innerHeight;P=Array.from({length:Math.min(70,Math.floor(innerWidth/18))},()=>({x:Math.random()*bg.width,y:Math.random()*bg.height,vx:(Math.random()-.5)*.25,vy:(Math.random()-.5)*.25,r:Math.random()*1.6+.4,c:rnd(["34,225,255","139,92,246","255,61,154"])}))}
+function bgLoop(){bx.clearRect(0,0,bg.width,bg.height);
+  for(let i=0;i<P.length;i++){const p=P[i];p.x+=p.vx;p.y+=p.vy;if(p.x<0||p.x>bg.width)p.vx*=-1;if(p.y<0||p.y>bg.height)p.vy*=-1;
+    bx.fillStyle=`rgba(${p.c},.8)`;bx.beginPath();bx.arc(p.x,p.y,p.r,0,7);bx.fill();
+    for(let j=i+1;j<P.length;j++){const q=P[j],dx=p.x-q.x,dy=p.y-q.y,d=dx*dx+dy*dy;if(d<12000){bx.strokeStyle=`rgba(${p.c},${.12*(1-d/12000)})`;bx.beginPath();bx.moveTo(p.x,p.y);bx.lineTo(q.x,q.y);bx.stroke()}}}
+  requestAnimationFrame(bgLoop)}
+addEventListener("resize",()=>{bgSize();if($("#home").classList.contains("on"))renderHome()});bgSize();bgLoop();
+
+function confetti(){const cv=$("#confetti"),x=cv.getContext("2d");cv.width=innerWidth;cv.height=innerHeight;
+  const C=Array.from({length:160},()=>({x:innerWidth/2,y:innerHeight/3,vx:(Math.random()-.5)*16,vy:Math.random()*-14-4,s:Math.random()*8+4,r:Math.random()*6,vr:(Math.random()-.5)*.3,c:rnd(["#22e1ff","#ff3d9a","#ffd166","#8b5cf6","#2bff9b"])}));
+  const t0=performance.now();(function f(t){x.clearRect(0,0,cv.width,cv.height);C.forEach(p=>{p.vy+=.35;p.vx*=.99;p.x+=p.vx;p.y+=p.vy;p.r+=p.vr;x.save();x.translate(p.x,p.y);x.rotate(p.r);x.fillStyle=p.c;x.fillRect(-p.s/2,-p.s/4,p.s,p.s/2);x.restore()});
+    if(t-t0<3500)requestAnimationFrame(f);else x.clearRect(0,0,cv.width,cv.height)})(t0)}
+
+renderHome();
+</script>
+</body>
+</html>

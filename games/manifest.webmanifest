@@ -1,8 +1,8 @@
 {
  "id": "./",
- "name": "Saurabh's EDUVERSE — Science Games",
+ "name": "Saurabh's EDUVERSE — Learning Games",
  "short_name": "EDUVERSE",
- "description": "3D science games for CBSE / NCERT Class 6 to 10 in English and all 22 Indian languages",
+ "description": "3D science games for CBSE / NCERT Class 1 to 10 in English and all 22 Indian languages",
  "start_url": "./",
  "scope": "../",
  "display": "standalone",

@@ -1,13 +1,27 @@
 # Saurabh's EDUVERSE 🎮🔬
 
-Free 3D science games and virtual labs for **CBSE / NCERT Class 6 to 10**, made by **Saurabh Sharma (Saurabh Sir)**, Hanifa School, Borsad.
+Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made by **Saurabh Sharma (Saurabh Sir)**, Hanifa School, Borsad.
 
 - **Games app:** [`games/`](games/) — every game with its thumbnail, sorted by class, with search
 - **Languages:** English + all **22 scheduled languages of India** (Hindi, Gujarati, Marathi, Bengali, Assamese, Odia, Punjabi, Tamil, Telugu, Kannada, Malayalam, Urdu, Sindhi, Kashmiri, Nepali, Konkani, Maithili, Dogri, Bodo, Sanskrit, Santali, Manipuri)
 - **Installable app:** open the games page on an Android phone and tap **Install app** (works offline after "Save offline")
 - **3D labs:** [Science Laboratory](index.html) · [Biology Lab](bio/index.html) · [Chemistry Lab](chemlab/index.html)
 
-## Games
+## Games (21)
+
+### Class 1
+
+| | Game | Chapter |
+|---|---|---|
+| <a href="games/class-1/festival-islands-3d/index.html"><img src="games/class-1/festival-islands-3d/thumbnail.webp" width="240" alt="Festival Islands 3D"></a> | **🪔 Festival Islands 3D** | Ch 12 · Let's Celebrate |
+| <a href="games/class-1/helper-town-express/index.html"><img src="games/class-1/helper-town-express/thumbnail.webp" width="240" alt="Helper Town Express"></a> | **🛺 Helper Town Express** | Ch 10 · People at Work |
+
+### Class 3
+
+| | Game | Chapter |
+|---|---|---|
+| <a href="games/class-3/bubbly-healthy-island-3d/index.html"><img src="games/class-3/bubbly-healthy-island-3d/thumbnail.webp" width="240" alt="Bubbly's Healthy Happy Island 3D"></a> | **🫧 Bubbly's Healthy Happy Island 3D** | Ch 9 · Staying Healthy and Happy |
+| <a href="games/class-3/birbal-crow-count/index.html"><img src="games/class-3/birbal-crow-count/thumbnail.webp" width="240" alt="Birbal's Crow Count"></a> | **🐦 Birbal's Crow Count** | House of Hundreds |
 
 ### Class 6
 
@@ -38,6 +52,14 @@ Free 3D science games and virtual labs for **CBSE / NCERT Class 6 to 10**, made 
 | <a href="games/class-10/magnet-quest-3d/index.html"><img src="games/class-10/magnet-quest-3d/thumbnail.webp" width="240" alt="Magnet Quest 3D"></a> | **🧲 Magnet Quest 3D** | Ch 13 · Magnetic Effects of Electric Current |
 | <a href="games/class-10/magnet-heredity-quiz/index.html"><img src="games/class-10/magnet-heredity-quiz/thumbnail.webp" width="240" alt="Magnet & Heredity MCQ Quiz"></a> | **📝 Magnet & Heredity MCQ Quiz** | Magnetism and Heredity |
 
+### Fun & Skills
+
+| | Game | Chapter |
+|---|---|---|
+| <a href="games/fun/turbo-horizon-bharat/index.html"><img src="games/fun/turbo-horizon-bharat/thumbnail.webp" width="240" alt="Turbo Horizon: Bharat Edition"></a> | **🏎️ Turbo Horizon: Bharat Edition** | Racing across India |
+| <a href="games/fun/typenova-typing-trainer/index.html"><img src="games/fun/typenova-typing-trainer/thumbnail.webp" width="240" alt="TypeNova — Typing Trainer"></a> | **⌨️ TypeNova — Typing Trainer** | Typing speed |
+| <a href="games/fun/hanami-koi-pond/index.html"><img src="games/fun/hanami-koi-pond/thumbnail.webp" width="240" alt="Hanami Koi Pond"></a> | **🎏 Hanami Koi Pond** | Relax at the koi pond |
+
 ## Folder layout
 
 ```
@@ -48,8 +70,9 @@ games/
   catalog.js          List of games  ← add a line here for each new game
   i18n.js             App words in 23 languages
   manifest.webmanifest
-  class-6/<game>/index.html + thumbnail.webp
-  class-9/…  class-10/…
+  class-1/ … class-10/<game>/index.html + thumbnail.webp
+  fun/                Fun & Skills games
+  vendor/three-r128/  three.js kept on the site so games work offline
 sw.js                 Offline support for the whole site
 ```
 
