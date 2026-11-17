@@ -7,14 +7,14 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 - **Installable app:** open the games page on an Android phone and tap **Install app** (works offline after "Save offline")
 - **3D labs:** [Science Laboratory](index.html) · [Biology Lab](bio/index.html) · [Chemistry Lab](chemlab/index.html) · [Periodic Table 3D](ptable/index.html)
 
-## Games (21) and apps (6)
+## Games (30) and apps (6)
 
 ### Class 1
 
 | | Name | Chapter |
 |---|---|---|
-| <a href="games/class-1/festival-islands-3d/index.html"><img src="games/class-1/festival-islands-3d/thumbnail.webp" width="240" alt="Festival Islands 3D"></a> | **🪔 Festival Islands 3D** | Ch 12 · Let's Celebrate |
 | <a href="games/class-1/helper-town-express/index.html"><img src="games/class-1/helper-town-express/thumbnail.webp" width="240" alt="Helper Town Express"></a> | **🛺 Helper Town Express** | Ch 10 · People at Work |
+| <a href="games/class-1/festival-islands-3d/index.html"><img src="games/class-1/festival-islands-3d/thumbnail.webp" width="240" alt="Festival Islands 3D"></a> | **🪔 Festival Islands 3D** | Ch 12 · Let's Celebrate |
 
 ### Class 3
 
@@ -27,9 +27,9 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 
 | | Name | Chapter |
 |---|---|---|
-| <a href="games/class-6/bharat-ki-yatra-3d/index.html"><img src="games/class-6/bharat-ki-yatra-3d/thumbnail.webp" width="240" alt="Bharat ki Yatra 3D"></a> | **🚂 Bharat ki Yatra 3D** | Ch 9 · Methods of Separation in Everyday Life |
-| <a href="games/class-6/boondi-water-journey-3d/index.html"><img src="games/class-6/boondi-water-journey-3d/thumbnail.webp" width="240" alt="Boondi's Water Journey 3D"></a> | **💧 Boondi's Water Journey 3D** | Ch 8 · A Journey through States of Water |
 | <a href="games/class-6/taapu-temperature-trek/index.html"><img src="games/class-6/taapu-temperature-trek/thumbnail.webp" width="240" alt="Taapu's Temperature Trek"></a> | **🌡️ Taapu's Temperature Trek** | Ch 7 · Temperature and its Measurement |
+| <a href="games/class-6/boondi-water-journey-3d/index.html"><img src="games/class-6/boondi-water-journey-3d/thumbnail.webp" width="240" alt="Boondi's Water Journey 3D"></a> | **💧 Boondi's Water Journey 3D** | Ch 8 · A Journey through States of Water |
+| <a href="games/class-6/bharat-ki-yatra-3d/index.html"><img src="games/class-6/bharat-ki-yatra-3d/thumbnail.webp" width="240" alt="Bharat ki Yatra 3D"></a> | **🚂 Bharat ki Yatra 3D** | Ch 9 · Methods of Separation in Everyday Life |
 
 ### Class 9
 
@@ -44,11 +44,20 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 
 | | Name | Chapter |
 |---|---|---|
+| <a href="games/class-10/reaction-express-3d/index.html"><img src="games/class-10/reaction-express-3d/thumbnail.webp" width="240" alt="Reaction Express 3D"></a> | **🚂 Reaction Express 3D** | Ch 1 · Chemical Reactions and Equations |
+| <a href="games/class-10/ph-rainbow-isles-3d/index.html"><img src="games/class-10/ph-rainbow-isles-3d/thumbnail.webp" width="240" alt="pH Rainbow Isles 3D"></a> | **🌈 pH Rainbow Isles 3D** | Ch 2 · Acids, Bases and Salts |
 | <a href="games/class-10/litmus-lab/index.html"><img src="games/class-10/litmus-lab/thumbnail.webp" width="240" alt="Litmus Lab"></a> | **🧪 Litmus Lab** | Ch 2 · Acids, Bases and Salts |
+| <a href="games/class-10/metal-mountain-mine-3d/index.html"><img src="games/class-10/metal-mountain-mine-3d/thumbnail.webp" width="240" alt="Metal Mountain Mine 3D"></a> | **⛏️ Metal Mountain Mine 3D** | Ch 3 · Metals and Non-metals |
 | <a href="games/class-10/carbon-citadel-3d/index.html"><img src="games/class-10/carbon-citadel-3d/thumbnail.webp" width="240" alt="Carbon Citadel 3D"></a> | **🏰 Carbon Citadel 3D** | Ch 4 · Carbon and its Compounds |
+| <a href="games/class-10/life-engine-3d/index.html"><img src="games/class-10/life-engine-3d/thumbnail.webp" width="240" alt="Life Engine 3D"></a> | **🫁 Life Engine 3D** | Ch 5 · Life Processes |
 | <a href="games/class-10/synapse-voyager/index.html"><img src="games/class-10/synapse-voyager/thumbnail.webp" width="240" alt="Synapse Voyager"></a> | **🧠 Synapse Voyager** | Ch 6 · Control and Coordination |
 | <a href="games/class-10/neuroatlas-3d/index.html"><img src="games/class-10/neuroatlas-3d/thumbnail.webp" width="240" alt="NeuroAtlas 3D"></a> | **🧬 NeuroAtlas 3D** | Ch 6 · Control and Coordination |
+| <a href="games/class-10/generation-spiral-3d/index.html"><img src="games/class-10/generation-spiral-3d/thumbnail.webp" width="240" alt="Generation Spiral 3D"></a> | **🌸 Generation Spiral 3D** | Ch 7 · How do Organisms Reproduce? |
+| <a href="games/class-10/pea-code-garden-3d/index.html"><img src="games/class-10/pea-code-garden-3d/thumbnail.webp" width="240" alt="Pea Code Garden 3D"></a> | **🫛 Pea Code Garden 3D** | Ch 8 · Heredity |
+| <a href="games/class-10/lumina-lighthouse-3d/index.html"><img src="games/class-10/lumina-lighthouse-3d/thumbnail.webp" width="240" alt="Lumina Lighthouse 3D"></a> | **🗼 Lumina Lighthouse 3D** | Ch 9 · Light – Reflection and Refraction |
+| <a href="games/class-10/iris-arch-3d/index.html"><img src="games/class-10/iris-arch-3d/thumbnail.webp" width="240" alt="Iris Arch 3D"></a> | **👁️ Iris Arch 3D** | Ch 10 · The Human Eye and the Colourful World |
 | <a href="games/class-10/volt-city-3d/index.html"><img src="games/class-10/volt-city-3d/thumbnail.webp" width="240" alt="Volt City 3D"></a> | **⚡ Volt City 3D** | Ch 11 · Electricity |
+| <a href="games/class-10/little-green-planet-3d/index.html"><img src="games/class-10/little-green-planet-3d/thumbnail.webp" width="240" alt="Little Green Planet 3D"></a> | **🌳 Little Green Planet 3D** | Ch 13 · Our Environment |
 | <a href="games/class-10/magnet-quest-3d/index.html"><img src="games/class-10/magnet-quest-3d/thumbnail.webp" width="240" alt="Magnet Quest 3D"></a> | **🧲 Magnet Quest 3D** | Ch 13 · Magnetic Effects of Electric Current |
 | <a href="games/class-10/magnet-heredity-quiz/index.html"><img src="games/class-10/magnet-heredity-quiz/thumbnail.webp" width="240" alt="Magnet & Heredity MCQ Quiz"></a> | **📝 Magnet & Heredity MCQ Quiz** | Magnetism and Heredity |
 
