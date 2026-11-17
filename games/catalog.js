@@ -35,7 +35,7 @@ window.EDU_GAMES = [
   { cls: 10, path: 'class-10/magnet-heredity-quiz',   title: 'Magnet & Heredity MCQ Quiz',    ch: 0,  topic: 'quiz',    emoji: '📝' },
 
   /* Fun & Skills (not tied to a class) */
-  { cls: 0, fun: true, path: 'fun/india-run',               title: 'INDIA RUN: Legends of Bharat', topicText: '3D endless run across 15 Indian cities', emoji: '🏃' },
+  { cls: 0, fun: true, path: 'fun/india-run',               title: 'INDIA RUN: Legends of Bharat', topicText: '15 Indian cities, monuments, festivals and multiplayer', emoji: '🏃' },
   { cls: 0, fun: true, path: 'fun/turbo-horizon-bharat',   title: 'Turbo Horizon: Bharat Edition', topic: 'race', emoji: '🏎️',
     files: ['../../vendor/three-r128/three.min.js','../../vendor/three-r128/postprocessing/EffectComposer.js','../../vendor/three-r128/postprocessing/RenderPass.js','../../vendor/three-r128/postprocessing/ShaderPass.js','../../vendor/three-r128/postprocessing/UnrealBloomPass.js','../../vendor/three-r128/shaders/CopyShader.js','../../vendor/three-r128/shaders/GammaCorrectionShader.js','../../vendor/three-r128/shaders/LuminosityHighPassShader.js'] },
   { cls: 0, fun: true, path: 'fun/typenova-typing-trainer', title: 'TypeNova — Typing Trainer',    topic: 'type', emoji: '⌨️' },

@@ -65,7 +65,7 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 
 | | Name | About |
 |---|---|---|
-| <a href="games/fun/india-run/index.html"><img src="games/fun/india-run/thumbnail.webp" width="240" alt="INDIA RUN: Legends of Bharat"></a> | **🏃 INDIA RUN: Legends of Bharat** | 3D endless run across 15 Indian cities |
+| <a href="games/fun/india-run/index.html"><img src="games/fun/india-run/thumbnail.webp" width="240" alt="INDIA RUN: Legends of Bharat"></a> | **🏃 INDIA RUN: Legends of Bharat** | 15 Indian cities, monuments, festivals and multiplayer |
 | <a href="games/fun/turbo-horizon-bharat/index.html"><img src="games/fun/turbo-horizon-bharat/thumbnail.webp" width="240" alt="Turbo Horizon: Bharat Edition"></a> | **🏎️ Turbo Horizon: Bharat Edition** | Racing across India |
 | <a href="games/fun/typenova-typing-trainer/index.html"><img src="games/fun/typenova-typing-trainer/thumbnail.webp" width="240" alt="TypeNova — Typing Trainer"></a> | **⌨️ TypeNova — Typing Trainer** | Typing speed |
 | <a href="games/fun/hanami-koi-pond/index.html"><img src="games/fun/hanami-koi-pond/thumbnail.webp" width="240" alt="Hanami Koi Pond"></a> | **🎏 Hanami Koi Pond** | Relax at the koi pond |
