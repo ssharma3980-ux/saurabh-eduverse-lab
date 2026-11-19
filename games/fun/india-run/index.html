@@ -242,6 +242,13 @@ input{font:inherit}
 .hLives i.on{opacity:1}
 .hLives.hit{animation:livesHit .6s}
 @keyframes livesHit{0%,100%{transform:scale(1)}30%{transform:scale(1.25)}60%{transform:scale(.95)}}
+/* Live Race button on the home screen */
+.liveBtn{pointer-events:auto;margin:10px auto 0;display:flex;align-items:center;gap:10px;padding:10px 20px;border-radius:999px;border:1.5px solid rgba(255,90,90,.75);background:linear-gradient(180deg,rgba(150,20,20,.75),rgba(70,8,8,.75));color:#fff;box-shadow:0 0 18px rgba(255,60,60,.35);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);font:inherit;cursor:pointer;transition:transform .15s}
+.liveBtn:active{transform:scale(.95)}
+.liveBtn b{font-size:17px;font-weight:900;letter-spacing:.5px}
+.liveBtn small{font-size:11px;opacity:.75;font-weight:700}
+.orLine{display:flex;align-items:center;gap:10px;opacity:.6;font-size:12px;font-weight:700;margin:4px 0}
+.orLine::before,.orLine::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.25)}
 
 </style>
 </head>
@@ -8838,7 +8845,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'Could not connect the two phones. Try again, or connect both to Wi-Fi.', friendLeft: 'Your friend left the race.', retry: 'Try again',
       rematch: 'Rematch', waitRematch: 'Waiting for the host to start a rematch…', leave: 'Leave', stillRunning: 'is still running…', isOut: 'is out at',
       youWin: 'You win! 🏆', friendWins: 'wins!', draw: "It's a draw!", go: 'GO!', you: 'You', liveInvite: '🔴 Race me LIVE in INDIA RUN! Code:', city: 'City',
-      raceNote: 'Whoever runs farther wins.', freeLife: 'Free life used!', livesLeft: 'lives left', lastLife: 'That was your last free life!',
+      raceNote: 'Whoever runs farther wins.', freeLife: 'Free life used!', or: 'or', yourName: 'Your name', livesLeft: 'lives left', lastLife: 'That was your last free life!',
     },
     hi: {
       liveRace: 'लाइव रेस', liveDesc: 'इंटरनेट से दोस्त के साथ एक ही समय पर दौड़ें। 4 अंकों का कोड भेजें और साथ-साथ दौड़ें!',
@@ -8848,7 +8855,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'दोनों फ़ोन जुड़ नहीं पाए। फिर कोशिश करें, या दोनों Wi-Fi से जुड़ें।', friendLeft: 'दोस्त रेस छोड़ गया।', retry: 'फिर कोशिश करें',
       rematch: 'फिर से रेस', waitRematch: 'होस्ट की नई रेस का इंतज़ार…', leave: 'बाहर निकलें', stillRunning: 'अभी दौड़ रहा है…', isOut: 'आउट हुआ',
       youWin: 'आप जीते! 🏆', friendWins: 'जीता!', draw: 'बराबरी!', go: 'दौड़ो!', you: 'आप', liveInvite: '🔴 INDIA RUN में मेरे साथ लाइव दौड़ो! कोड:', city: 'शहर',
-      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।', freeLife: 'फ्री लाइफ़ इस्तेमाल हुई!', livesLeft: 'लाइफ़ बाकी', lastLife: 'यह आपकी आख़िरी फ्री लाइफ़ थी!',
+      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।', freeLife: 'फ्री लाइफ़ इस्तेमाल हुई!', or: 'या', yourName: 'आपका नाम', livesLeft: 'लाइफ़ बाकी', lastLife: 'यह आपकी आख़िरी फ्री लाइफ़ थी!',
     },
     gu: {
       liveRace: 'લાઇવ રેસ', liveDesc: 'ઇન્ટરનેટથી મિત્ર સાથે એક જ સમયે દોડો. 4 અંકનો કોડ મોકલો અને સાથે દોડો!',
@@ -8858,7 +8865,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'બંને ફોન જોડાઈ શક્યા નહીં. ફરી પ્રયાસ કરો, અથવા બંને Wi-Fi પર જોડાઓ.', friendLeft: 'મિત્રએ રેસ છોડી દીધી.', retry: 'ફરી પ્રયાસ કરો',
       rematch: 'ફરી રેસ', waitRematch: 'હોસ્ટની નવી રેસની રાહ…', leave: 'બહાર નીકળો', stillRunning: 'હજી દોડે છે…', isOut: 'આઉટ થયો',
       youWin: 'તમે જીત્યા! 🏆', friendWins: 'જીત્યો!', draw: 'બરાબરી!', go: 'દોડો!', you: 'તમે', liveInvite: '🔴 INDIA RUN માં મારી સાથે લાઇવ દોડો! કોડ:', city: 'શહેર',
-      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.', freeLife: 'ફ્રી લાઇફ વપરાઈ!', livesLeft: 'લાઇફ બાકી', lastLife: 'આ તમારી છેલ્લી ફ્રી લાઇફ હતી!',
+      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.', freeLife: 'ફ્રી લાઇફ વપરાઈ!', or: 'અથવા', yourName: 'તમારું નામ', livesLeft: 'લાઇફ બાકી', lastLife: 'આ તમારી છેલ્લી ફ્રી લાઇફ હતી!',
     },
   };
   for (const k in add) Object.assign(IR.STR[k], add[k]);
@@ -9306,6 +9313,8 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
     build.call(this, game);
     $('#ui').insertAdjacentHTML('beforeend', `<div id="live" class="screen panelScreen"><div class="panel narrow" id="liveBody"></div></div>`);
     $('#hud').insertAdjacentHTML('beforeend', `<div class="liveCount" id="liveCount"></div>`);
+    $('.runWrap').insertAdjacentHTML('afterend', `<button class="liveBtn" id="bLiveMenu"><span class="liveDot"></span><b data-t="liveRace">${this.tr('liveRace')}</b><small>2P · 4-digit code</small></button>`);
+    $('#bLiveMenu').onclick = () => { this.click(); if (LV.st === 'error') LV.st = 'idle'; this.openLive(); this.renderLive(); };
     LV.cb = (ev, data) => this.liveEvent(ev, data);
     const code = LV.parseLink(location.hash);
     if (code) {
@@ -9346,7 +9355,14 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
     const box = $('#liveBody'), t = (k) => this.tr(k), st = LV.st, d = this.g.data;
     const cancel = `<button class="ghost" id="bLiveX">${t('cancel')}</button>`;
     let html = '';
-    if (st === 'opening' || st === 'connecting') {
+    if (st === 'idle') {
+      html = `<div class="mh c"><span class="liveDot"></span><b>${t('liveRace')}</b></div><p class="muted">${t('liveDesc')}</p>
+        <div class="field"><small>${t('yourName')}</small><input id="liveName" maxlength="14" value="${esc(d.name || '')}" placeholder="${t('yourName')}"></div>
+        <button class="cta" id="bLiveHost2">🏁 ${t('createRace')}</button>
+        <div class="orLine"><span>${t('or')}</span></div>
+        <div class="joinRow"><input id="liveCode2" inputmode="numeric" pattern="[0-9]*" maxlength="4" placeholder="${t('enterCode')}" autocomplete="off"><button class="ghost" id="bLiveJoin2">${t('joinRace')} ›</button></div>
+        <button class="ghost" id="bLiveX">${t('home')}</button>`;
+    } else if (st === 'opening' || st === 'connecting') {
       html = `<div class="bigIcon spin">📡</div><h2>${t('connecting')}</h2>${LV.code && st === 'connecting' ? `<p class="codeSmall">${LV.code}</p>` : ''}${cancel}`;
     } else if (st === 'waiting') {
       html = `<div class="mh c"><span class="liveDot"></span><b>${t('liveRace')}</b></div><small class="muted">${t('raceCode')}</small>
@@ -9370,6 +9386,18 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
         <button class="cta" id="bLiveRetry">🔁 ${t('retry')}</button><button class="ghost" id="bLiveX">${t('home')}</button>`;
     } else return;
     box.innerHTML = html;
+    if (st === 'idle') {
+      const nm = $('#liveName'), inp = $('#liveCode2');
+      const keepName = () => { d.name = nm.value.trim().slice(0, 14); IR.progress.save(); };
+      inp.oninput = () => { inp.value = inp.value.replace(/\D/g, '').slice(0, 4); };
+      $('#bLiveHost2').onclick = () => { this.click(); keepName(); LV.host(); this.renderLive(); };
+      $('#bLiveJoin2').onclick = () => {
+        this.click(); keepName();
+        if (!/^\d{4}$/.test(inp.value)) { inp.classList.add('shake'); setTimeout(() => inp.classList.remove('shake'), 500); return; }
+        LV.join(inp.value); this.renderLive();
+      };
+      inp.onkeydown = (e) => { if (e.key === 'Enter') $('#bLiveJoin2').click(); };
+    }
     const x = $('#bLiveX'); if (x) x.onclick = () => { this.click(); LV.close(true); this.toMenu(); };
     const go = $('#bLiveGo'); if (go) go.onclick = () => { this.click(); LV.start(); };
     const retry = $('#bLiveRetry'); if (retry) retry.onclick = () => { this.click(); if (LV.lastRole === 'guest' && LV.lastCode) LV.join(LV.lastCode); else LV.host(); this.renderLive(); };
