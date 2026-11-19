@@ -249,6 +249,7 @@ input{font:inherit}
 .liveBtn small{font-size:11px;opacity:.75;font-weight:700}
 .orLine{display:flex;align-items:center;gap:10px;opacity:.6;font-size:12px;font-weight:700;margin:4px 0}
 .orLine::before,.orLine::after{content:"";flex:1;height:1px;background:rgba(255,255,255,.25)}
+a.cta{display:flex;align-items:center;justify-content:center;text-decoration:none;box-sizing:border-box}
 
 </style>
 </head>
@@ -8845,7 +8846,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'Could not connect the two phones. Try again, or connect both to Wi-Fi.', friendLeft: 'Your friend left the race.', retry: 'Try again',
       rematch: 'Rematch', waitRematch: 'Waiting for the host to start a rematch…', leave: 'Leave', stillRunning: 'is still running…', isOut: 'is out at',
       youWin: 'You win! 🏆', friendWins: 'wins!', draw: "It's a draw!", go: 'GO!', you: 'You', liveInvite: '🔴 Race me LIVE in INDIA RUN! Code:', city: 'City',
-      raceNote: 'Whoever runs farther wins.', freeLife: 'Free life used!', or: 'or', yourName: 'Your name', livesLeft: 'lives left', lastLife: 'That was your last free life!',
+      raceNote: 'Whoever runs farther wins.', freeLife: 'Free life used!', or: 'or', yourName: 'Your name', boxedNote: 'Live Race cannot connect from inside this preview. Open the game website or the Android app to race your friend.', openSite: 'Open game website', livesLeft: 'lives left', lastLife: 'That was your last free life!',
     },
     hi: {
       liveRace: 'लाइव रेस', liveDesc: 'इंटरनेट से दोस्त के साथ एक ही समय पर दौड़ें। 4 अंकों का कोड भेजें और साथ-साथ दौड़ें!',
@@ -8855,7 +8856,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'दोनों फ़ोन जुड़ नहीं पाए। फिर कोशिश करें, या दोनों Wi-Fi से जुड़ें।', friendLeft: 'दोस्त रेस छोड़ गया।', retry: 'फिर कोशिश करें',
       rematch: 'फिर से रेस', waitRematch: 'होस्ट की नई रेस का इंतज़ार…', leave: 'बाहर निकलें', stillRunning: 'अभी दौड़ रहा है…', isOut: 'आउट हुआ',
       youWin: 'आप जीते! 🏆', friendWins: 'जीता!', draw: 'बराबरी!', go: 'दौड़ो!', you: 'आप', liveInvite: '🔴 INDIA RUN में मेरे साथ लाइव दौड़ो! कोड:', city: 'शहर',
-      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।', freeLife: 'फ्री लाइफ़ इस्तेमाल हुई!', or: 'या', yourName: 'आपका नाम', livesLeft: 'लाइफ़ बाकी', lastLife: 'यह आपकी आख़िरी फ्री लाइफ़ थी!',
+      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।', freeLife: 'फ्री लाइफ़ इस्तेमाल हुई!', or: 'या', yourName: 'आपका नाम', boxedNote: 'इस प्रीव्यू के अंदर से लाइव रेस नहीं जुड़ सकती। दोस्त के साथ दौड़ने के लिए गेम की वेबसाइट या Android ऐप खोलें।', openSite: 'गेम वेबसाइट खोलें', livesLeft: 'लाइफ़ बाकी', lastLife: 'यह आपकी आख़िरी फ्री लाइफ़ थी!',
     },
     gu: {
       liveRace: 'લાઇવ રેસ', liveDesc: 'ઇન્ટરનેટથી મિત્ર સાથે એક જ સમયે દોડો. 4 અંકનો કોડ મોકલો અને સાથે દોડો!',
@@ -8865,7 +8866,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'બંને ફોન જોડાઈ શક્યા નહીં. ફરી પ્રયાસ કરો, અથવા બંને Wi-Fi પર જોડાઓ.', friendLeft: 'મિત્રએ રેસ છોડી દીધી.', retry: 'ફરી પ્રયાસ કરો',
       rematch: 'ફરી રેસ', waitRematch: 'હોસ્ટની નવી રેસની રાહ…', leave: 'બહાર નીકળો', stillRunning: 'હજી દોડે છે…', isOut: 'આઉટ થયો',
       youWin: 'તમે જીત્યા! 🏆', friendWins: 'જીત્યો!', draw: 'બરાબરી!', go: 'દોડો!', you: 'તમે', liveInvite: '🔴 INDIA RUN માં મારી સાથે લાઇવ દોડો! કોડ:', city: 'શહેર',
-      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.', freeLife: 'ફ્રી લાઇફ વપરાઈ!', or: 'અથવા', yourName: 'તમારું નામ', livesLeft: 'લાઇફ બાકી', lastLife: 'આ તમારી છેલ્લી ફ્રી લાઇફ હતી!',
+      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.', freeLife: 'ફ્રી લાઇફ વપરાઈ!', or: 'અથવા', yourName: 'તમારું નામ', boxedNote: 'આ પ્રિવ્યૂની અંદરથી લાઇવ રેસ જોડાઈ શકતી નથી. મિત્ર સાથે દોડવા ગેમની વેબસાઇટ અથવા Android એપ ખોલો.', openSite: 'ગેમ વેબસાઇટ ખોલો', livesLeft: 'લાઇફ બાકી', lastLife: 'આ તમારી છેલ્લી ફ્રી લાઇફ હતી!',
     },
   };
   for (const k in add) Object.assign(IR.STR[k], add[k]);
@@ -9382,7 +9383,12 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
     } else if (st === 'lobby') {
       html = `<div class="bigIcon spin">📡</div><h2>${t('connecting')}</h2>${cancel}`;
     } else if (st === 'error') {
-      html = `<div class="bigIcon">⚠️</div><h2>${t('liveRace')}</h2><p class="errTxt">${t(this.liveErr || 'noConn')}</p>
+      // inside a preview frame (e.g. the Claude app) the browser blocks the connection: send players to the real site
+      const boxed = !IR.NATIVE && this.liveErr === 'noNet' && !/github\.io$|itch\.(zone|io)$|^localhost$|^127\./.test(location.hostname);
+      html = boxed
+        ? `<div class="bigIcon">🌐</div><h2>${t('liveRace')}</h2><p class="errTxt">${t('boxedNote')}</p>
+          <a class="cta" id="bLiveSite" href="https://ssharma3980-ux.github.io/india-run/" target="_blank" rel="noopener">🌐 ${t('openSite')}</a><button class="ghost" id="bLiveX">${t('home')}</button>`
+        : `<div class="bigIcon">⚠️</div><h2>${t('liveRace')}</h2><p class="errTxt">${t(this.liveErr || 'noConn')}</p>
         <button class="cta" id="bLiveRetry">🔁 ${t('retry')}</button><button class="ghost" id="bLiveX">${t('home')}</button>`;
     } else return;
     box.innerHTML = html;
