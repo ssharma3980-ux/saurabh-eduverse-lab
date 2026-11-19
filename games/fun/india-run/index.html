@@ -235,6 +235,13 @@ input{font:inherit}
 .hTag.live{border:1px solid rgba(255,80,80,.55)}
 .brow small{opacity:.6;font-size:12px;min-width:44px;text-align:right}
 .cta[disabled]{filter:grayscale(.7);opacity:.55}
+/* ---- free lives ---- */
+.hLeft{display:flex;flex-direction:column;align-items:flex-start;gap:6px}
+.hLives{display:flex;gap:2px;padding:3px 8px;border-radius:12px;background:rgba(14,7,6,.45);backdrop-filter:blur(8px);-webkit-backdrop-filter:blur(8px)}
+.hLives i{font-style:normal;font-size:15px;line-height:1.2;opacity:.55;transition:transform .3s,opacity .3s}
+.hLives i.on{opacity:1}
+.hLives.hit{animation:livesHit .6s}
+@keyframes livesHit{0%,100%{transform:scale(1)}30%{transform:scale(1.25)}60%{transform:scale(.95)}}
 
 </style>
 </head>
@@ -7776,6 +7783,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
 /* ==== game/progress.js ==== */
 /* Save data, missions, achievements, daily rewards, upgrades */
 (function () {
+  IR.FREE_LIVES = 4; // free second chances in every run
   const KEY = 'indiarun_save_v1';
   const def = () => ({
     coins: 0, best: 0, totalCoins: 0, totalDist: 0, runs: 0, totalJumps: 0,
@@ -8358,7 +8366,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       this.p = {
         d: 3, x: 0, y: 0, vy: 0, laneI: 1, speed: 11, dist: 0, coins: 0, score: 0, slideT: 0, slideQ: false, grounded: true,
         turnQ: false, turns: 0, jumps: 0, slides: 0, powers: 0, pw: { magnet: 0, shield: 0, double: 0, multi: 0, boost: 0, glide: 0, rath: 0 }, tokens: 0, treasures: 0, facts: 0,
-        invuln: 0, revives: 0, combo: 0, comboT: 0, nextCheck: 1000, timeLeft: mode === 'timed' ? 120 : 0, fall: false, dead: false, chDone: false,
+        invuln: 0, revives: 0, lives: IR.FREE_LIVES, combo: 0, comboT: 0, nextCheck: 1000, timeLeft: mode === 'timed' ? 120 : 0, fall: false, dead: false, chDone: false,
       };
       this.mult = IR.progress.multiplier();
       this.camYaw = this.run.yaw;
@@ -8390,12 +8398,15 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       if (navigator.vibrate) try { navigator.vibrate(120); } catch (e) {}
     }
     reviveCost() { return 150 * Math.pow(2, this.p.revives); }
-    revive() {
+    revive(free) {
       const p = this.p, cost = this.reviveCost();
-      if (this.data.coins + p.coins < cost) return false;
-      // spend banked coins first, then run coins
-      const fromBank = Math.min(this.data.coins, cost); this.data.coins -= fromBank; p.coins -= cost - fromBank;
-      p.revives++; p.dead = false; p.invuln = 2.5; p.vy = 0; p.slideT = 0; p.fall = false;
+      if (!free) {
+        if (this.data.coins + p.coins < cost) return false;
+        // spend banked coins first, then run coins
+        const fromBank = Math.min(this.data.coins, cost); this.data.coins -= fromBank; p.coins -= cost - fromBank;
+        p.revives++;
+      }
+      p.dead = false; p.invuln = 2.5; p.vy = 0; p.slideT = 0; p.fall = false;
       if (p.cause === 'wall') this.doTurn(true);
       else if (p.cause === 'fall') { const g = this.run.gaps.find(([a, b]) => p.d > a - 1 && p.d < b + 1); if (g) p.d = g[1] + 1; p.y = 0; }
       for (const o of this.run.obstacles) if (Math.abs(o.d - p.d) < 6) this.clearObstacle(o, false);
@@ -8506,7 +8517,8 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       else if (this.state === 'dying') {
         this.dyingT -= dt;
         if (this.p.fall) { this.p.vy -= GRAV * dt; this.p.y += this.p.vy * dt; }
-        if (this.dyingT <= 0) { this.state = 'revive'; IR.ui.revive(this.reviveCost(), this.data.coins + this.p.coins >= this.reviveCost() && this.p.revives < 3); }
+        if (this.dyingT <= 0 && this.p.lives > 0) { this.p.lives--; this.revive(true); IR.ui.lifeUsed(this.p.lives); }
+        else if (this.dyingT <= 0) { this.state = 'revive'; IR.ui.revive(this.reviveCost(), this.data.coins + this.p.coins >= this.reviveCost() && this.p.revives < 3); }
       }
       this.updateVisuals(dt);
       this.render();
@@ -8826,7 +8838,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'Could not connect the two phones. Try again, or connect both to Wi-Fi.', friendLeft: 'Your friend left the race.', retry: 'Try again',
       rematch: 'Rematch', waitRematch: 'Waiting for the host to start a rematch…', leave: 'Leave', stillRunning: 'is still running…', isOut: 'is out at',
       youWin: 'You win! 🏆', friendWins: 'wins!', draw: "It's a draw!", go: 'GO!', you: 'You', liveInvite: '🔴 Race me LIVE in INDIA RUN! Code:', city: 'City',
-      raceNote: 'Whoever runs farther wins.',
+      raceNote: 'Whoever runs farther wins.', freeLife: 'Free life used!', livesLeft: 'lives left', lastLife: 'That was your last free life!',
     },
     hi: {
       liveRace: 'लाइव रेस', liveDesc: 'इंटरनेट से दोस्त के साथ एक ही समय पर दौड़ें। 4 अंकों का कोड भेजें और साथ-साथ दौड़ें!',
@@ -8836,7 +8848,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'दोनों फ़ोन जुड़ नहीं पाए। फिर कोशिश करें, या दोनों Wi-Fi से जुड़ें।', friendLeft: 'दोस्त रेस छोड़ गया।', retry: 'फिर कोशिश करें',
       rematch: 'फिर से रेस', waitRematch: 'होस्ट की नई रेस का इंतज़ार…', leave: 'बाहर निकलें', stillRunning: 'अभी दौड़ रहा है…', isOut: 'आउट हुआ',
       youWin: 'आप जीते! 🏆', friendWins: 'जीता!', draw: 'बराबरी!', go: 'दौड़ो!', you: 'आप', liveInvite: '🔴 INDIA RUN में मेरे साथ लाइव दौड़ो! कोड:', city: 'शहर',
-      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।',
+      raceNote: 'जो ज़्यादा दूर दौड़ेगा, वही जीतेगा।', freeLife: 'फ्री लाइफ़ इस्तेमाल हुई!', livesLeft: 'लाइफ़ बाकी', lastLife: 'यह आपकी आख़िरी फ्री लाइफ़ थी!',
     },
     gu: {
       liveRace: 'લાઇવ રેસ', liveDesc: 'ઇન્ટરનેટથી મિત્ર સાથે એક જ સમયે દોડો. 4 અંકનો કોડ મોકલો અને સાથે દોડો!',
@@ -8846,7 +8858,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       noConn: 'બંને ફોન જોડાઈ શક્યા નહીં. ફરી પ્રયાસ કરો, અથવા બંને Wi-Fi પર જોડાઓ.', friendLeft: 'મિત્રએ રેસ છોડી દીધી.', retry: 'ફરી પ્રયાસ કરો',
       rematch: 'ફરી રેસ', waitRematch: 'હોસ્ટની નવી રેસની રાહ…', leave: 'બહાર નીકળો', stillRunning: 'હજી દોડે છે…', isOut: 'આઉટ થયો',
       youWin: 'તમે જીત્યા! 🏆', friendWins: 'જીત્યો!', draw: 'બરાબરી!', go: 'દોડો!', you: 'તમે', liveInvite: '🔴 INDIA RUN માં મારી સાથે લાઇવ દોડો! કોડ:', city: 'શહેર',
-      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.',
+      raceNote: 'જે વધુ દૂર દોડશે તે જીતશે.', freeLife: 'ફ્રી લાઇફ વપરાઈ!', livesLeft: 'લાઇફ બાકી', lastLife: 'આ તમારી છેલ્લી ફ્રી લાઇફ હતી!',
     },
   };
   for (const k in add) Object.assign(IR.STR[k], add[k]);
@@ -8908,7 +8920,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       <div id="incoming" class="screen panelScreen"><div class="panel narrow" id="incomingBody"></div></div>
       <div id="hud" class="screen">
         <div class="hudTop">
-          <div class="hScore"><b id="hScore">0</b><small><span id="hDist">0</span> m · <span class="mult" id="hMult">x1</span></small></div>
+          <div class="hLeft"><div class="hScore"><b id="hScore">0</b><small><span id="hDist">0</span> m · <span class="mult" id="hMult">x1</span></small></div><div class="hLives" id="hLives"></div></div>
           <div class="hMid"><div class="hTimer" id="hTimer"></div><div class="hTag" id="hTag"></div></div>
           <div class="hRight"><div class="chip coins"><span>🪙</span><b id="hCoins">0</b></div><div class="chip tok" id="hTok"></div><button class="pauseBtn" id="bPause" aria-label="Pause">❚❚</button></div>
         </div>
@@ -9183,6 +9195,7 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       this.togs();
     },
     hud(p, g) {
+      if (this.livesShown !== p.lives || this.livesRun !== p) { this.livesShown = p.lives; this.livesRun = p; const L = $('#hLives'); L.innerHTML = Array.from({ length: IR.FREE_LIVES }, (_, i) => `<i class="${i < p.lives ? 'on' : ''}">${i < p.lives ? '❤️' : '🤍'}</i>`).join(''); }
       $('#hScore').textContent = fmt(p.score); $('#hDist').textContent = fmt(p.dist); $('#hCoins').textContent = fmt(p.coins);
       $('#hMult').textContent = 'x' + g.mult * (p.pw.multi > 0 ? 2 : 1);
       if (g.festival) $('#hTok').innerHTML = `<span>${IR.FESTIVALS[g.festival].token}</span><b>${p.tokens}</b>`;
@@ -9236,6 +9249,12 @@ window.IR=window.IR||{};IR.ASSETS={"anims/f_cheer.json":"eyJuYW1lIjoiZl9jaGVlciI
       if (this.tutStep === undefined || this.tutStep > 3) return;
       const want = ['left|right', 'up', 'down', 'left|right'][this.tutStep];
       if (want.split('|').includes(a) && $('#tut').classList.contains('on')) this.tutNext();
+    },
+    lifeUsed(left) {
+      this.livesShown = -1;
+      const L = $('#hLives'); L.classList.remove('hit'); void L.offsetWidth; L.classList.add('hit');
+      this.toast(left > 0 ? `❤️ ${this.tr('freeLife')} · ${left} ${this.tr('livesLeft')}` : `💔 ${this.tr('lastLife')}`, left > 0 ? 'mission' : 'warn');
+      IR.audio.play('power');
     },
     revive(cost, can) {
       this.show('revive');
