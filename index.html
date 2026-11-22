@@ -323,8 +323,9 @@ html[lang=hi] .tabs button,html[lang=hi] h3{letter-spacing:0;text-transform:none
   </main>
 </div>
 
+<script>window.__b64=function(b){if(Uint8Array.fromBase64)return Uint8Array.fromBase64(b);const s=atob(b),n=s.length,u=new Uint8Array(n);for(let i=0;i<n;i++)u[i]=s.charCodeAt(i);return u};</script>
 <script type="importmap">
-{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.165.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.165.0/examples/jsm/"}}
+{"imports":{"three":"./vendor/three-0.165.0/build/three.module.js","three/addons/":"./vendor/three-0.165.0/jsm/"}}
 </script>
 <script type="module">
 import * as THREE from "three";
@@ -365,9 +366,26 @@ const canvas=renderer.domElement;
 const camera=new THREE.PerspectiveCamera(45,1,.01,4000);
 const controls=new OrbitControls(camera,canvas);
 controls.enableDamping=true;controls.dampingFactor=.08;controls.rotateSpeed=.7;controls.zoomSpeed=.9;
-const QUAL={high:{pr:2,sh:true,map:2048,bloom:true,ao:true},medium:{pr:1.5,sh:true,map:1024,bloom:true,ao:true},low:{pr:1,sh:false,map:512,bloom:false,ao:false}};
+const QUAL={high:{pr:2,sh:true,map:2048,bloom:true,ao:true},medium:{pr:1.5,sh:true,map:1024,bloom:true,ao:true},low:{pr:.85,sh:false,map:512,bloom:false,ao:false}};
 const coarse=matchMedia("(pointer:coarse)").matches;
-let quality=(coarse||innerWidth<820)?"medium":"high";
+let quality=(function(){
+  /* Pick graphics quality to suit the device: school laptops, smart TVs and big screens start lighter */
+  try{const saved=localStorage.getItem("eduQuality");if(saved&&QUAL[saved])return saved}catch(e){}
+  let gpu="";try{const gl=renderer.getContext(),ext=gl.getExtension("WEBGL_debug_renderer_info");gpu=String(ext?gl.getParameter(ext.UNMASKED_RENDERER_WEBGL):gl.getParameter(gl.RENDERER)).toLowerCase()}catch(e){}
+  const ua=navigator.userAgent;
+  const tv=/smart-?tv|tizen|web0?s|netcast|hbbtv|android tv|aft[a-z]|crkey|bravia|viera|googletv|silk/i.test(ua);
+  const weakGpu=/intel|uhd|hd graphics|iris|mali|adreno [1-5]|powervr|videocore|swiftshader|llvmpipe|software|microsoft basic/i.test(gpu);
+  const lowMem=(navigator.deviceMemory&&navigator.deviceMemory<=4)||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4);
+  const bigScreen=screen.width*screen.height*Math.pow(devicePixelRatio||1,2)>2600000;
+  if(tv||(weakGpu&&(lowMem||bigScreen)))return "low";
+  if(coarse||innerWidth<820||weakGpu||lowMem||bigScreen)return "medium";
+  return "high"})();
+let qualityPinned=false;try{qualityPinned=!!localStorage.getItem("eduQuality")}catch(e){}
+/* Watch the frame rate: if the device struggles, lower the graphics by itself (until the user picks a level) */
+const FPSW={t0:0,n:0,bad:0};
+function fpsWatch(now){if(qualityPinned||quality==="low")return;if(!FPSW.t0){FPSW.t0=now;FPSW.n=0;return}FPSW.n++;const el=now-FPSW.t0;if(el<2000)return;const fps=FPSW.n*1000/el;FPSW.t0=now;FPSW.n=0;
+  if(fps<26){if(++FPSW.bad>=2){FPSW.bad=0;quality=quality==="high"?"medium":"low";applyQuality();try{const t=document.createElement("div");t.textContent="Graphics lowered so the lab runs smoothly ("+quality+")";t.style.cssText="position:fixed;left:50%;bottom:70px;transform:translateX(-50%);background:#0b1730ee;color:#fff;padding:8px 14px;border-radius:999px;font:600 13px system-ui;z-index:99999";document.body.appendChild(t);setTimeout(()=>t.remove(),3500)}catch(e){}}}else FPSW.bad=0}
+
 if(Math.min(innerWidth,innerHeight)<600)QUAL.medium.ao=false; /* phones: skip the heaviest effect */
 const composer=new EffectComposer(renderer,new THREE.WebGLRenderTarget(4,4,{type:THREE.HalfFloatType,samples:4}));
 const renderPass=new RenderPass(new THREE.Scene(),camera);
@@ -470,7 +488,7 @@ function mount(stage){
   if(!stage.querySelector(".tools")){
     const t=el("div",{className:"tools"});
     const q=el("button",{className:"wide qbtn",textContent:"Quality: "+quality,title:"Change graphics quality"});
-    q.onclick=()=>{quality=quality==="high"?"medium":quality==="medium"?"low":"high";applyQuality()};
+    q.onclick=()=>{quality=quality==="high"?"medium":quality==="medium"?"low":"high";qualityPinned=true;try{localStorage.setItem("eduQuality",quality)}catch(e){}applyQuality()};
     const rs=el("button",{textContent:"⟲",title:"Reset view"});rs.setAttribute("aria-label","Reset view");rs.onclick=()=>world&&world.home&&world.home();
     const fs=el("button",{textContent:"⛶",title:"Full screen"});fs.setAttribute("aria-label","Full screen");fs.onclick=()=>{stage.classList.toggle("full");fs.textContent=stage.classList.contains("full")?"✕":"⛶";setTimeout(resize,30)};
     t.append(q,rs,fs);stage.append(t);
@@ -484,6 +502,7 @@ canvas.addEventListener("pointerup",e=>{if(!downAt||!world||!world.tap)return;co
 let last=performance.now(),TIME=0;
 function frame(now){
   requestAnimationFrame(frame);
+  if(world&&host&&!host.closest("main").hidden)fpsWatch(now);
   const dt=Math.min(window.__eduFast?.25:.05,(now-last)/1000);last=now;TIME+=dt;
   if(!world||!host||host.closest("main").hidden)return;
   if(tween){tween.k+=dt/tween.dur;const e=ease(Math.min(1,tween.k));camera.position.lerpVectors(tween.p0,tween.p1,e);camera.position.y+=Math.sin(Math.PI*e)*tween.lift;controls.target.lerpVectors(tween.t0,tween.t1,e);camera.lookAt(controls.target);if(tween.k>=1){const d=tween.done;tween=null;controls.enabled=true;d&&d()}}
@@ -1202,7 +1221,7 @@ function expProjectile(){
    ============================================================= */
 const PEOPLE=[{id:"Medical_Female_02",name:"Priya",look:"Lab coat",sex:"Woman"},{id:"Female_Adult_05",name:"Ananya",look:"Casual",sex:"Woman"},{id:"Medical_Male_03",name:"Vikram",look:"Lab coat",sex:"Man"},{id:"Male_Adult_06",name:"Arjun",look:"Casual",sex:"Man"}];
 const GLB={},CHAR={id:null,gltf:null};
-function loadPerson(id){if(!GLB[id])GLB[id]=import("./assets/people/"+id+".js").then(m=>{const bin=atob(m.default),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);return new Promise((res,rej)=>new GLTFLoader().parse(u.buffer,"",res,rej))}).then(g=>{g.animations.forEach(c=>c.tracks.forEach(t=>{if(/^Bip01\.position$/.test(t.name)){const v=t.values;for(let i=3;i<v.length;i+=3){v[i]=v[0];v[i+2]=v[2]}}}));return g});return GLB[id]}
+function loadPerson(id){if(!GLB[id])GLB[id]=import("./assets/people/"+id+".js").then(m=>{const u=window.__b64(m.default);return new Promise((res,rej)=>new GLTFLoader().parse(u.buffer,"",res,rej))}).then(g=>{g.animations.forEach(c=>c.tracks.forEach(t=>{if(/^Bip01\.position$/.test(t.name)){const v=t.values;for(let i=3;i<v.length;i+=3){v[i]=v[0];v[i+2]=v[2]}}}));return g});return GLB[id]}
 function makePerson(gltf){const g=SkeletonUtils.clone(gltf.scene);g.traverse(o=>{if(o.isMesh){o.castShadow=true;o.receiveShadow=true;o.frustumCulled=false}});const mixer=new THREE.AnimationMixer(g);const act={};gltf.animations.forEach(c=>act[c.name]=mixer.clipAction(c));["idle","walk","run"].forEach(n=>{if(act[n]){act[n].play();act[n].setEffectiveWeight(n==="idle"?1:0)}});return{g,mixer,act,waveT:0}}
 function animPerson(P,dt,speed,S){const wr=clamp((speed-2.2)/1.8,0,1),mv=clamp(speed/1.2,0,1),ww=mv*(1-wr),wi=1-mv;
   let k=1;if(S&&S.press>0&&P.act.wave&&P.waveT<=0){P.waveT=1.8;const a=P.act.wave;a.reset();a.setLoop(THREE.LoopOnce,1);a.setEffectiveWeight(1);a.fadeIn(.25).play();S.press=0}
@@ -4113,7 +4132,7 @@ addEventListener("hashchange",route);
   try{await Promise.race([Promise.all(['700 40px "Caveat"','600 40px "Chakra Petch"','600 20px "IBM Plex Mono"','500 20px "IBM Plex Sans"'].map(f=>document.fonts.load(f))),new Promise(r=>setTimeout(r,2500))])}catch(e){}
   initTex();
   const tl=new THREE.TextureLoader(),lt=(u,srgb=true)=>new Promise(res=>tl.load(u,t=>{if(srgb)t.colorSpace=THREE.SRGBColorSpace;t.anisotropy=Math.min(8,maxAniso);t.wrapS=t.wrapT=THREE.RepeatWrapping;res(t)},undefined,()=>res(new THREE.Texture())));
-  const [hdr,b1,b2,b3,h1,h2,h3,w1,w2,w3,gr]=await Promise.all([import("./assets/sky.js").then(m=>{const bin=atob(m.default),u=new Uint8Array(bin.length);for(let i=0;i<bin.length;i++)u[i]=bin.charCodeAt(i);const d=new RGBELoader().parse(u.buffer);const t=new THREE.DataTexture(d.data,d.width,d.height,THREE.RGBAFormat,d.type);t.flipY=true;t.colorSpace=THREE.LinearSRGBColorSpace;t.minFilter=t.magFilter=THREE.LinearFilter;t.generateMipmaps=false;t.needsUpdate=true;return t}).catch(()=>null),lt("assets/brick_diffuse.jpg"),lt("assets/brick_bump.jpg",false),lt("assets/brick_roughness.jpg",false),lt("assets/hardwood2_diffuse.jpg"),lt("assets/hardwood2_bump.jpg",false),lt("assets/hardwood2_roughness.jpg",false),lt("assets/win1.jpg"),lt("assets/win2.jpg"),lt("assets/win3.jpg"),lt("assets/grass.jpg")]);
+  const [hdr,b1,b2,b3,h1,h2,h3,w1,w2,w3,gr]=await Promise.all([import("./assets/sky.js").then(m=>{const u=window.__b64(m.default);const d=new RGBELoader().parse(u.buffer);const t=new THREE.DataTexture(d.data,d.width,d.height,THREE.RGBAFormat,d.type);t.flipY=true;t.colorSpace=THREE.LinearSRGBColorSpace;t.minFilter=t.magFilter=THREE.LinearFilter;t.generateMipmaps=false;t.needsUpdate=true;return t}).catch(()=>null),lt("assets/brick_diffuse.jpg"),lt("assets/brick_bump.jpg",false),lt("assets/brick_roughness.jpg",false),lt("assets/hardwood2_diffuse.jpg"),lt("assets/hardwood2_bump.jpg",false),lt("assets/hardwood2_roughness.jpg",false),lt("assets/win1.jpg"),lt("assets/win2.jpg"),lt("assets/win3.jpg"),lt("assets/grass.jpg")]);
   Object.assign(TEX,{grass:gr,brick:b1,brickB:b2,brickR:b3,hw:h1,hwB:h2,hwR:h3,win:[w1,w2,w3]});
   if(hdr){hdr.mapping=THREE.EquirectangularReflectionMapping;ENV.hdr=hdr;ENV.out=pmrem.fromEquirectangular(hdr).texture}else{ENV.hdr=new THREE.Texture();ENV.out=roomEnv}
   initMats();makeHands();initJoy();buildPicker();
