@@ -7,7 +7,7 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 - **Installable app:** open the games page on an Android phone and tap **Install app** (works offline after "Save offline")
 - **3D labs:** [Science Laboratory](index.html) · [Biology Lab](bio/index.html) · [Chemistry Lab](chemlab/index.html) · [Periodic Table 3D](ptable/index.html)
 
-## Games (31) and apps (6)
+## Games (31) and apps (7)
 
 ### Class 1
 
@@ -80,6 +80,7 @@ Free 3D learning games and virtual labs for **CBSE / NCERT Class 1 to 10**, made
 | <a href="games/apps/ai-crop-doctor-gujarati/index.html"><img src="games/apps/ai-crop-doctor-gujarati/thumbnail.webp" width="240" alt="AI Crop Doctor (ગુજરાતી · English)"></a> | **🌱 AI Crop Doctor (ગુજરાતી · English)** | Find crop disease from a leaf photo |
 | <a href="games/apps/career-genius/index.html"><img src="games/apps/career-genius/thumbnail.webp" width="240" alt="Career Genius"></a> | **🎓 Career Genius** | Career guidance with a PDF report |
 | <a href="games/apps/trainable-bot-studio/index.html"><img src="games/apps/trainable-bot-studio/thumbnail.webp" width="240" alt="Trainable Bot Studio"></a> | **🤖 Trainable Bot Studio** | Teach your own chatbot |
+| <a href="games/apps/eduverse-ai-bot/index.html"><img src="games/apps/eduverse-ai-bot/thumbnail.webp" width="240" alt="Eduverse AI Bot"></a> | **💬 Eduverse AI Bot (Telegram)** | Ask science doubts on Telegram |
 
 ## Folder layout
 

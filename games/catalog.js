@@ -48,7 +48,8 @@ window.EDU_GAMES = [
   { cls: 0, app: true, path: 'apps/ai-crop-doctor-web',         title: 'AI Crop Doctor Web',                       topic: 'crop',   emoji: '🍃' },
   { cls: 0, app: true, path: 'apps/ai-crop-doctor-gujarati',    title: 'AI Crop Doctor (ગુજરાતી · English)',         topic: 'crop',   emoji: '🌱' },
   { cls: 0, app: true, path: 'apps/career-genius',              title: 'Career Genius',                            topic: 'career', emoji: '🎓' },
-  { cls: 0, app: true, path: 'apps/trainable-bot-studio',       title: 'Trainable Bot Studio',                     topic: 'bot',    emoji: '🤖' }
+  { cls: 0, app: true, path: 'apps/trainable-bot-studio',       title: 'Trainable Bot Studio',                     topic: 'bot',    emoji: '🤖' },
+  { cls: 0, app: true, path: 'apps/eduverse-ai-bot',            title: 'Eduverse AI Bot (Telegram)',               topic: 'tg',     emoji: '💬' }
 ];
 
 /* 3D labs that are already on the website */
